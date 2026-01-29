@@ -1,3 +1,4 @@
+import { format } from "date-fns";
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router";
 import { TagInput } from "../../components/shared";
@@ -29,6 +30,7 @@ export function ProblemDetailPage() {
 
 	const [loading, setLoading] = useState(!isNew);
 	const [saving, setSaving] = useState(false);
+	const [createdAt, setCreatedAt] = useState<string | null>(null);
 	const [form, setForm] = useState<{
 		title: string;
 		link: string;
@@ -63,6 +65,7 @@ export function ProblemDetailPage() {
 					memo: problem.memo,
 					status: problem.status,
 				});
+				setCreatedAt(problem.createdAt);
 			}
 			setLoading(false);
 		};
@@ -141,8 +144,14 @@ export function ProblemDetailPage() {
 					</h1>
 				</div>
 			</header>
-
 			<form onSubmit={handleSubmit} className="flex-1 overflow-auto p-4">
+				<div className="px-2 flex justify-end">
+					{createdAt && (
+						<div className="text-sm text-gray-500 dark:text-gray-400">
+							CreatedAt {format(new Date(createdAt), "yyyy년 M월 d일")}
+						</div>
+					)}
+				</div>
 				<div className="space-y-4">
 					<Input
 						id="title"
