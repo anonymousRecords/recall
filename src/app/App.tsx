@@ -1,10 +1,10 @@
-import { BrowserRouter } from "react-router";
+import { MemoryRouter } from "react-router";
 import { AppRouter } from "./Router";
 
 export function App() {
 	return (
-		<BrowserRouter>
+		<MemoryRouter initialEntries={["/"]}>
 			<AppRouter />
-		</BrowserRouter>
+		</MemoryRouter>
 	);
 }
