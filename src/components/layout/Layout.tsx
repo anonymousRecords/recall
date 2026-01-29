@@ -8,8 +8,8 @@ interface LayoutProps {
 
 export function Layout({ children }: LayoutProps) {
 	return (
-		<div className="flex h-[600px] w-[400px] flex-col bg-white dark:bg-gray-950">
-			<main className="flex-1 overflow-auto">{children}</main>
+		<div className="flex h-[600px] w-[400px] flex-col overflow-hidden bg-white dark:bg-gray-950">
+			<main className="min-h-0 flex-1 overflow-auto">{children}</main>
 
 			<nav className="border-t h-[60px] border-gray-200 dark:border-gray-800 flex items-center justify-around">
 				<NavItem to="/" icon={<HomeIcon />} label="홈" />
