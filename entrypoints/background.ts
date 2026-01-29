@@ -1,5 +1,5 @@
 import Dexie from "dexie";
-import type { Problem } from "@/types";
+import type { Problem } from "../src/types";
 
 const db = new Dexie("OdapNoteDB") as Dexie & {
 	problems: Dexie.Table<Problem, string>;
