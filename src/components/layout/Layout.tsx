@@ -13,7 +13,7 @@ export function Layout({ children }: LayoutProps) {
 
 			<nav className="border-t h-[60px] border-gray-200 dark:border-gray-800 flex items-center justify-around">
 				<NavItem to="/" icon={<HomeIcon />} label="홈" />
-				<NavItem to="/problems" icon={<ListIcon />} label="문제" />
+				<NavItem to="/problems" icon={<ListIcon />} label="문제" end />
 				<NavItem to="/problems/new" icon={<PlusIcon />} label="추가" />
 				<NavItem to="/settings" icon={<SettingsIcon />} label="설정" />
 			</nav>
@@ -25,12 +25,14 @@ interface NavItemProps {
 	to: string;
 	icon: ReactNode;
 	label: string;
+	end?: boolean;
 }
 
-function NavItem({ to, icon }: NavItemProps) {
+function NavItem({ to, icon, end }: NavItemProps) {
 	return (
 		<NavLink
 			to={to}
+			end={end}
 			className={({ isActive }) =>
 				cn(
 					"flex flex-col items-center gap-0.5 px-4 py-8 transition-colors",
