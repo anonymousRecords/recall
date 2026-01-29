@@ -17,6 +17,16 @@ const THEME_OPTIONS = [
 	{ value: "dark", label: "다크 모드" },
 ];
 
+function applyTheme(selectedTheme: "light" | "dark" | "system") {
+	const root = document.documentElement;
+	const isDark =
+		selectedTheme === "dark" ||
+		(selectedTheme === "system" &&
+			window.matchMedia("(prefers-color-scheme: dark)").matches);
+
+	root.classList.toggle("dark", isDark);
+}
+
 export function SettingsPage() {
 	const { settings, saveSettings, loading } = useSettings();
 	const [intervals, setIntervals] = useState<string>(
@@ -34,16 +44,6 @@ export function SettingsPage() {
 	useEffect(() => {
 		applyTheme(theme);
 	}, [theme]);
-
-	const applyTheme = (selectedTheme: "light" | "dark" | "system") => {
-		const root = document.documentElement;
-		const isDark =
-			selectedTheme === "dark" ||
-			(selectedTheme === "system" &&
-				window.matchMedia("(prefers-color-scheme: dark)").matches);
-
-		root.classList.toggle("dark", isDark);
-	};
 
 	const parseIntervals = (input: string): number[] | null => {
 		const parts = input.split(",").map((s) => s.trim());
