@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useMemo } from "react";
 import {
 	createProblem,
 	deleteProblem,
@@ -7,69 +7,65 @@ import {
 	updateProblem,
 } from "../lib/db/problems";
 import type { CreateProblemInput, Problem, UpdateProblemInput } from "../types";
+import { useAsyncData } from "./useAsyncData";
 
 export function useProblems() {
-	const [problems, setProblems] = useState<Problem[]>([]);
-	const [loading, setLoading] = useState(true);
-	const [error, setError] = useState<Error | null>(null);
+	const fetcher = useCallback(() => getAllProblems(), []);
+	const { data: problems, loading, error, refetch, setData } = useAsyncData<Problem[]>(
+		fetcher,
+		[],
+	);
 
-	const fetchProblems = useCallback(async () => {
-		try {
-			setLoading(true);
-			const data = await getAllProblems();
-			setProblems(data);
-			setError(null);
-		} catch (err) {
-			setError(
-				err instanceof Error ? err : new Error("Failed to fetch problems"),
-			);
-		} finally {
-			setLoading(false);
-		}
-	}, []);
-
-	useEffect(() => {
-		fetchProblems();
-	}, [fetchProblems]);
-
-	const addProblem = useCallback(async (input: CreateProblemInput) => {
-		const newProblem = await createProblem(input);
-		setProblems((prev) => [newProblem, ...prev]);
-		return newProblem;
-	}, []);
+	const addProblem = useCallback(
+		async (input: CreateProblemInput) => {
+			const newProblem = await createProblem(input);
+			setData((prev) => [newProblem, ...prev]);
+			return newProblem;
+		},
+		[setData],
+	);
 
 	const editProblem = useCallback(
 		async (id: string, input: UpdateProblemInput) => {
 			const updated = await updateProblem(id, input);
 			if (updated) {
-				setProblems((prev) => prev.map((p) => (p.id === id ? updated : p)));
+				setData((prev) => prev.map((p) => (p.id === id ? updated : p)));
 			}
 			return updated;
 		},
-		[],
+		[setData],
 	);
 
-	const removeProblem = useCallback(async (id: string) => {
-		await deleteProblem(id);
-		setProblems((prev) => prev.filter((p) => p.id !== id));
-	}, []);
+	const removeProblem = useCallback(
+		async (id: string) => {
+			await deleteProblem(id);
+			setData((prev) => prev.filter((p) => p.id !== id));
+		},
+		[setData],
+	);
 
-	const refreshProblem = useCallback(async (id: string) => {
-		const updated = await getProblem(id);
-		if (updated) {
-			setProblems((prev) => prev.map((p) => (p.id === id ? updated : p)));
-		}
-		return updated;
-	}, []);
+	const refreshProblem = useCallback(
+		async (id: string) => {
+			const updated = await getProblem(id);
+			if (updated) {
+				setData((prev) => prev.map((p) => (p.id === id ? updated : p)));
+			}
+			return updated;
+		},
+		[setData],
+	);
 
-	return {
-		problems,
-		loading,
-		error,
-		addProblem,
-		editProblem,
-		removeProblem,
-		refreshProblem,
-		refetch: fetchProblems,
-	};
+	return useMemo(
+		() => ({
+			problems,
+			loading,
+			error,
+			addProblem,
+			editProblem,
+			removeProblem,
+			refreshProblem,
+			refetch,
+		}),
+		[problems, loading, error, addProblem, editProblem, removeProblem, refreshProblem, refetch],
+	);
 }
