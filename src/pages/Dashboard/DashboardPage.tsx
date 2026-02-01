@@ -43,22 +43,24 @@ export function DashboardPage() {
 				totalCount={totalCount}
 			/>
 
-			<div className="flex-1 overflow-auto p-4 flex items-center justify-center">
+			<div className="flex-1 overflow-auto p-4">
 				{problems.length === 0 ? (
-					<EmptyState
-						icon={<CheckBadgeIcon />}
-						title="모든 복습 완료"
-						description="오늘 복습할 문제가 없습니다"
-						action={
-							<Link to="/problems/new">
-								<Button variant="secondary" size="sm">
-									새 문제 등록
-								</Button>
-							</Link>
-						}
-					/>
+					<div className="h-full flex items-center justify-center">
+						<EmptyState
+							icon={<CheckBadgeIcon />}
+							title="모든 복습 완료"
+							description="오늘 복습할 문제가 없습니다"
+							action={
+								<Link to="/problems/new">
+									<Button variant="secondary" size="sm">
+										새 문제 등록
+									</Button>
+								</Link>
+							}
+						/>
+					</div>
 				) : (
-					<div className="space-y-3">
+					<div className="w-full max-w-2xl">
 						{problems.map((problem) => {
 							const overdue = isOverdue(problem.nextReviewDate);
 							return (
