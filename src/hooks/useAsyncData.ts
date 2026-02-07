@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 
 interface UseAsyncDataResult<T> {
 	data: T;
@@ -15,11 +15,13 @@ export function useAsyncData<T>(
 	const [data, setData] = useState<T>(initialData);
 	const [loading, setLoading] = useState(true);
 	const [error, setError] = useState<Error | null>(null);
+	const fetcherRef = useRef(fetcher);
+	fetcherRef.current = fetcher;
 
 	const refetch = useCallback(async () => {
 		try {
 			setLoading(true);
-			const result = await fetcher();
+			const result = await fetcherRef.current();
 			setData(result);
 			setError(null);
 		} catch (err) {
@@ -27,7 +29,7 @@ export function useAsyncData<T>(
 		} finally {
 			setLoading(false);
 		}
-	}, [fetcher]);
+	}, []);
 
 	useEffect(() => {
 		refetch();

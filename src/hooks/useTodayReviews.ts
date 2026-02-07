@@ -5,14 +5,13 @@ import type { Problem } from "../types";
 import { useAsyncData } from "./useAsyncData";
 
 export function useTodayReviews() {
-	const fetcher = useCallback(() => getTodayReviewProblems(), []);
 	const {
 		data: problems,
 		loading,
 		error,
 		refetch,
 		setData,
-	} = useAsyncData<Problem[]>(fetcher, []);
+	} = useAsyncData<Problem[]>(getTodayReviewProblems, []);
 
 	const markAsReviewed = useCallback(
 		async (problemId: string) => {

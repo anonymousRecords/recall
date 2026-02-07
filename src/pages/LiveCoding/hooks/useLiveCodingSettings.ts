@@ -8,14 +8,13 @@ import {
 import type { LiveCodingSettings } from "../../../types";
 
 export function useLiveCodingSettings() {
-	const fetcher = useCallback(() => getLiveCodingSettings(), []);
 	const {
 		data: settings,
 		loading,
 		error,
 		refetch,
 		setData,
-	} = useAsyncData(fetcher, DEFAULT_LIVE_CODING_SETTINGS);
+	} = useAsyncData(getLiveCodingSettings, DEFAULT_LIVE_CODING_SETTINGS);
 
 	const saveSettings = useCallback(
 		async (updates: Partial<Omit<LiveCodingSettings, "id">>) => {

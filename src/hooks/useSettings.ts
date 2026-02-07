@@ -8,14 +8,13 @@ import type { Settings } from "../types";
 import { useAsyncData } from "./useAsyncData";
 
 export function useSettings() {
-	const fetcher = useCallback(() => getSettings(), []);
 	const {
 		data: settings,
 		loading,
 		error,
 		refetch,
 		setData,
-	} = useAsyncData(fetcher, DEFAULT_SETTINGS);
+	} = useAsyncData(getSettings, DEFAULT_SETTINGS);
 
 	const saveSettings = useCallback(
 		async (updates: Partial<Omit<Settings, "id">>) => {

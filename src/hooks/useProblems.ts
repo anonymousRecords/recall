@@ -10,14 +10,13 @@ import type { CreateProblemInput, Problem, UpdateProblemInput } from "../types";
 import { useAsyncData } from "./useAsyncData";
 
 export function useProblems() {
-	const fetcher = useCallback(() => getAllProblems(), []);
 	const {
 		data: problems,
 		loading,
 		error,
 		refetch,
 		setData,
-	} = useAsyncData<Problem[]>(fetcher, []);
+	} = useAsyncData<Problem[]>(getAllProblems, []);
 
 	const addProblem = useCallback(
 		async (input: CreateProblemInput) => {
