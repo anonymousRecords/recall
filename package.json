@@ -1,6 +1,6 @@
 {
-	"name": "odapnote",
-	"description": "ODAP Note - A Chrome extension for managing coding problems",
+	"name": "recall",
+	"description": "An AI-powered system for algorithm recall and live coding interviews.",
 	"private": true,
 	"version": "0.0.0",
 	"type": "module",
