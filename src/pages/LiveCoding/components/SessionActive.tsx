@@ -1,22 +1,15 @@
 import { useEffect, useRef, useState } from "react";
 import { Button, Input } from "../../../components/ui";
 import { cn } from "../../../lib/utils";
-import type { ChatMessage } from "../../../types";
+import type { ChatMessage, SpeechState } from "../../../types";
 
 interface SessionActiveProps {
 	messages: ChatMessage[];
 	timeRemaining: number | null;
 	isAILoading: boolean;
-	isListening: boolean;
-	isSpeaking: boolean;
-	finalTranscript: string;
-	interimTranscript: string;
-	volume: number;
-	hasPermission: boolean | null;
+	speech: SpeechState;
 	onSendMessage: (content: string) => Promise<void>;
 	onEnd: () => Promise<void>;
-	onToggleListening: () => void;
-	onRequestPermission: () => Promise<boolean>;
 }
 
 const formatTime = (seconds: number): string => {
@@ -29,17 +22,21 @@ export function SessionActive({
 	messages,
 	timeRemaining,
 	isAILoading,
-	isListening,
-	isSpeaking,
-	finalTranscript,
-	interimTranscript,
-	volume,
-	hasPermission,
+	speech,
 	onSendMessage,
 	onEnd,
-	onToggleListening,
-	onRequestPermission,
 }: SessionActiveProps) {
+	const {
+		isListening,
+		isSpeaking,
+		finalTranscript,
+		interimTranscript,
+		volume,
+		hasPermission,
+		toggleListening,
+		requestPermission,
+	} = speech;
+
 	const [input, setInput] = useState("");
 	const messagesEndRef = useRef<HTMLDivElement>(null);
 	const messagesLengthRef = useRef(messages.length);
@@ -140,7 +137,7 @@ export function SessionActive({
 					<div className="text-center py-2 mb-3">
 						<button
 							type="button"
-							onClick={onRequestPermission}
+							onClick={requestPermission}
 							aria-label={
 								hasPermission === false
 									? "다시 권한 요청하기"
@@ -165,7 +162,7 @@ export function SessionActive({
 					<div className="flex items-center justify-center gap-3 mb-3">
 						<button
 							type="button"
-							onClick={onToggleListening}
+							onClick={toggleListening}
 							disabled={isSpeaking || isAILoading}
 							aria-label={isListening ? "음성 인식 중지" : "음성 인식 시작"}
 							aria-pressed={isListening}

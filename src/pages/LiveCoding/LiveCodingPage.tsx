@@ -11,18 +11,11 @@ export function LiveCodingPage() {
 		timeRemaining,
 		problemInfo,
 		isAILoading,
-		isListening,
-		isSpeaking,
-		finalTranscript,
-		interimTranscript,
-		volume,
-		hasPermission,
-		requestPermission,
+		speech,
 		startSession,
 		endSession,
 		resetSession,
 		sendMessage,
-		toggleListening,
 	} = useLiveSession();
 
 	if (status === "idle") {
@@ -35,16 +28,9 @@ export function LiveCodingPage() {
 				messages={messages}
 				timeRemaining={timeRemaining}
 				isAILoading={isAILoading}
-				isListening={isListening}
-				isSpeaking={isSpeaking}
-				finalTranscript={finalTranscript}
-				interimTranscript={interimTranscript}
-				volume={volume}
-				hasPermission={hasPermission}
+				speech={speech}
 				onSendMessage={sendMessage}
 				onEnd={endSession}
-				onToggleListening={toggleListening}
-				onRequestPermission={requestPermission}
 			/>
 		);
 	}

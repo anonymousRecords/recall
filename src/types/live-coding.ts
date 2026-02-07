@@ -114,6 +114,17 @@ export type AIRequest =
 			problemInfo: ProblemInfo;
 	  };
 
+export interface SpeechState {
+	isListening: boolean;
+	isSpeaking: boolean;
+	finalTranscript: string;
+	interimTranscript: string;
+	volume: number;
+	hasPermission: boolean | null;
+	toggleListening: () => void;
+	requestPermission: () => Promise<boolean>;
+}
+
 export interface AIClient {
 	chat(messages: { role: string; content: string }[]): Promise<string>;
 	testConnection(): Promise<boolean>;
