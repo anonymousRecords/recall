@@ -46,7 +46,7 @@ export function SessionSetup({ problemInfo, onStart }: SessionSetupProps) {
 		settings.defaultStyle,
 	);
 
-	const [starting, setStarting] = useState(false);
+	const [isStarting, setIsStarting] = useState(false);
 	const [error, setError] = useState<string | null>(null);
 
 	if (settingsLoading) {
@@ -65,7 +65,6 @@ export function SessionSetup({ problemInfo, onStart }: SessionSetupProps) {
 				<div className="space-y-4">
 					<InterviewGuideCard />
 
-					{/* 문제 정보 */}
 					{problemInfo ? (
 						<ProblemInfoCard problemInfo={problemInfo} />
 					) : (
@@ -86,22 +85,17 @@ export function SessionSetup({ problemInfo, onStart }: SessionSetupProps) {
 					{error && (
 						<p className="text-sm text-red-600 dark:text-red-400">{error}</p>
 					)}
+
 					<Button
 						className="w-full"
-						disabled={!problemInfo || !hasApiKey || starting}
+						disabled={!problemInfo || !hasApiKey || isStarting}
 						onClick={async () => {
-							if (!problemInfo) {
-								setError("문제 정보를 찾을 수 없습니다.");
-								return;
-							}
-
-							setStarting(true);
+							setIsStarting(true);
 							setError(null);
 
 							try {
 								await onStart({
-									timeLimit:
-										timeLimit === "null" ? null : parseInt(timeLimit, 10),
+									timeLimit: parseInt(timeLimit, 10),
 									interviewerStyle: interviewerStyle,
 								});
 							} catch (err) {
@@ -110,11 +104,12 @@ export function SessionSetup({ problemInfo, onStart }: SessionSetupProps) {
 										? err.message
 										: "세션 시작에 실패했습니다.",
 								);
-								setStarting(false);
+							} finally {
+								setIsStarting(false);
 							}
 						}}
 					>
-						{starting ? "시작 중..." : "세션 시작"}
+						{isStarting ? "시작 중..." : "세션 시작"}
 					</Button>
 				</div>
 			</div>
