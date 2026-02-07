@@ -1,9 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from "react";
-import {
-	completeSession,
-	createSession,
-	updateSession,
-} from "../../../lib/db/sessions";
+import { completeSession, createSession } from "../../../lib/db/sessions";
 import type {
 	ChatMessage,
 	InterviewerStyle,
@@ -11,12 +7,15 @@ import type {
 	SessionConfig,
 	SessionStatus,
 } from "../../../types";
+import { useCodeChangeHandler } from "./useCodeChangeHandler";
 import { useCodeMonitor } from "./useCodeMonitor";
 import { useInterviewer } from "./useInterviewer";
 import { useLiveCodingSettings } from "./useLiveCodingSettings";
+import { useSessionAutoSave } from "./useSessionAutoSave";
+import { useSessionChat } from "./useSessionChat";
+import { useSessionMessages } from "./useSessionMessages";
+import { useSessionTimer } from "./useSessionTimer";
 import { useSpeech } from "./useSpeech";
-
-const DEBOUNCE_MS = 3000;
 
 export function useLiveSession() {
 	const { settings } = useLiveCodingSettings();
@@ -41,62 +40,35 @@ export function useLiveSession() {
 
 	const [status, setStatus] = useState<SessionStatus>("idle");
 	const [session, setSession] = useState<LiveSession | null>(null);
-	const [messages, setMessages] = useState<ChatMessage[]>([]);
-	const [timeRemaining, setTimeRemaining] = useState<number | null>(null);
 
-	const previousCodeRef = useRef("");
-	const lastCodeChangeTimeRef = useRef<number>(Date.now());
-	const codeChangeTimeoutRef = useRef<number | null>(null);
 	const sessionConfigRef = useRef<SessionConfig | null>(null);
 	const clearTranscriptRef = useRef<() => void>(() => {});
 	const speakRef = useRef<(text: string) => void>(() => {});
-	const messagesRef = useRef<ChatMessage[]>([]);
 
-	useEffect(() => {
-		messagesRef.current = messages;
-	}, [messages]);
+	const {
+		messages,
+		messagesRef,
+		setMessages,
+		addMessage,
+		reset: resetMessages,
+	} = useSessionMessages();
 
-	const handleFinalTranscript = useCallback(
-		async (text: string) => {
-			const config = sessionConfigRef.current;
-			if (status !== "active" || !config) return;
+	const endSessionRef = useRef<() => void>(() => {});
 
-			clearTranscriptRef.current();
-
-			const userMessage: ChatMessage = {
-				id: crypto.randomUUID(),
-				role: "user",
-				content: text,
-				timestamp: Date.now(),
-				codeContext: currentCode,
-			};
-			setMessages((prev) => [...prev, userMessage]);
-
-			try {
-				const response = await sendToAI({
-					type: "user_message",
-					content: text,
-					codeContext: currentCode,
-					messages: [...messagesRef.current, userMessage],
-					problemInfo: config.problemInfo,
-					style: config.style,
-				});
-
-				const aiMessage: ChatMessage = {
-					id: crypto.randomUUID(),
-					role: "interviewer",
-					content: response,
-					timestamp: Date.now(),
-				};
-				setMessages((prev) => [...prev, aiMessage]);
-
-				speakRef.current(response);
-			} catch (error) {
-				console.error("[오답노트] AI 응답 실패:", error);
-			}
-		},
-		[status, currentCode, sendToAI],
+	const timer = useSessionTimer(status === "active", () =>
+		endSessionRef.current(),
 	);
+
+	const { handleFinalTranscript, sendMessage } = useSessionChat({
+		status,
+		sessionConfigRef,
+		currentCode,
+		sendToAI,
+		addMessage,
+		messagesRef,
+		speakRef,
+		clearTranscriptRef,
+	});
 
 	const {
 		isListening,
@@ -126,54 +98,17 @@ export function useLiveSession() {
 		speakRef.current = speak;
 	}, [speak]);
 
-	const handleCodeChange = useCallback(
-		async (code: string) => {
-			const config = sessionConfigRef.current;
-			if (status !== "active" || !config) return;
-
-			const now = Date.now();
-			const pauseDuration = Math.floor(
-				(now - lastCodeChangeTimeRef.current) / 1000,
-			);
-			lastCodeChangeTimeRef.current = now;
-
-			if (codeChangeTimeoutRef.current) {
-				clearTimeout(codeChangeTimeoutRef.current);
-			}
-
-			if (isSpeaking || isAILoading) return;
-
-			codeChangeTimeoutRef.current = window.setTimeout(async () => {
-				try {
-					const response = await sendToAI({
-						type: "code_changed",
-						previousCode: previousCodeRef.current,
-						currentCode: code,
-						pauseDuration,
-						messages: messagesRef.current,
-						problemInfo: config.problemInfo,
-						style: config.style,
-					});
-
-					previousCodeRef.current = code;
-
-					if (response) {
-						const aiMessage: ChatMessage = {
-							id: crypto.randomUUID(),
-							role: "interviewer",
-							content: response,
-							timestamp: Date.now(),
-						};
-						setMessages((prev) => [...prev, aiMessage]);
-						speak(response);
-					}
-				} catch (error) {
-					console.error("[오답노트] 코드 분석 실패:", error);
-				}
-			}, DEBOUNCE_MS);
-		},
-		[status, sendToAI, speak, isSpeaking, isAILoading],
-	);
+	const codeChange = useCodeChangeHandler({
+		status,
+		currentCode,
+		sessionConfigRef,
+		messagesRef,
+		isSpeaking,
+		isAILoading,
+		sendToAI,
+		onAIResponse: addMessage,
+		speak: (text) => speakRef.current(text),
+	});
 
 	const startSession = useCallback(
 		async (config: { timeLimit: number | null; style: InterviewerStyle }) => {
@@ -189,8 +124,7 @@ export function useLiveSession() {
 			};
 
 			sessionConfigRef.current = sessionConfig;
-			previousCodeRef.current = currentCode;
-			lastCodeChangeTimeRef.current = Date.now();
+			codeChange.setPreviousCode(currentCode);
 
 			const newSession = await createSession({
 				config: sessionConfig,
@@ -202,10 +136,10 @@ export function useLiveSession() {
 
 			setSession(newSession);
 			setStatus("active");
-			setMessages([]);
+			resetMessages();
 
 			if (config.timeLimit) {
-				setTimeRemaining(config.timeLimit * 60);
+				timer.start(config.timeLimit);
 			}
 
 			await startMonitoring();
@@ -227,10 +161,21 @@ export function useLiveSession() {
 				setMessages([aiMessage]);
 				speak(greeting);
 			} catch (error) {
-				console.error("[오답노트] AI 인사 실패:", error);
+				console.error("[Recall] AI 인사 실패:", error);
 			}
 		},
-		[problemInfo, language, currentCode, startMonitoring, sendToAI, speak],
+		[
+			problemInfo,
+			language,
+			currentCode,
+			startMonitoring,
+			sendToAI,
+			speak,
+			codeChange,
+			timer,
+			resetMessages,
+			setMessages,
+		],
 	);
 
 	const endSession = useCallback(async () => {
@@ -239,10 +184,7 @@ export function useLiveSession() {
 		stopListening();
 		stopSpeaking();
 		await stopMonitoring();
-
-		if (codeChangeTimeoutRef.current) {
-			clearTimeout(codeChangeTimeoutRef.current);
-		}
+		codeChange.cleanup();
 
 		setStatus("completed");
 
@@ -263,7 +205,7 @@ export function useLiveSession() {
 				setSession(completedSession);
 			}
 		} catch (error) {
-			console.error("[오답노트] 리포트 생성 실패:", error);
+			console.error("[Recall] 리포트 생성 실패:", error);
 		}
 	}, [
 		session,
@@ -273,78 +215,29 @@ export function useLiveSession() {
 		stopListening,
 		stopSpeaking,
 		stopMonitoring,
+		codeChange,
 	]);
 
-	const sendMessage = useCallback(
-		async (content: string) => {
-			await handleFinalTranscript(content);
-		},
-		[handleFinalTranscript],
-	);
-
-	const resetSession = useCallback(() => {
-		setStatus("idle");
-		setSession(null);
-		setMessages([]);
-		setTimeRemaining(null);
-		sessionConfigRef.current = null;
-		previousCodeRef.current = "";
-		if (codeChangeTimeoutRef.current) {
-			clearTimeout(codeChangeTimeoutRef.current);
-			codeChangeTimeoutRef.current = null;
-		}
-	}, []);
-
-	const endSessionRef = useRef(endSession);
 	useEffect(() => {
 		endSessionRef.current = endSession;
 	}, [endSession]);
 
-	const isTimerActive = status === "active" && timeRemaining !== null;
+	const resetSession = useCallback(() => {
+		setStatus("idle");
+		setSession(null);
+		resetMessages();
+		timer.reset();
+		codeChange.reset();
+		sessionConfigRef.current = null;
+	}, [resetMessages, timer, codeChange]);
 
-	useEffect(() => {
-		if (!isTimerActive) return;
-
-		const interval = setInterval(() => {
-			setTimeRemaining((prev) => {
-				if (prev === null || prev <= 0) {
-					endSessionRef.current();
-					return 0;
-				}
-				return prev - 1;
-			});
-		}, 1000);
-
-		return () => clearInterval(interval);
-	}, [isTimerActive]);
-
-	useEffect(() => {
-		if (status === "active" && currentCode !== previousCodeRef.current) {
-			handleCodeChange(currentCode);
-		}
-	}, [status, currentCode, handleCodeChange]);
-
-	useEffect(() => {
-		if (session && status === "active") {
-			updateSession(session.id, {
-				messages,
-				codeSnapshots: [
-					...(session.codeSnapshots || []),
-					{
-						code: currentCode,
-						language,
-						timestamp: Date.now(),
-					},
-				],
-			});
-		}
-	}, [messages, session, status, currentCode, language]);
+	useSessionAutoSave(session, status, messages, currentCode, language);
 
 	return {
 		status,
 		session,
 		messages,
-		timeRemaining,
+		timeRemaining: timer.timeRemaining,
 		currentCode,
 		problemInfo,
 		isProgrammers,
