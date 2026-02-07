@@ -12,12 +12,6 @@ interface SessionActiveViewProps {
 	onEnd: () => Promise<void>;
 }
 
-const formatTime = (seconds: number): string => {
-	const mins = Math.floor(seconds / 60);
-	const secs = seconds % 60;
-	return `${mins.toString().padStart(2, "0")}:${secs.toString().padStart(2, "0")}`;
-};
-
 export function SessionActiveView({
 	messages,
 	timeRemaining,
@@ -37,7 +31,6 @@ export function SessionActiveView({
 		requestPermission,
 	} = speech;
 
-	const [input, setInput] = useState("");
 	const messagesEndRef = useRef<HTMLDivElement>(null);
 	const messagesLengthRef = useRef(messages.length);
 
@@ -48,196 +41,47 @@ export function SessionActiveView({
 		}
 	}, [messages.length]);
 
-	const handleSubmit = (e: { preventDefault: () => void }) => {
-		e.preventDefault();
-		if (!input.trim() || isAILoading) return;
-
-		const message = input.trim();
-		setInput("");
-		onSendMessage(message);
-	};
-
-	const handleEnd = () => {
-		if (window.confirm("세션을 종료하시겠습니까?")) {
-			onEnd();
-		}
-	};
-
 	return (
 		<div className="flex flex-col h-full">
-			<header className="border-b border-gray-200 dark:border-gray-800 px-4 py-2 flex items-center justify-between">
-				<div className="flex items-center gap-2">
-					{timeRemaining !== null && (
-						<span
-							className={cn(
-								"text-lg font-mono font-semibold",
-								timeRemaining < 60
-									? "text-red-600 dark:text-red-400"
-									: timeRemaining < 300
-										? "text-amber-600 dark:text-amber-400"
-										: "text-gray-900 dark:text-white",
-							)}
-						>
-							{formatTime(timeRemaining)}
-						</span>
-					)}
-					{isAILoading && (
-						<span className="text-xs text-gray-500 dark:text-gray-400">
-							생각 중...
-						</span>
-					)}
-				</div>
-				<Button variant="secondary" size="sm" onClick={handleEnd}>
-					종료
-				</Button>
-			</header>
+			<SessionActiveViewHeader
+				timeRemaining={timeRemaining}
+				isAILoading={isAILoading}
+				handleEnd={onEnd}
+			/>
 
-			<div className="flex-1 overflow-auto p-4 space-y-3">
-				{messages.map((message) => (
-					<MessageBubble key={message.id} message={message} />
-				))}
-
-				{isAILoading && (
-					<div className="flex items-start gap-2">
-						<div className="w-8 h-8 rounded-full bg-blue-100 dark:bg-blue-900 flex items-center justify-center text-sm">
-							AI
-						</div>
-						<div className="bg-gray-100 dark:bg-gray-800 rounded-lg px-3 py-2">
-							<LoadingDots />
-						</div>
-					</div>
-				)}
-
-				{(finalTranscript || interimTranscript) && (
-					<div className="flex items-start gap-2 justify-end">
-						<div className="bg-orange-100 dark:bg-orange-900/30 rounded-lg px-3 py-2 max-w-[80%]">
-							<p className="text-sm">
-								{finalTranscript && (
-									<span className="text-orange-900 dark:text-orange-100">
-										{finalTranscript}
-									</span>
-								)}
-								{interimTranscript && (
-									<span className="text-orange-600/70 dark:text-orange-300/70 italic">
-										{finalTranscript ? " " : ""}
-										{interimTranscript}
-										<span className="animate-pulse">|</span>
-									</span>
-								)}
-							</p>
-						</div>
-					</div>
-				)}
-
-				<div ref={messagesEndRef} />
-			</div>
+			<MessageList
+				messages={messages}
+				isAILoading={isAILoading}
+				finalTranscript={finalTranscript}
+				interimTranscript={interimTranscript}
+				messagesEndRef={messagesEndRef}
+			/>
 
 			<div className="border-t border-gray-200 dark:border-gray-800 px-4 py-3">
 				{hasPermission !== true ? (
-					<div className="text-center py-2 mb-3">
-						<button
-							type="button"
-							onClick={requestPermission}
-							aria-label={
-								hasPermission === false
-									? "다시 권한 요청하기"
-									: "마이크 권한 허용하기"
-							}
-							className="inline-flex items-center gap-2 px-4 py-2 bg-orange-500 hover:bg-orange-600 text-white rounded-lg transition-colors mb-2"
-						>
-							<MicIcon className="w-5 h-5" />
-							<span className="text-sm font-medium">
-								{hasPermission === false
-									? "다시 권한 요청하기"
-									: "마이크 권한 허용하기"}
-							</span>
-						</button>
-						<p className="text-xs text-gray-500 dark:text-gray-400">
-							버튼 클릭 후 <strong>브라우저 주소창 아래</strong>에 나타나는
-							<br />
-							권한 요청 팝업에서 "허용"을 선택해주세요
-						</p>
-					</div>
+					<MicPermissionGuide
+						hasPermission={hasPermission}
+						requestPermission={requestPermission}
+					/>
 				) : (
-					<div className="flex items-center justify-center gap-3 mb-3">
-						<button
-							type="button"
-							onClick={toggleListening}
-							disabled={isSpeaking || isAILoading}
-							aria-label={isListening ? "음성 인식 중지" : "음성 인식 시작"}
-							aria-pressed={isListening}
-							className={cn(
-								"relative w-14 h-14 rounded-full flex items-center justify-center transition-all",
-								isListening
-									? "bg-red-500 text-white"
-									: "bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400",
-								(isSpeaking || isAILoading) && "opacity-50 cursor-not-allowed",
-							)}
-						>
-							{isListening ? (
-								<VoiceVisualizer volume={volume} />
-							) : (
-								<MicIcon className="w-6 h-6" />
-							)}
-						</button>
-
-						<div className="flex-1">
-							{isListening ? (
-								<div>
-									<p className="text-sm font-medium text-red-600 dark:text-red-400 flex items-center gap-2">
-										<span
-											className="w-2 h-2 bg-red-500 rounded-full animate-pulse"
-											aria-hidden="true"
-										/>
-										듣는 중...
-									</p>
-									{(finalTranscript || interimTranscript) && (
-										<p className="text-sm mt-1 truncate max-w-[200px]">
-											<span className="text-gray-700 dark:text-gray-300">
-												{finalTranscript}
-											</span>
-											{interimTranscript && (
-												<span className="text-gray-500 dark:text-gray-500 italic">
-													{finalTranscript ? " " : ""}
-													{interimTranscript}
-												</span>
-											)}
-										</p>
-									)}
-								</div>
-							) : isSpeaking ? (
-								<p className="text-sm text-blue-600 dark:text-blue-400">
-									AI가 말하는 중...
-								</p>
-							) : isAILoading ? (
-								<p className="text-sm text-gray-500 dark:text-gray-400">
-									AI 생각 중...
-								</p>
-							) : (
-								<p className="text-sm text-gray-500 dark:text-gray-400">
-									마이크 버튼을 눌러 말하세요
-								</p>
-							)}
-						</div>
-					</div>
+					<VoiceInteractionField
+						isAILoading={isAILoading}
+						isListening={isListening}
+						isSpeaking={isSpeaking}
+						volume={volume}
+						toggleListening={toggleListening}
+						transcripts={{
+							finalTranscript,
+							interimTranscript,
+						}}
+					/>
 				)}
 
-				<form onSubmit={handleSubmit} className="flex gap-2">
-					<Input
-						value={input}
-						onChange={(e) => setInput(e.target.value)}
-						placeholder="또는 텍스트로 입력..."
-						disabled={isAILoading || isListening}
-						className="flex-1"
-						aria-label="메시지 입력"
-					/>
-					<Button
-						type="submit"
-						disabled={!input.trim() || isAILoading || isListening}
-					>
-						전송
-					</Button>
-				</form>
+				<MessageInput
+					isAILoading={isAILoading}
+					isListening={isListening}
+					onSendMessage={onSendMessage}
+				/>
 			</div>
 		</div>
 	);
@@ -348,6 +192,350 @@ function VoiceVisualizer({ volume }: { volume: number }) {
 					style={{ height: `${getBarHeight(bar.variation)}px` }}
 				/>
 			))}
+		</div>
+	);
+}
+
+const formatTime = (seconds: number): string => {
+	const mins = Math.floor(seconds / 60);
+	const secs = seconds % 60;
+	return `${mins.toString().padStart(2, "0")}:${secs.toString().padStart(2, "0")}`;
+};
+
+interface SessionActiveViewHeaderProps {
+	timeRemaining: number | null;
+	isAILoading: boolean;
+	handleEnd: () => Promise<void>;
+}
+
+function SessionActiveViewHeader({
+	timeRemaining,
+	isAILoading,
+	handleEnd,
+}: SessionActiveViewHeaderProps) {
+	return (
+		<header className="border-b border-gray-200 dark:border-gray-800 px-4 py-2 flex items-center justify-between">
+			<div className="flex items-center gap-2">
+				{timeRemaining !== null && (
+					<span
+						className={cn(
+							"text-lg font-mono font-semibold",
+							timeRemaining < 60
+								? "text-red-600 dark:text-red-400"
+								: timeRemaining < 300
+									? "text-amber-600 dark:text-amber-400"
+									: "text-gray-900 dark:text-white",
+						)}
+					>
+						{formatTime(timeRemaining)}
+					</span>
+				)}
+				{isAILoading && (
+					<span className="text-xs text-gray-500 dark:text-gray-400">
+						생각 중...
+					</span>
+				)}
+			</div>
+			<Button
+				variant="secondary"
+				size="sm"
+				onClick={() => {
+					if (window.confirm("세션을 종료하시겠습니까?")) {
+						handleEnd();
+					}
+				}}
+			>
+				종료
+			</Button>
+		</header>
+	);
+}
+
+function AiThinkingBubble() {
+	return (
+		<div className="flex items-start gap-2">
+			<div className="w-8 h-8 rounded-full bg-blue-100 dark:bg-blue-900 flex items-center justify-center text-sm">
+				AI
+			</div>
+			<div className="bg-gray-100 dark:bg-gray-800 rounded-lg px-3 py-2">
+				<LoadingDots />
+			</div>
+		</div>
+	);
+}
+
+interface MessageListProps {
+	messages: ChatMessage[];
+	isAILoading: boolean;
+	finalTranscript: string | null;
+	interimTranscript: string | null;
+	messagesEndRef: React.RefObject<HTMLDivElement | null>;
+}
+
+function MessageList({
+	messages,
+	isAILoading,
+	finalTranscript,
+	interimTranscript,
+	messagesEndRef,
+}: MessageListProps) {
+	return (
+		<div className="flex-1 overflow-auto p-4 space-y-3">
+			{messages.map((message) => (
+				<MessageBubble key={message.id} message={message} />
+			))}
+
+			{isAILoading && <AiThinkingBubble />}
+
+			{(finalTranscript || interimTranscript) && (
+				<TranscriptBubble
+					finalTranscript={finalTranscript}
+					interimTranscript={interimTranscript}
+				/>
+			)}
+
+			<div ref={messagesEndRef} />
+		</div>
+	);
+}
+
+interface TranscriptBubbleProps {
+	finalTranscript: string | null;
+	interimTranscript: string | null;
+}
+
+function TranscriptBubble({
+	finalTranscript,
+	interimTranscript,
+}: TranscriptBubbleProps) {
+	return (
+		<div className="flex items-start gap-2 justify-end">
+			<div className="bg-orange-100 dark:bg-orange-900/30 rounded-lg px-3 py-2 max-w-[80%]">
+				<p className="text-sm">
+					{finalTranscript && (
+						<span className="text-orange-900 dark:text-orange-100">
+							{finalTranscript}
+						</span>
+					)}
+					{interimTranscript && (
+						<span className="text-orange-600/70 dark:text-orange-300/70 italic">
+							{finalTranscript ? " " : ""}
+							{interimTranscript}
+							<span className="animate-pulse">|</span>
+						</span>
+					)}
+				</p>
+			</div>
+		</div>
+	);
+}
+
+interface MicPermissionGuideProps {
+	hasPermission: boolean | null;
+	requestPermission: () => void;
+}
+
+function MicPermissionGuide({
+	hasPermission,
+	requestPermission,
+}: MicPermissionGuideProps) {
+	return (
+		<div className="text-center py-2 mb-3">
+			<button
+				type="button"
+				onClick={requestPermission}
+				className="inline-flex items-center gap-2 px-4 py-2 bg-orange-500 hover:bg-orange-600 text-white rounded-lg transition-colors mb-2"
+			>
+				<MicIcon className="w-5 h-5" />
+				<span className="text-sm font-medium">
+					{hasPermission === false
+						? "다시 권한 요청하기"
+						: "마이크 권한 허용하기"}
+				</span>
+			</button>
+			<p className="text-xs text-gray-500 dark:text-gray-400">
+				버튼 클릭 후 <strong>브라우저 주소창 아래</strong>에 나타나는
+				<br />
+				권한 요청 팝업에서 "허용"을 선택해주세요
+			</p>
+		</div>
+	);
+}
+
+interface MessageInputProps {
+	isAILoading: boolean;
+	isListening: boolean;
+	onSendMessage: (message: string) => void;
+}
+
+function MessageInput({
+	isAILoading,
+	isListening,
+	onSendMessage,
+}: MessageInputProps) {
+	const [input, setInput] = useState("");
+
+	const handleSubmit = (e: { preventDefault: () => void }) => {
+		e.preventDefault();
+		if (!input.trim() || isAILoading) return;
+
+		const message = input.trim();
+		setInput("");
+		onSendMessage(message);
+	};
+
+	return (
+		<form onSubmit={handleSubmit} className="flex gap-2">
+			<Input
+				value={input}
+				onChange={(e) => setInput(e.target.value)}
+				placeholder="또는 텍스트로 입력..."
+				disabled={isAILoading || isListening}
+				className="flex-1"
+				aria-label="메시지 입력"
+			/>
+			<Button
+				type="submit"
+				disabled={!input.trim() || isAILoading || isListening}
+			>
+				전송
+			</Button>
+		</form>
+	);
+}
+
+interface VoiceInteractionFieldProps {
+	isListening: boolean;
+	isSpeaking: boolean;
+	isAILoading: boolean;
+	volume: number;
+	toggleListening: () => void;
+	transcripts: {
+		finalTranscript: string | null;
+		interimTranscript: string | null;
+	};
+}
+
+function VoiceInteractionField({
+	isListening,
+	isSpeaking,
+	isAILoading,
+	volume,
+	toggleListening,
+	transcripts,
+}: VoiceInteractionFieldProps) {
+	return (
+		<div className="flex items-center justify-center gap-3 mb-3">
+			<VoiceToggleButton
+				isListening={isListening}
+				disabled={isSpeaking || isAILoading}
+				volume={volume}
+				onClick={toggleListening}
+			/>
+
+			<div className="flex-1">
+				<StatusMessageDisplay
+					isListening={isListening}
+					isSpeaking={isSpeaking}
+					isAILoading={isAILoading}
+					transcripts={transcripts}
+				/>
+			</div>
+		</div>
+	);
+}
+
+interface VoiceToggleButtonProps {
+	onClick: () => void;
+	isListening: boolean;
+	volume: number;
+	disabled: boolean;
+}
+
+function VoiceToggleButton({
+	onClick,
+	isListening,
+	volume,
+	disabled,
+}: VoiceToggleButtonProps) {
+	return (
+		<button
+			type="button"
+			onClick={onClick}
+			disabled={disabled}
+			aria-label={isListening ? "음성 인식 중지" : "음성 인식 시작"}
+			aria-pressed={isListening}
+			className={cn(
+				"relative w-14 h-14 rounded-full flex items-center justify-center transition-all",
+				isListening
+					? "bg-red-500 text-white"
+					: "bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400",
+				disabled && "opacity-50 cursor-not-allowed",
+			)}
+		>
+			{isListening ? (
+				<VoiceVisualizer volume={volume} />
+			) : (
+				<MicIcon className="w-6 h-6" />
+			)}
+		</button>
+	);
+}
+
+interface StatusMessageDisplayProps {
+	isSpeaking: boolean;
+	isAILoading: boolean;
+	isListening: boolean;
+	transcripts: {
+		finalTranscript: string | null;
+		interimTranscript: string | null;
+	};
+}
+
+function StatusMessageDisplay({
+	isListening,
+	isSpeaking,
+	isAILoading,
+	transcripts,
+}: StatusMessageDisplayProps) {
+	return (
+		<div className="flex-1">
+			{isListening ? (
+				<div>
+					<p className="text-sm font-medium text-red-600 dark:text-red-400 flex items-center gap-2">
+						<span
+							className="w-2 h-2 bg-red-500 rounded-full animate-pulse"
+							aria-hidden="true"
+						/>
+						듣는 중...
+					</p>
+					{(transcripts.finalTranscript || transcripts.interimTranscript) && (
+						<p className="text-sm mt-1 truncate max-w-[200px]">
+							<span className="text-gray-700 dark:text-gray-300">
+								{transcripts.finalTranscript}
+							</span>
+							{transcripts.interimTranscript && (
+								<span className="text-gray-500 dark:text-gray-500 italic">
+									{transcripts.finalTranscript ? " " : ""}
+									{transcripts.interimTranscript}
+								</span>
+							)}
+						</p>
+					)}
+				</div>
+			) : isSpeaking ? (
+				<p className="text-sm text-blue-600 dark:text-blue-400">
+					AI가 말하는 중...
+				</p>
+			) : isAILoading ? (
+				<p className="text-sm text-gray-500 dark:text-gray-400">
+					AI 생각 중...
+				</p>
+			) : (
+				<p className="text-sm text-gray-500 dark:text-gray-400">
+					마이크 버튼을 눌러 말하세요
+				</p>
+			)}
 		</div>
 	);
 }
