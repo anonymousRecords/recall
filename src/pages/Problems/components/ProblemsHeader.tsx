@@ -1,5 +1,6 @@
 import { Link } from "react-router";
 import { Button, Input } from "../../../components/ui";
+import { cn } from "../../../lib/utils";
 import type { FilterStatus } from "../ProblemsPage";
 
 interface ProblemsHeaderProps {
@@ -16,23 +17,26 @@ export function ProblemsHeader({
 	setFilterStatus,
 }: ProblemsHeaderProps) {
 	return (
-		<header className="border-b border-gray-200 dark:border-gray-800">
-			<div className="border-b flex items-center justify-between border-gray-200 dark:border-gray-800 px-4 py-3">
-				<h1 className="text-lg font-semibold text-gray-900 dark:text-white">
+		<header className="border-b border-neutral-200/60 bg-white dark:border-neutral-800 dark:bg-neutral-950">
+			<div className="flex items-center justify-between border-b border-neutral-100 px-4 py-4 dark:border-neutral-800/50">
+				<h1 className="text-lg font-semibold tracking-tight text-neutral-900 dark:text-white">
 					문제 목록
 				</h1>
 				<Link to="/problems/new">
 					<Button size="sm">추가</Button>
 				</Link>
 			</div>
-			<div className="px-4 py-3">
-				<Input
-					placeholder="검색..."
-					value={search}
-					onChange={(e) => setSearch(e.target.value)}
-					className="mb-2"
-				/>
-				<div className="flex gap-2">
+			<div className="space-y-3 px-4 py-3">
+				<div className="relative">
+					<SearchIcon className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-neutral-400" />
+					<Input
+						placeholder="검색..."
+						value={search}
+						onChange={(e) => setSearch(e.target.value)}
+						className="pl-9"
+					/>
+				</div>
+				<div className="flex gap-1.5">
 					<FilterButton
 						active={filterStatus === "all"}
 						onClick={() => setFilterStatus("all")}
@@ -74,13 +78,32 @@ function FilterButton({ active, onClick, children }: FilterButtonProps) {
 		<button
 			type="button"
 			onClick={onClick}
-			className={`px-3 py-1 text-xs rounded-full transition-colors ${
+			className={cn(
+				"rounded-full px-3 py-1 text-xs font-medium transition-all duration-150",
 				active
-					? "bg-gray-900 text-white dark:bg-white dark:text-gray-900"
-					: "bg-gray-100 text-gray-600 hover:bg-gray-200 dark:bg-gray-800 dark:text-gray-400 dark:hover:bg-gray-700"
-			}`}
+					? "bg-neutral-900 text-white dark:bg-white dark:text-neutral-900"
+					: "bg-neutral-100 text-neutral-500 hover:bg-neutral-200 hover:text-neutral-700 dark:bg-neutral-800 dark:text-neutral-400 dark:hover:bg-neutral-700 dark:hover:text-neutral-300",
+			)}
 		>
 			{children}
 		</button>
+	);
+}
+
+function SearchIcon({ className }: { className?: string }) {
+	return (
+		<svg
+			className={className}
+			fill="none"
+			viewBox="0 0 24 24"
+			strokeWidth="2"
+			stroke="currentColor"
+		>
+			<path
+				strokeLinecap="round"
+				strokeLinejoin="round"
+				d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z"
+			/>
+		</svg>
 	);
 }
