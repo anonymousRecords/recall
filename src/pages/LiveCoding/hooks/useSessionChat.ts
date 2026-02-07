@@ -45,7 +45,7 @@ export function useSessionChat({
 					codeContext: currentCode,
 					messages: [...messagesRef.current, userMessage],
 					problemInfo: config.problemInfo,
-					style: config.style,
+					interviewerStyle: config.interviewerStyle,
 				});
 
 				const aiMessage: ChatMessage = {

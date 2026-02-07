@@ -37,7 +37,7 @@ export interface ChatMessage {
 export interface SessionConfig {
 	problemInfo: ProblemInfo;
 	timeLimit: number | null;
-	style: InterviewerStyle;
+	interviewerStyle: InterviewerStyle;
 	language: string;
 }
 
@@ -88,14 +88,18 @@ export type LiveCodingMessageType =
 	| { type: "CODE_SUBMIT" };
 
 export type AIRequest =
-	| { type: "greeting"; problemInfo: ProblemInfo; style: InterviewerStyle }
+	| {
+			type: "greeting";
+			problemInfo: ProblemInfo;
+			interviewerStyle: InterviewerStyle;
+	  }
 	| {
 			type: "user_message";
 			content: string;
 			codeContext: string;
 			messages: ChatMessage[];
 			problemInfo: ProblemInfo;
-			style: InterviewerStyle;
+			interviewerStyle: InterviewerStyle;
 	  }
 	| {
 			type: "code_changed";
@@ -104,7 +108,7 @@ export type AIRequest =
 			pauseDuration: number;
 			messages: ChatMessage[];
 			problemInfo: ProblemInfo;
-			style: InterviewerStyle;
+			interviewerStyle: InterviewerStyle;
 	  }
 	| {
 			type: "generate_report";

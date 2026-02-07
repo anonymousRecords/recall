@@ -17,7 +17,7 @@ interface UseCodeChangeHandlerParams {
 		pauseDuration: number;
 		messages: ChatMessage[];
 		problemInfo: SessionConfig["problemInfo"];
-		style: SessionConfig["style"];
+		interviewerStyle: SessionConfig["interviewerStyle"];
 	}) => Promise<string>;
 	onAIResponse: (message: ChatMessage) => void;
 	speak: (text: string) => void;
@@ -64,7 +64,7 @@ export function useCodeChangeHandler({
 						pauseDuration,
 						messages: messagesRef.current,
 						problemInfo: config.problemInfo,
-						style: config.style,
+						interviewerStyle: config.interviewerStyle,
 					});
 
 					previousCodeRef.current = code;
@@ -84,7 +84,16 @@ export function useCodeChangeHandler({
 				}
 			}, DEBOUNCE_MS);
 		},
-		[status, sendToAI, speak, isSpeaking, isAILoading, sessionConfigRef, messagesRef, onAIResponse],
+		[
+			status,
+			sendToAI,
+			speak,
+			isSpeaking,
+			isAILoading,
+			sessionConfigRef,
+			messagesRef,
+			onAIResponse,
+		],
 	);
 
 	useEffect(() => {

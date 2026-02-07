@@ -66,7 +66,10 @@ export function useSessionLifecycle({
 	codeChange,
 }: SessionLifecycleDeps) {
 	const startSession = useCallback(
-		async (config: { timeLimit: number | null; style: InterviewerStyle }) => {
+		async (config: {
+			timeLimit: number | null;
+			interviewerStyle: InterviewerStyle;
+		}) => {
 			if (!codeMonitor.problemInfo) {
 				throw new Error("문제 정보를 찾을 수 없습니다.");
 			}
@@ -74,7 +77,7 @@ export function useSessionLifecycle({
 			const sessionConfig: SessionConfig = {
 				problemInfo: codeMonitor.problemInfo,
 				timeLimit: config.timeLimit,
-				style: config.style,
+				interviewerStyle: config.interviewerStyle,
 				language: codeMonitor.language,
 			};
 
@@ -103,7 +106,7 @@ export function useSessionLifecycle({
 				const greeting = await interviewer.sendToAI({
 					type: "greeting",
 					problemInfo: codeMonitor.problemInfo,
-					style: config.style,
+					interviewerStyle: config.interviewerStyle,
 				});
 
 				const aiMessage: ChatMessage = {
@@ -180,7 +183,14 @@ export function useSessionLifecycle({
 		timer.reset();
 		codeChange.reset();
 		sessionConfigRef.current = null;
-	}, [sessionMessages, timer, codeChange, sessionConfigRef, setSession, setStatus]);
+	}, [
+		sessionMessages,
+		timer,
+		codeChange,
+		sessionConfigRef,
+		setSession,
+		setStatus,
+	]);
 
 	return { startSession, endSession, resetSession };
 }

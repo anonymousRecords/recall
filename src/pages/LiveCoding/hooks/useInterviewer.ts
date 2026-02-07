@@ -41,7 +41,7 @@ export function useInterviewer({ provider, apiKey }: UseInterviewerOptions) {
 				switch (request.type) {
 					case "greeting": {
 						const systemPrompt = getSystemPrompt(
-							request.style,
+							request.interviewerStyle,
 							request.problemInfo,
 						);
 						response = await client.chat([
@@ -53,7 +53,7 @@ export function useInterviewer({ provider, apiKey }: UseInterviewerOptions) {
 
 					case "user_message": {
 						const systemPrompt = getSystemPrompt(
-							request.style,
+							request.interviewerStyle,
 							request.problemInfo,
 						);
 						const formattedMessages = formatMessagesForAI(request.messages);
@@ -73,7 +73,7 @@ export function useInterviewer({ provider, apiKey }: UseInterviewerOptions) {
 
 					case "code_changed": {
 						const systemPrompt = getSystemPrompt(
-							request.style,
+							request.interviewerStyle,
 							request.problemInfo,
 						);
 						const formattedMessages = formatMessagesForAI(request.messages);
