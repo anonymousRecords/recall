@@ -30,6 +30,7 @@
 		"@types/react-dom": "^19.2.3",
 		"@types/uuid": "^11.0.0",
 		"@wxt-dev/module-react": "^1.1.5",
+		"esbuild": "^0.27.2",
 		"tailwindcss": "^4.1.18",
 		"typescript": "^5.9.3",
 		"wxt": "^0.20.6"

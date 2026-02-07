@@ -48,6 +48,9 @@ importers:
       '@wxt-dev/module-react':
         specifier: ^1.1.5
         version: 1.1.5(vite@7.3.1(@types/node@25.0.10)(jiti@2.6.1)(lightningcss@1.30.2))(wxt@0.20.13(@types/node@25.0.10)(jiti@2.6.1)(lightningcss@1.30.2)(rollup@4.57.0))
+      esbuild:
+        specifier: ^0.27.2
+        version: 0.27.2
       tailwindcss:
         specifier: ^4.1.18
         version: 4.1.18
