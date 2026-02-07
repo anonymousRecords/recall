@@ -1,5 +1,9 @@
 import { v4 as uuidv4 } from "uuid";
-import type { CreateProblemInput, Problem, UpdateProblemInput } from "@/types";
+import type {
+	CreateProblemInput,
+	Problem,
+	UpdateProblemInput,
+} from "../../types";
 import { DEFAULT_INTERVALS, getNextReviewDate } from "../scheduling";
 import { db } from "./index";
 import { getSettings } from "./settings";

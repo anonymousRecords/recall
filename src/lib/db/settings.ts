@@ -1,4 +1,4 @@
-import type { Settings } from "@/types";
+import type { Settings } from "../../types";
 import { DEFAULT_INTERVALS } from "../scheduling";
 import { db } from "./index";
 
