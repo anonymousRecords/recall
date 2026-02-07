@@ -3,10 +3,11 @@ import { Link } from "react-router";
 import { EmptyState } from "../../components/shared";
 import { Button } from "../../components/ui";
 import { useProblems, useSettings } from "../../hooks";
+import type { ProblemStatus } from "../../types";
 import { ProblemRow } from "./components/ProblemRow";
 import { ProblemsHeader } from "./components/ProblemsHeader";
 
-export type FilterStatus = "all" | "active" | "completed" | "archived";
+export type FilterStatus = "all" | ProblemStatus;
 
 export function ProblemsPage() {
 	const { problems, loading, removeProblem } = useProblems();

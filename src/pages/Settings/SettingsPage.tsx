@@ -16,7 +16,7 @@ import {
 	updateLiveCodingSettings,
 } from "../../lib/db/live-coding-settings";
 import { DEFAULT_INTERVALS } from "../../lib/scheduling";
-import type { AIProvider, LiveCodingSettings } from "../../types";
+import type { AIProvider, LiveCodingSettings, Theme } from "../../types";
 
 const THEME_OPTIONS = [
 	{ value: "system", label: "시스템 설정" },
@@ -29,7 +29,7 @@ const AI_PROVIDER_OPTIONS = [
 	{ value: "claude", label: "Claude (Haiku)" },
 ];
 
-function applyTheme(selectedTheme: "light" | "dark" | "system") {
+function applyTheme(selectedTheme: Theme) {
 	const root = document.documentElement;
 	const isDark =
 		selectedTheme === "dark" ||
@@ -282,8 +282,8 @@ function IntervalSettings({ intervals, setIntervals }: IntervalSettingsProps) {
 }
 
 interface ThemeSettingsProps {
-	theme: "light" | "dark" | "system";
-	setTheme: (theme: "light" | "dark" | "system") => void;
+	theme: Theme;
+	setTheme: (theme: Theme) => void;
 }
 
 function ThemeSettings({ theme, setTheme }: ThemeSettingsProps) {
@@ -298,7 +298,7 @@ function ThemeSettings({ theme, setTheme }: ThemeSettingsProps) {
 					options={THEME_OPTIONS}
 					value={theme}
 					onChange={(e) =>
-						setTheme(e.target.value as "light" | "dark" | "system")
+						setTheme(e.target.value as Theme)
 					}
 				/>
 			</CardContent>

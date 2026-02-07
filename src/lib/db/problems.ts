@@ -2,6 +2,7 @@ import { v4 as uuidv4 } from "uuid";
 import type {
 	CreateProblemInput,
 	Problem,
+	ProblemStatus,
 	UpdateProblemInput,
 } from "../../types";
 import { DEFAULT_INTERVALS, getNextReviewDate } from "../scheduling";
@@ -67,7 +68,7 @@ export async function deleteProblem(id: string): Promise<void> {
 }
 
 export async function getProblemsByStatus(
-	status: Problem["status"],
+	status: ProblemStatus,
 ): Promise<Problem[]> {
 	return db.problems.where("status").equals(status).toArray();
 }

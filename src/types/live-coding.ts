@@ -1,19 +1,13 @@
-// AI 제공자
 export type AIProvider = "openai" | "claude";
 
-// 면접관 스타일
 export type InterviewerStyle = "friendly" | "normal" | "pressure";
 
-// 세션 상태
 export type SessionStatus = "idle" | "active" | "completed";
 
-// 메시지 역할
 export type MessageRole = "interviewer" | "user" | "system";
 
-// 음성 입력 방식
 export type VoiceInputMode = "push-to-talk" | "auto";
 
-// 문제 정보 (프로그래머스)
 export interface ProblemInfo {
 	title: string;
 	level: number;
@@ -26,14 +20,12 @@ export interface ProblemInfo {
 	url: string;
 }
 
-// 코드 스냅샷
 export interface CodeSnapshot {
 	code: string;
 	language: string;
 	timestamp: number;
 }
 
-// 대화 메시지
 export interface ChatMessage {
 	id: string;
 	role: MessageRole;
@@ -42,7 +34,6 @@ export interface ChatMessage {
 	codeContext?: string;
 }
 
-// 세션 설정
 export interface SessionConfig {
 	problemInfo: ProblemInfo;
 	timeLimit: number | null;
@@ -50,7 +41,6 @@ export interface SessionConfig {
 	language: string;
 }
 
-// 세션 리포트
 export interface SessionReport {
 	duration: number;
 	messageCount: number;
@@ -65,7 +55,6 @@ export interface SessionReport {
 	improvements: string[];
 }
 
-// 라이브 세션 기록
 export interface LiveSession {
 	id: string;
 	config: SessionConfig;
@@ -77,7 +66,6 @@ export interface LiveSession {
 	report?: SessionReport;
 }
 
-// 라이브 코딩 설정
 export interface LiveCodingSettings {
 	id: "live-coding-settings";
 	aiProvider: AIProvider;
@@ -90,7 +78,6 @@ export interface LiveCodingSettings {
 	voiceRate: number;
 }
 
-// 메시지 타입 (Content Script ↔ SidePanel 통신)
 export type LiveCodingMessageType =
 	| { type: "GET_PROBLEM_INFO" }
 	| { type: "PROBLEM_INFO"; payload: ProblemInfo | null }
@@ -100,7 +87,6 @@ export type LiveCodingMessageType =
 	| { type: "CODE_RUN" }
 	| { type: "CODE_SUBMIT" };
 
-// AI 요청 타입
 export type AIRequest =
 	| { type: "greeting"; problemInfo: ProblemInfo; style: InterviewerStyle }
 	| {
@@ -128,7 +114,6 @@ export type AIRequest =
 			problemInfo: ProblemInfo;
 	  };
 
-// AI 클라이언트 인터페이스
 export interface AIClient {
 	chat(messages: { role: string; content: string }[]): Promise<string>;
 	testConnection(): Promise<boolean>;

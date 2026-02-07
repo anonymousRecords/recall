@@ -1,3 +1,6 @@
+export type ProblemStatus = "active" | "archived" | "completed";
+export type Theme = "light" | "dark" | "system";
+
 export interface Problem {
 	id: string;
 	title: string;
@@ -6,7 +9,7 @@ export interface Problem {
 	difficulty?: string;
 	tags: string[];
 	memo: string;
-	status: "active" | "archived" | "completed";
+	status: ProblemStatus;
 	currentStage: number;
 	nextReviewDate: string;
 	createdAt: string;
@@ -24,7 +27,7 @@ export interface Review {
 export interface Settings {
 	id: "user-settings";
 	reviewIntervals: number[];
-	theme: "light" | "dark" | "system";
+	theme: Theme;
 }
 
 export type CreateProblemInput = Omit<

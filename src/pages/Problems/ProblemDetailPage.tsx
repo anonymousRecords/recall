@@ -6,7 +6,7 @@ import { Button, Input, Select, Textarea } from "../../components/ui";
 import { useProblems } from "../../hooks";
 import { getProblem } from "../../lib/db/problems";
 import { extractSiteFromUrl } from "../../lib/utils";
-import type { CreateProblemInput, Problem } from "../../types";
+import type { CreateProblemInput, ProblemStatus } from "../../types";
 
 const DIFFICULTY_OPTIONS = [
 	{ value: "", label: "난이도 선택 (선택)" },
@@ -38,7 +38,7 @@ export function ProblemDetailPage() {
 		difficulty: string;
 		tags: string[];
 		memo: string;
-		status: Problem["status"];
+		status: ProblemStatus;
 	}>({
 		title: "",
 		link: "",
@@ -224,7 +224,7 @@ export function ProblemDetailPage() {
 							onChange={(e) =>
 								setForm((prev) => ({
 									...prev,
-									status: e.target.value as Problem["status"],
+									status: e.target.value as ProblemStatus,
 								}))
 							}
 						/>
