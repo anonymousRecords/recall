@@ -2,7 +2,7 @@ import type { Settings } from "../../types";
 import { DEFAULT_INTERVALS } from "../scheduling";
 import { db } from "./index";
 
-const DEFAULT_SETTINGS: Settings = {
+export const DEFAULT_SETTINGS: Settings = {
 	id: "user-settings",
 	reviewIntervals: DEFAULT_INTERVALS,
 	theme: "system",

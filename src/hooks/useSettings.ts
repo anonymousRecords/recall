@@ -1,14 +1,11 @@
 import { useCallback, useMemo } from "react";
-import { getSettings, updateSettings } from "../lib/db/settings";
-import { DEFAULT_INTERVALS } from "../lib/scheduling";
+import {
+	DEFAULT_SETTINGS,
+	getSettings,
+	updateSettings,
+} from "../lib/db/settings";
 import type { Settings } from "../types";
 import { useAsyncData } from "./useAsyncData";
-
-const DEFAULT_SETTINGS: Settings = {
-	id: "user-settings",
-	reviewIntervals: DEFAULT_INTERVALS,
-	theme: "system",
-};
 
 export function useSettings() {
 	const fetcher = useCallback(() => getSettings(), []);
