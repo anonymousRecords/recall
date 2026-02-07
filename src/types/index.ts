@@ -35,3 +35,5 @@ export type CreateProblemInput = Omit<
 export type UpdateProblemInput = Partial<
 	Omit<Problem, "id" | "createdAt" | "updatedAt">
 >;
+
+export * from "./live-coding";
