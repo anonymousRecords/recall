@@ -6,10 +6,13 @@ import { useAsyncData } from "./useAsyncData";
 
 export function useTodayReviews() {
 	const fetcher = useCallback(() => getTodayReviewProblems(), []);
-	const { data: problems, loading, error, refetch, setData } = useAsyncData<Problem[]>(
-		fetcher,
-		[],
-	);
+	const {
+		data: problems,
+		loading,
+		error,
+		refetch,
+		setData,
+	} = useAsyncData<Problem[]>(fetcher, []);
 
 	const markAsReviewed = useCallback(
 		async (problemId: string) => {
@@ -45,6 +48,14 @@ export function useTodayReviews() {
 			todayCount,
 			totalCount: problems.length,
 		}),
-		[problems, loading, error, markAsReviewed, refetch, overdueCount, todayCount],
+		[
+			problems,
+			loading,
+			error,
+			markAsReviewed,
+			refetch,
+			overdueCount,
+			todayCount,
+		],
 	);
 }

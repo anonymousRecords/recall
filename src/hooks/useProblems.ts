@@ -11,10 +11,13 @@ import { useAsyncData } from "./useAsyncData";
 
 export function useProblems() {
 	const fetcher = useCallback(() => getAllProblems(), []);
-	const { data: problems, loading, error, refetch, setData } = useAsyncData<Problem[]>(
-		fetcher,
-		[],
-	);
+	const {
+		data: problems,
+		loading,
+		error,
+		refetch,
+		setData,
+	} = useAsyncData<Problem[]>(fetcher, []);
 
 	const addProblem = useCallback(
 		async (input: CreateProblemInput) => {
@@ -66,6 +69,15 @@ export function useProblems() {
 			refreshProblem,
 			refetch,
 		}),
-		[problems, loading, error, addProblem, editProblem, removeProblem, refreshProblem, refetch],
+		[
+			problems,
+			loading,
+			error,
+			addProblem,
+			editProblem,
+			removeProblem,
+			refreshProblem,
+			refetch,
+		],
 	);
 }
