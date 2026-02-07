@@ -15,23 +15,25 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
 			<button
 				ref={ref}
 				className={cn(
-					"inline-flex items-center justify-center rounded-md font-medium transition-colors",
-					"focus:outline-none focus:ring-2 focus:ring-offset-2",
-					"disabled:opacity-50 disabled:cursor-not-allowed",
+					"inline-flex items-center justify-center gap-2 font-medium",
+					"rounded-lg transition-all duration-150 ease-out",
+					"focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2",
+					"disabled:pointer-events-none disabled:opacity-40",
+					"active:scale-[0.98]",
 					{
-						"bg-gray-900 text-white hover:bg-gray-800 focus:ring-gray-500 dark:bg-white dark:text-gray-900 dark:hover:bg-gray-100":
+						"bg-neutral-900 text-white shadow-sm hover:bg-neutral-800 focus-visible:ring-neutral-900 dark:bg-white dark:text-neutral-900 dark:hover:bg-neutral-100 dark:focus-visible:ring-white":
 							variant === "primary",
-						"bg-gray-100 text-gray-900 hover:bg-gray-200 focus:ring-gray-400 dark:bg-gray-800 dark:text-gray-100 dark:hover:bg-gray-700":
+						"bg-neutral-100 text-neutral-700 hover:bg-neutral-200 focus-visible:ring-neutral-400 dark:bg-neutral-800 dark:text-neutral-200 dark:hover:bg-neutral-700":
 							variant === "secondary",
-						"text-gray-600 hover:bg-gray-100 hover:text-gray-900 focus:ring-gray-400 dark:text-gray-400 dark:hover:bg-gray-800 dark:hover:text-gray-100":
+						"text-neutral-600 hover:bg-neutral-100 hover:text-neutral-900 focus-visible:ring-neutral-400 dark:text-neutral-400 dark:hover:bg-neutral-800 dark:hover:text-neutral-100":
 							variant === "ghost",
-						"bg-red-600 text-white hover:bg-red-700 focus:ring-red-500":
+						"bg-red-600 text-white shadow-sm hover:bg-red-700 focus-visible:ring-red-600":
 							variant === "danger",
 					},
 					{
-						"h-8 px-3 text-sm": size === "sm",
-						"h-10 px-4 text-sm": size === "md",
-						"h-12 px-6 text-base": size === "lg",
+						"h-8 px-3 text-[13px]": size === "sm",
+						"h-9 px-4 text-sm": size === "md",
+						"h-11 px-5 text-[15px]": size === "lg",
 					},
 					className,
 				)}

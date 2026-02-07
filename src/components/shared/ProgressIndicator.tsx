@@ -17,12 +17,12 @@ export function ProgressIndicator({
 				<div
 					key={currentStage}
 					className={cn(
-						"h-2 w-2 rounded-full transition-colors",
+						"h-1.5 w-1.5 rounded-full transition-all duration-200",
 						index < currentStage
-							? "bg-green-500"
+							? "bg-emerald-500 dark:bg-emerald-400"
 							: index === currentStage
-								? "bg-blue-500"
-								: "bg-gray-200 dark:bg-gray-700",
+								? "bg-blue-500 ring-2 ring-blue-500/20 dark:bg-blue-400 dark:ring-blue-400/20"
+								: "bg-neutral-200 dark:bg-neutral-700",
 					)}
 				/>
 			))}
