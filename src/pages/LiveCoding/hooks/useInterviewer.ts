@@ -1,0 +1,196 @@
+import { useCallback, useState } from "react";
+import { createAIClient } from "../../../lib/ai";
+import {
+	formatMessagesForAI,
+	getCodeAnalysisPrompt,
+	getGreetingPrompt,
+	getReportPrompt,
+	getSystemPrompt,
+	getUserMessagePrompt,
+} from "../../../lib/ai/prompts";
+import type {
+	AIProvider,
+	AIRequest,
+	ChatMessage,
+	ProblemInfo,
+	SessionReport,
+} from "../../../types";
+
+interface UseInterviewerOptions {
+	provider: AIProvider;
+	apiKey: string;
+}
+
+export function useInterviewer({ provider, apiKey }: UseInterviewerOptions) {
+	const [isLoading, setIsLoading] = useState(false);
+	const [error, setError] = useState<string | null>(null);
+
+	const sendToAI = useCallback(
+		async (request: AIRequest): Promise<string> => {
+			if (!apiKey) {
+				throw new Error("API 키가 설정되지 않았습니다.");
+			}
+
+			setIsLoading(true);
+			setError(null);
+
+			try {
+				const client = createAIClient(provider, apiKey);
+				let response: string;
+
+				switch (request.type) {
+					case "greeting": {
+						const systemPrompt = getSystemPrompt(
+							request.style,
+							request.problemInfo,
+						);
+						response = await client.chat([
+							{ role: "system", content: systemPrompt },
+							{ role: "user", content: getGreetingPrompt() },
+						]);
+						break;
+					}
+
+					case "user_message": {
+						const systemPrompt = getSystemPrompt(
+							request.style,
+							request.problemInfo,
+						);
+						const formattedMessages = formatMessagesForAI(request.messages);
+						response = await client.chat([
+							{ role: "system", content: systemPrompt },
+							...formattedMessages,
+							{
+								role: "user",
+								content: getUserMessagePrompt(
+									request.content,
+									request.codeContext,
+								),
+							},
+						]);
+						break;
+					}
+
+					case "code_changed": {
+						const systemPrompt = getSystemPrompt(
+							request.style,
+							request.problemInfo,
+						);
+						const formattedMessages = formatMessagesForAI(request.messages);
+						const analysisPrompt = getCodeAnalysisPrompt(
+							request.previousCode,
+							request.currentCode,
+							request.pauseDuration,
+						);
+
+						response = await client.chat([
+							{ role: "system", content: systemPrompt },
+							...formattedMessages,
+							{ role: "user", content: analysisPrompt },
+						]);
+
+						if (response.trim().toUpperCase() === "SKIP") {
+							return "";
+						}
+						break;
+					}
+
+					case "generate_report": {
+						const reportPrompt = getReportPrompt(
+							request.problemInfo,
+							request.messages,
+							request.finalCode,
+							request.duration,
+						);
+
+						response = await client.chat([
+							{
+								role: "system",
+								content:
+									"당신은 코딩 면접 평가자입니다. 반드시 유효한 JSON 형식으로만 응답하세요.",
+							},
+							{ role: "user", content: reportPrompt },
+						]);
+						break;
+					}
+
+					default:
+						throw new Error("알 수 없는 요청 타입입니다.");
+				}
+
+				return response;
+			} catch (err) {
+				const errorMessage =
+					err instanceof Error
+						? err.message
+						: "AI 요청 중 오류가 발생했습니다.";
+				setError(errorMessage);
+				throw err;
+			} finally {
+				setIsLoading(false);
+			}
+		},
+		[provider, apiKey],
+	);
+
+	const generateReport = useCallback(
+		async (
+			messages: ChatMessage[],
+			finalCode: string,
+			duration: number,
+			problemInfo: ProblemInfo,
+		): Promise<SessionReport> => {
+			const response = await sendToAI({
+				type: "generate_report",
+				messages,
+				finalCode,
+				duration,
+				problemInfo,
+			});
+
+			try {
+				const jsonMatch = response.match(/\{[\s\S]*\}/);
+				if (!jsonMatch) {
+					throw new Error("JSON을 찾을 수 없습니다.");
+				}
+
+				const report = JSON.parse(jsonMatch[0]) as SessionReport;
+				return report;
+			} catch {
+				return {
+					duration,
+					messageCount: messages.length,
+					scores: {
+						understanding: 70,
+						communication: 70,
+						codeQuality: 70,
+						timeManagement: 70,
+					},
+					feedback: ["리포트 생성 중 오류가 발생했습니다."],
+					strengths: [],
+					improvements: [],
+				};
+			}
+		},
+		[sendToAI],
+	);
+
+	const testConnection = useCallback(async (): Promise<boolean> => {
+		if (!apiKey) return false;
+
+		try {
+			const client = createAIClient(provider, apiKey);
+			return await client.testConnection();
+		} catch {
+			return false;
+		}
+	}, [provider, apiKey]);
+
+	return {
+		sendToAI,
+		generateReport,
+		testConnection,
+		isLoading,
+		error,
+	};
+}
