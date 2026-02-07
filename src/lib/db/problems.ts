@@ -1,4 +1,3 @@
-import { v4 as uuidv4 } from "uuid";
 import type {
 	CreateProblemInput,
 	Problem,
@@ -17,7 +16,7 @@ export async function createProblem(
 	const now = new Date().toISOString();
 
 	const problem: Problem = {
-		id: uuidv4(),
+		id: crypto.randomUUID(),
 		...input,
 		currentStage: 0,
 		nextReviewDate: getNextReviewDate(new Date(), 0, intervals),
@@ -57,9 +56,17 @@ export async function updateProblem(
 	id: string,
 	input: UpdateProblemInput,
 ): Promise<Problem | undefined> {
-	const now = new Date().toISOString();
-	await db.problems.update(id, { ...input, updatedAt: now });
-	return getProblem(id);
+	const current = await db.problems.get(id);
+	if (!current) return undefined;
+
+	const updated: Problem = {
+		...current,
+		...input,
+		updatedAt: new Date().toISOString(),
+	};
+
+	await db.problems.put(updated);
+	return updated;
 }
 
 export async function deleteProblem(id: string): Promise<void> {

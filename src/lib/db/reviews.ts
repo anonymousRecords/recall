@@ -1,4 +1,3 @@
-import { v4 as uuidv4 } from "uuid";
 import type { Problem, Review } from "../../types";
 import { DEFAULT_INTERVALS, getNextReviewDate } from "../scheduling";
 import { db } from "./index";
@@ -9,7 +8,7 @@ export async function createReview(
 	scheduledDate: string,
 ): Promise<Review> {
 	const review: Review = {
-		id: uuidv4(),
+		id: crypto.randomUUID(),
 		problemId: problem.id,
 		stage: problem.currentStage,
 		completedAt: new Date().toISOString(),
@@ -35,7 +34,8 @@ export async function completeReview(
 	const nextStage = problem.currentStage + 1;
 	const isCompleted = nextStage >= intervals.length;
 
-	const updates: Partial<Problem> = {
+	const updated: Problem = {
+		...problem,
 		currentStage: nextStage,
 		status: isCompleted ? "completed" : "active",
 		nextReviewDate: isCompleted
@@ -44,8 +44,8 @@ export async function completeReview(
 		updatedAt: new Date().toISOString(),
 	};
 
-	await db.problems.update(problemId, updates);
-	return db.problems.get(problemId) as Promise<Problem>;
+	await db.problems.put(updated);
+	return updated;
 }
 
 export async function getReviewsForProblem(

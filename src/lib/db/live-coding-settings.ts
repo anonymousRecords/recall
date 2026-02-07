@@ -1,7 +1,8 @@
 import type { LiveCodingSettings } from "../../types";
+import { getStorageItem, setStorageItem } from "./browser-storage";
 import { db } from "./index";
 
-const API_KEY_STORAGE_KEY = "odapnote_api_key";
+const API_KEY_STORAGE_KEY = "recall_api_key";
 
 const DEFAULT_LIVE_CODING_SETTINGS: LiveCodingSettings = {
 	id: "live-coding-settings",
@@ -15,21 +16,12 @@ const DEFAULT_LIVE_CODING_SETTINGS: LiveCodingSettings = {
 	voiceRate: 1.0,
 };
 
-async function getApiKey(): Promise<string> {
-	try {
-		const result = await browser.storage.local.get(API_KEY_STORAGE_KEY);
-		return (result[API_KEY_STORAGE_KEY] as string) ?? "";
-	} catch {
-		return "";
-	}
+function getApiKey(): Promise<string> {
+	return getStorageItem(API_KEY_STORAGE_KEY, "");
 }
 
-async function setApiKey(apiKey: string): Promise<void> {
-	try {
-		await browser.storage.local.set({ [API_KEY_STORAGE_KEY]: apiKey });
-	} catch {
-		console.error("[오답노트] API Key 저장 실패");
-	}
+function setApiKey(apiKey: string): Promise<void> {
+	return setStorageItem(API_KEY_STORAGE_KEY, apiKey);
 }
 
 export async function getLiveCodingSettings(): Promise<LiveCodingSettings> {
