@@ -11,14 +11,6 @@ import {
 import type { InterviewerStyle, ProblemInfo } from "../../../types";
 import { useLiveCodingSettings } from "../hooks/useLiveCodingSettings";
 
-interface SessionSetupProps {
-	problemInfo: ProblemInfo | null;
-	onStart: (config: {
-		timeLimit: number | null;
-		interviewerStyle: InterviewerStyle;
-	}) => Promise<void>;
-}
-
 const TIME_OPTIONS = [
 	{ value: "30", label: "30분" },
 	{ value: "45", label: "45분" },
@@ -32,7 +24,18 @@ const INTERVIEWER_STYLE_OPTIONS = [
 	{ value: "pressure", label: "압박" },
 ];
 
-export function SessionSetup({ problemInfo, onStart }: SessionSetupProps) {
+interface SessionSetupViewProps {
+	problemInfo: ProblemInfo | null;
+	onStart: (config: {
+		timeLimit: number | null;
+		interviewerStyle: InterviewerStyle;
+	}) => Promise<void>;
+}
+
+export function SessionSetupView({
+	problemInfo,
+	onStart,
+}: SessionSetupViewProps) {
 	const {
 		settings,
 		hasApiKey,

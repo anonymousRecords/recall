@@ -1,6 +1,6 @@
-import { SessionActive } from "./components/SessionActive";
-import { SessionReport } from "./components/SessionReport";
-import { SessionSetup } from "./components/SessionSetup";
+import { SessionActiveView } from "./components/SessionActiveView";
+import { SessionReportView } from "./components/SessionReportView";
+import { SessionSetupView } from "./components/SessionSetupView";
 import { useLiveSession } from "./hooks/useLiveSession";
 
 export function LiveCodingPage() {
@@ -19,12 +19,14 @@ export function LiveCodingPage() {
 	} = useLiveSession();
 
 	if (status === "idle") {
-		return <SessionSetup problemInfo={problemInfo} onStart={startSession} />;
+		return (
+			<SessionSetupView problemInfo={problemInfo} onStart={startSession} />
+		);
 	}
 
 	if (status === "active") {
 		return (
-			<SessionActive
+			<SessionActiveView
 				messages={messages}
 				timeRemaining={timeRemaining}
 				isAILoading={isAILoading}
@@ -36,7 +38,7 @@ export function LiveCodingPage() {
 	}
 
 	if (status === "completed" && session?.report) {
-		return <SessionReport session={session} onNewSession={resetSession} />;
+		return <SessionReportView session={session} onNewSession={resetSession} />;
 	}
 
 	return null;

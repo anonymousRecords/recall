@@ -1,3 +1,3 @@
-export { SessionActive } from "./SessionActive";
-export { SessionReport } from "./SessionReport";
-export { SessionSetup } from "./SessionSetup";
+export { SessionActive } from "./SessionActiveView";
+export { SessionReport } from "./SessionReportView";
+export { SessionSetup } from "./SessionSetupView";

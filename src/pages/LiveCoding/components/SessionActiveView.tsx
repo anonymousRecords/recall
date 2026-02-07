@@ -3,7 +3,7 @@ import { Button, Input } from "../../../components/ui";
 import { cn } from "../../../lib/utils";
 import type { ChatMessage, SpeechState } from "../../../types";
 
-interface SessionActiveProps {
+interface SessionActiveViewProps {
 	messages: ChatMessage[];
 	timeRemaining: number | null;
 	isAILoading: boolean;
@@ -18,14 +18,14 @@ const formatTime = (seconds: number): string => {
 	return `${mins.toString().padStart(2, "0")}:${secs.toString().padStart(2, "0")}`;
 };
 
-export function SessionActive({
+export function SessionActiveView({
 	messages,
 	timeRemaining,
 	isAILoading,
 	speech,
 	onSendMessage,
 	onEnd,
-}: SessionActiveProps) {
+}: SessionActiveViewProps) {
 	const {
 		isListening,
 		isSpeaking,
