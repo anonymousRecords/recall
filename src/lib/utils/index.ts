@@ -30,36 +30,3 @@ export function extractSiteFromUrl(url: string): string {
 		return "기타";
 	}
 }
-
-export function truncateText(text: string, maxLength: number): string {
-	if (text.length <= maxLength) return text;
-	return `${text.slice(0, maxLength)}...`;
-}
-
-export function debounce<T extends (...args: unknown[]) => unknown>(
-	fn: T,
-	delay: number,
-): (...args: Parameters<T>) => void {
-	let timeoutId: ReturnType<typeof setTimeout>;
-	return (...args: Parameters<T>) => {
-		clearTimeout(timeoutId);
-		timeoutId = setTimeout(() => fn(...args), delay);
-	};
-}
-
-export function formatDate(dateString: string): string {
-	return new Date(dateString).toLocaleDateString("ko-KR", {
-		year: "numeric",
-		month: "long",
-		day: "numeric",
-	});
-}
-
-export function getDaysUntil(dateString: string): number {
-	const today = new Date();
-	today.setHours(0, 0, 0, 0);
-	const targetDate = new Date(dateString);
-	targetDate.setHours(0, 0, 0, 0);
-	const diffTime = targetDate.getTime() - today.getTime();
-	return Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-}
