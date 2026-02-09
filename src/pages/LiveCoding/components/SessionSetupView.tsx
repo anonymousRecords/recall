@@ -57,7 +57,10 @@ export function SessionSetupView({
 	}
 
 	return (
-		<div className="flex flex-col h-full">
+		<div
+			className="flex flex-col h-full bg-white
+  dark:bg-neutral-950"
+		>
 			<header className="border-b border-gray-200 dark:border-gray-800 px-4 py-3">
 				<h1 className="text-lg font-semibold text-gray-900 dark:text-white">
 					라이브 코딩
