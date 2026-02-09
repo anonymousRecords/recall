@@ -34,7 +34,7 @@ export function ProblemsPage() {
 				setFilterStatus={setFilterStatus}
 			/>
 
-			<div className="flex-1 overflow-auto">
+			<div className="flex flex-1 flex-col overflow-auto">
 				<ProblemList
 					filteredProblems={filteredProblems}
 					settings={settings}
@@ -64,22 +64,25 @@ function ProblemList({
 	search,
 }: ProblemListProps) {
 	if (filteredProblems.length === 0) {
-		<EmptyState
-			icon={<DocumentIcon />}
-			title="문제가 없습니다"
-			description={
-				search ? "검색 결과가 없습니다" : "새로운 문제를 등록해보세요"
-			}
-			action={
-				!search && (
-					<Link to="/problems/new">
-						<Button variant="secondary" size="sm">
-							새 문제 등록
-						</Button>
-					</Link>
-				)
-			}
-		/>;
+		return (
+			<EmptyState
+				className="flex-1"
+				icon={<DocumentIcon />}
+				title="문제가 없습니다"
+				description={
+					search ? "검색 결과가 없습니다" : "새로운 문제를 등록해보세요"
+				}
+				action={
+					!search && (
+						<Link to="/problems/new">
+							<Button variant="secondary" size="sm">
+								새 문제 등록
+							</Button>
+						</Link>
+					)
+				}
+			/>
+		);
 	}
 
 	return (
