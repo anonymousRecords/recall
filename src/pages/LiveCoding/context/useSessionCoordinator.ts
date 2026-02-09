@@ -49,6 +49,13 @@ export function useSessionCoordinator({
 				throw new Error("문제 정보를 찾을 수 없습니다.");
 			}
 
+			if (speech.hasPermission !== true) {
+				const granted = await speech.requestPermission();
+				if (!granted) {
+					throw new Error("마이크 권한이 필요해요");
+				}
+			}
+
 			const sessionConfig: SessionConfig = {
 				problemInfo: codeMonitor.problemInfo,
 				timeLimit: config.timeLimit,

@@ -25,9 +25,7 @@ export interface SessionStateContext {
 		finalTranscript: string;
 		interimTranscript: string;
 		volume: number;
-		hasPermission: boolean | null;
 		toggleListening: () => Promise<void>;
-		requestPermission: () => Promise<boolean>;
 	};
 }
 
@@ -89,9 +87,7 @@ export function SessionProvider({ children }: { children: ReactNode }) {
 					finalTranscript: speech.finalTranscript,
 					interimTranscript: speech.interimTranscript,
 					volume: speech.volume,
-					hasPermission: speech.hasPermission,
 					toggleListening: speech.toggleListening,
-					requestPermission: speech.requestPermission,
 				},
 			}}
 		>

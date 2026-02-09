@@ -124,9 +124,7 @@ export interface SpeechState {
 	finalTranscript: string;
 	interimTranscript: string;
 	volume: number;
-	hasPermission: boolean | null;
 	toggleListening: () => void;
-	requestPermission: () => Promise<boolean>;
 }
 
 export interface AIClient {
