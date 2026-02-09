@@ -83,7 +83,7 @@ function DashboardHeader({
 				)}
 				{totalCount === 0 && (
 					<span className="text-neutral-400 dark:text-neutral-500">
-						복습할 문제가 없습니다
+						복습할 문제가 없어요
 					</span>
 				)}
 			</div>
@@ -108,7 +108,7 @@ function ReviewProblemList({
 				<EmptyState
 					icon={<CheckBadgeIcon className="h-10 w-10" />}
 					title="모든 복습 완료"
-					description="오늘 복습할 문제가 없습니다"
+					description="오늘 복습할 문제가 없어요"
 					action={
 						<Link to="/problems/new">
 							<Button variant="secondary" size="sm">

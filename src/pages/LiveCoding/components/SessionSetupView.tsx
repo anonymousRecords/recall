@@ -106,16 +106,14 @@ export function SessionSetupView({
 								});
 							} catch (err) {
 								setError(
-									err instanceof Error
-										? err.message
-										: "세션 시작에 실패했습니다.",
+									err instanceof Error ? err.message : "세션 시작에 실패했어요",
 								);
 							} finally {
 								setIsStarting(false);
 							}
 						}}
 					>
-						{isStarting ? "시작 중..." : "세션 시작"}
+						{isStarting ? "시작 중" : "세션 시작"}
 					</Button>
 				</div>
 			</div>
@@ -128,9 +126,9 @@ function InterviewGuideCard() {
 		<Card>
 			<CardContent className="py-4">
 				<p className="text-sm text-gray-600 dark:text-gray-400">
-					프로그래머스에서 실제 면접처럼 연습하세요.
+					프로그래머스에서 실제 면접처럼 연습하세요
 					<br />
-					AI 면접관이 질문하고 피드백을 제공해줘요.
+					AI 면접관이 질문하고 피드백을 제공해줘요
 				</p>
 			</CardContent>
 		</Card>
@@ -164,7 +162,7 @@ function StepInstructionCard() {
 		<Card>
 			<CardContent className="py-4 flex flex-col gap-4">
 				<p className="text-sm text-gray-900 dark:text-white">
-					프로그래머스 문제 페이지에서 확장을 열어주세요.
+					프로그래머스 문제 페이지에서 확장을 열어주세요
 				</p>
 				<Button
 					variant="secondary"
@@ -184,8 +182,8 @@ function ApiKeyAlertCard() {
 		<Card>
 			<CardContent className="py-4 flex flex-col gap-4">
 				<p className="text-sm text-red-600 dark:text-red-400 mb-2">
-					API 키가 설정되지 않았어요. <br />
-					설정에서 API 키를 입력해주세요.
+					API 키가 설정되지 않았어요 <br />
+					설정에서 API 키를 입력해주세요
 				</p>
 				<Button
 					variant="primary"
@@ -240,9 +238,9 @@ function InterviewSessionSettings({
 						}
 					/>
 					<p className="text-xs text-gray-500 dark:text-gray-400 mt-2">
-						{style === "friendly" && "친절하게 힌트를 많이 제공해요."}
-						{style === "normal" && "적절한 질문과 피드백을 제공해요."}
-						{style === "pressure" && "날카로운 질문과 시간 압박을 줘요."}
+						{style === "friendly" && "친절하게 힌트를 많이 제공해요"}
+						{style === "normal" && "적절한 질문과 피드백을 제공해요"}
+						{style === "pressure" && "날카로운 질문과 시간 압박을 줘요"}
 					</p>
 				</CardContent>
 			</Card>

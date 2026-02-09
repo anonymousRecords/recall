@@ -144,7 +144,7 @@ function IntervalCard({ intervals, setIntervals }: IntervalCardProps) {
 			<CardHeader>
 				<CardTitle>복습 주기</CardTitle>
 				<CardDescription>
-					에빙하우스 망각곡선 기반 복습 주기를 설정합니다
+					에빙하우스 망각곡선 기반 복습 주기를 설정해요
 				</CardDescription>
 			</CardHeader>
 			<CardContent>
@@ -169,7 +169,7 @@ function ThemeCard({ theme, setTheme }: ThemeCardProps) {
 		<Card>
 			<CardHeader>
 				<CardTitle>테마</CardTitle>
-				<CardDescription>앱의 색상 모드를 선택합니다</CardDescription>
+				<CardDescription>Recall의 색상 모드를 선택해요</CardDescription>
 			</CardHeader>
 			<CardContent>
 				<Select
@@ -235,7 +235,7 @@ function LiveCodingCard({
 						onClick={onTestApi}
 						disabled={testingApi || !apiKey}
 					>
-						{testingApi ? "테스트 중..." : "연결 테스트"}
+						{testingApi ? "테스트 중" : "연결 테스트"}
 					</Button>
 					{apiTestResult && (
 						<span
@@ -277,7 +277,7 @@ function SettingsActions({ onReset, onSave, saving }: SettingsActionsProps) {
 				onClick={onSave}
 				disabled={saving}
 			>
-				{saving ? "저장 중..." : "저장"}
+				{saving ? "저장 중" : "저장"}
 			</Button>
 		</div>
 	);
@@ -287,10 +287,10 @@ function AppInfoFooter() {
 	return (
 		<div className="text-center">
 			<p className="text-xs font-medium text-neutral-400 dark:text-neutral-500">
-				오답노트 v1.0.0
+				Recall v0.1.0
 			</p>
 			<p className="mt-0.5 text-xs text-neutral-300 dark:text-neutral-600">
-				에빙하우스 망각곡선 기반 복습 관리
+				Where memory becomes skill
 			</p>
 		</div>
 	);
