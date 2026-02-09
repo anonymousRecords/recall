@@ -6,7 +6,7 @@ import {
 	CardTitle,
 } from "../../../components/ui";
 import { cn } from "../../../lib/utils";
-import type { LiveSession, SessionConfig, SessionReport } from "../../../types";
+import type { LiveSession, SessionReport } from "../../../types";
 
 interface SessionReportProps {
 	session: LiveSession;
@@ -17,14 +17,14 @@ export function SessionReportView({
 	session,
 	onNewSession,
 }: SessionReportProps) {
-	const { report, config } = session;
+	const { report } = session;
 
 	if (report === undefined) {
-		return <EmptyReportView />;
+		return <ReportSkeletonView />;
 	}
 
 	return (
-		<div className="flex flex-col h-full">
+		<div className="flex flex-col h-full bg-white dark:bg-neutral-950">
 			<header className="border-b border-gray-200 dark:border-gray-800 px-4 py-3">
 				<h1 className="text-lg font-semibold text-gray-900 dark:text-white">
 					면접 리포트
@@ -32,7 +32,7 @@ export function SessionReportView({
 			</header>
 
 			<div className="flex-1 overflow-auto p-4 space-y-4">
-				<BasicInfoReportCard config={config} report={report} />
+				<BasicInfoReportCard report={report} />
 				<ScoreReportCard report={report} />
 				{report.feedback.length > 0 && <FeddbackCard report={report} />}
 				{report.strengths.length > 0 && <StrengthCard report={report} />}
@@ -40,7 +40,7 @@ export function SessionReportView({
 
 				<div className="flex gap-3">
 					<Button variant="secondary" className="flex-1" onClick={onNewSession}>
-						새 세션 시작
+						새로운 세션 시작
 					</Button>
 				</div>
 			</div>
@@ -92,31 +92,30 @@ const formatDuration = (seconds: number): string => {
 	return `${mins}분 ${secs}초`;
 };
 
-function EmptyReportView() {
+function ReportSkeletonView() {
 	return (
-		<div className="flex h-full items-center justify-center p-4">
-			<p className="text-gray-500 dark:text-gray-400">
-				리포트를 생성할 수 없습니다.
-			</p>
-		</div>
+		<div
+			className={
+				"w-full h-full animate-pulse rounded bg-gray-200 dark:bg-gray-700"
+			}
+		/>
 	);
 }
 
 interface BasicInfoReportCardProps {
-	config: SessionConfig;
 	report: SessionReport;
 }
 
-function BasicInfoReportCard({ config, report }: BasicInfoReportCardProps) {
+function BasicInfoReportCard({ report }: BasicInfoReportCardProps) {
 	return (
 		<Card>
-			<CardContent className="py-4">
-				<h2 className="font-medium text-gray-900 dark:text-white mb-2">
-					{config.problemInfo.title}
-				</h2>
-				<div className="flex gap-4 text-sm text-gray-500 dark:text-gray-400">
-					<span>소요: {formatDuration(report.duration)}</span>
-					<span>대화: {report.messageCount}회</span>
+			<CardHeader>
+				<CardTitle className="text-base">로그 데이터</CardTitle>
+			</CardHeader>
+			<CardContent>
+				<div className="flex flex-col gap-2 text-sm text-gray-500 dark:text-gray-400">
+					<span>소요 시간: {formatDuration(report.duration)}</span>
+					<span>대화 횟수: {report.messageCount}회</span>
 				</div>
 			</CardContent>
 		</Card>
@@ -189,7 +188,7 @@ function StrengthCard({ report }: StrengthCardProps) {
 							key={item}
 							className="text-sm text-gray-700 dark:text-gray-300 flex items-start gap-2"
 						>
-							<span className="text-green-500">+</span>
+							<span className="text-gray-400">•</span>
 							<span>{item}</span>
 						</li>
 					))}
@@ -217,7 +216,7 @@ function ImprovementCard({ report }: ImprovementCardProps) {
 							key={item}
 							className="text-sm text-gray-700 dark:text-gray-300 flex items-start gap-2"
 						>
-							<span className="text-amber-500">→</span>
+							<span className="text-gray-400">•</span>
 							<span>{item}</span>
 						</li>
 					))}

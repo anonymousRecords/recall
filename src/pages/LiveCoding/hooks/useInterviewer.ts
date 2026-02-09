@@ -155,7 +155,7 @@ export function useInterviewer({ provider, apiKey }: UseInterviewerOptions) {
 				}
 
 				const report = JSON.parse(jsonMatch[0]) as SessionReport;
-				return report;
+				return { ...report, duration, messageCount: messages.length };
 			} catch {
 				return {
 					duration,
