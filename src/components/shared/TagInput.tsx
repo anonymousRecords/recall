@@ -47,7 +47,7 @@ export function TagInput({
 			)}
 			<div
 				className={cn(
-					"flex min-h-[36px] w-full flex-wrap items-center gap-1.5 rounded-lg border bg-white px-2.5 py-1.5",
+					"flex min-h-[36px] w-full flex-wrap items-center gap-1.5 rounded-sm border bg-white px-2.5 py-1.5",
 					"border-neutral-200",
 					"transition-all duration-150 ease-out",
 					"hover:border-neutral-300",

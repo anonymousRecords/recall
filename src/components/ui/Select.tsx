@@ -25,7 +25,7 @@ export const Select = forwardRef<HTMLSelectElement, SelectProps>(
 						ref={ref}
 						id={id}
 						className={cn(
-							"h-9 w-full appearance-none rounded-lg border bg-white pl-3 pr-8 text-sm",
+							"h-9 w-full appearance-none rounded-sm border bg-white pl-3 pr-8 text-sm",
 							"border-neutral-200",
 							"transition-all duration-150 ease-out",
 							"hover:border-neutral-300",
@@ -67,6 +67,8 @@ export const Select = forwardRef<HTMLSelectElement, SelectProps>(
 function ChevronDownIcon() {
 	return (
 		<svg
+			role="img"
+			aria-label="ChevronDown"
 			className="h-4 w-4 text-neutral-400"
 			fill="none"
 			viewBox="0 0 24 24"
