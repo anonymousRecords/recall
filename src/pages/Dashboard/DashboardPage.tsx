@@ -1,5 +1,10 @@
 import { Link } from "react-router";
-import { EmptyState, ProgressIndicator } from "../../components/shared";
+import type { Problem } from "@/src/types";
+import {
+	EmptyState,
+	LoadingSpinner,
+	ProgressIndicator,
+} from "../../components/shared";
 import {
 	Badge,
 	Button,
@@ -21,21 +26,9 @@ export function DashboardPage() {
 		totalCount,
 	} = useTodayReviews();
 	const { settings } = useSettings();
-	const intervals = settings.reviewIntervals;
-
-	const handleReviewComplete = async (problemId: string) => {
-		await markAsReviewed(problemId);
-	};
 
 	if (loading) {
-		return (
-			<div className="flex h-full items-center justify-center">
-				<div className="flex items-center gap-2 text-neutral-400">
-					<LoadingSpinner />
-					<span className="text-sm">불러오는 중...</span>
-				</div>
-			</div>
-		);
+		return <DashboardPageSkeleton />;
 	}
 
 	return (
@@ -47,76 +40,13 @@ export function DashboardPage() {
 			/>
 
 			<div className="flex-1 overflow-auto">
-				{problems.length === 0 ? (
-					<div className="flex h-full items-center justify-center px-4">
-						<EmptyState
-							icon={<CheckBadgeIcon />}
-							title="모든 복습 완료"
-							description="오늘 복습할 문제가 없습니다"
-							action={
-								<Link to="/problems/new">
-									<Button variant="secondary" size="sm">
-										새 문제 등록
-									</Button>
-								</Link>
-							}
-						/>
-					</div>
-				) : (
-					<div className="space-y-3 p-4">
-						{problems.map((problem) => {
-							const overdue = isOverdue(problem.nextReviewDate);
-							return (
-								<Card key={problem.id} hover className="group">
-									<CardHeader className="mb-3 pb-0">
-										<div className="flex items-start justify-between gap-3">
-											<div className="min-w-0 flex-1">
-												<CardTitle className="truncate">
-													{problem.title}
-												</CardTitle>
-												<div className="mt-2 flex flex-wrap items-center gap-1.5">
-													<Badge variant={overdue ? "danger" : "info"}>
-														{formatReviewDate(problem.nextReviewDate)}
-													</Badge>
-													<Badge>{problem.site}</Badge>
-												</div>
-											</div>
-										</div>
-									</CardHeader>
-									<CardContent>
-										<div className="flex items-center justify-between border-t border-neutral-100 pt-3 dark:border-neutral-800">
-											<div className="flex items-center gap-2.5">
-												<span className="text-xs tabular-nums text-neutral-400">
-													{problem.currentStage + 1}/{intervals.length}
-												</span>
-												<ProgressIndicator
-													currentStage={problem.currentStage}
-													totalStages={intervals.length}
-												/>
-											</div>
-											<div className="flex items-center gap-2">
-												<a
-													href={problem.link}
-													target="_blank"
-													rel="noopener noreferrer"
-													className="text-sm font-medium text-neutral-500 transition-colors hover:text-neutral-900 dark:text-neutral-400 dark:hover:text-neutral-100"
-												>
-													문제 보기
-												</a>
-												<Button
-													size="sm"
-													onClick={() => handleReviewComplete(problem.id)}
-												>
-													완료
-												</Button>
-											</div>
-										</div>
-									</CardContent>
-								</Card>
-							);
-						})}
-					</div>
-				)}
+				<ReviewProblemList
+					problems={problems}
+					intervals={settings.reviewIntervals}
+					handleReviewComplete={async (problemId: string) => {
+						await markAsReviewed(problemId);
+					}}
+				/>
 			</div>
 		</div>
 	);
@@ -159,23 +89,101 @@ function DashboardHeader({
 	);
 }
 
-function LoadingSpinner() {
+interface ReviewProblemListProps {
+	problems: Problem[];
+	intervals: number[];
+	handleReviewComplete: (problemId: string) => void;
+}
+
+function ReviewProblemList({
+	problems,
+	intervals,
+	handleReviewComplete,
+}: ReviewProblemListProps) {
+	if (problems.length === 0) {
+		return (
+			<div className="flex h-full items-center justify-center px-4">
+				<EmptyState
+					icon={<CheckBadgeIcon />}
+					title="모든 복습 완료"
+					description="오늘 복습할 문제가 없습니다"
+					action={
+						<Link to="/problems/new">
+							<Button variant="secondary" size="sm">
+								새 문제 등록
+							</Button>
+						</Link>
+					}
+				/>
+			</div>
+		);
+	}
+
 	return (
-		<svg className="h-4 w-4 animate-spin" fill="none" viewBox="0 0 24 24">
-			<circle
-				className="opacity-25"
-				cx="12"
-				cy="12"
-				r="10"
-				stroke="currentColor"
-				strokeWidth="4"
-			/>
-			<path
-				className="opacity-75"
-				fill="currentColor"
-				d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-			/>
-		</svg>
+		<div className="space-y-3 p-4">
+			{problems.map((problem) => {
+				const overdue = isOverdue(problem.nextReviewDate);
+
+				return (
+					<Card key={problem.id} hover className="group">
+						<CardHeader className="mb-3 pb-0">
+							<div className="flex items-start justify-between gap-3">
+								<div className="min-w-0 flex-1">
+									<CardTitle className="truncate">{problem.title}</CardTitle>
+									<div className="mt-2 flex flex-wrap items-center gap-1.5">
+										<Badge variant={overdue ? "danger" : "info"}>
+											{formatReviewDate(problem.nextReviewDate)}
+										</Badge>
+										<Badge>{problem.site}</Badge>
+									</div>
+								</div>
+							</div>
+						</CardHeader>
+
+						<CardContent>
+							<div className="flex items-center justify-between border-t border-neutral-100 pt-3 dark:border-neutral-800">
+								<div className="flex items-center gap-2.5">
+									<span className="text-xs tabular-nums text-neutral-400">
+										{problem.currentStage + 1}/{intervals.length}
+									</span>
+									<ProgressIndicator
+										currentStage={problem.currentStage}
+										totalStages={intervals.length}
+									/>
+								</div>
+								<div className="flex items-center gap-2">
+									<a
+										href={problem.link}
+										target="_blank"
+										rel="noopener noreferrer"
+										className="text-sm font-medium text-neutral-500 transition-colors hover:text-neutral-900 dark:text-neutral-400 dark:hover:text-neutral-100"
+									>
+										문제 보기
+									</a>
+									<Button
+										size="sm"
+										onClick={() => handleReviewComplete(problem.id)}
+									>
+										완료
+									</Button>
+								</div>
+							</div>
+						</CardContent>
+					</Card>
+				);
+			})}
+		</div>
+	);
+}
+
+function DashboardPageSkeleton() {
+	return (
+		<div className="flex h-full items-center justify-center">
+			<div className="flex items-center gap-2 text-neutral-400">
+				<LoadingSpinner />
+				<span className="text-sm">불러오는 중...</span>
+			</div>
+		</div>
 	);
 }
 
