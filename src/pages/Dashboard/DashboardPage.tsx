@@ -125,11 +125,23 @@ function ReviewProblemList({
 				const overdue = isOverdue(problem.nextReviewDate);
 
 				return (
-					<Card key={problem.id} hover className="group">
+					<Card key={problem.id} className="group">
 						<CardHeader className="mb-3 pb-0">
 							<div className="flex items-start justify-between gap-3">
 								<div className="min-w-0 flex-1">
-									<CardTitle className="truncate">{problem.title}</CardTitle>
+									<div className="flex items-center justify-between">
+										<CardTitle className="truncate">{problem.title}</CardTitle>
+
+										<a
+											href={problem.link}
+											target="_blank"
+											rel="noopener noreferrer"
+											className="rounded-md p-1.5 text-neutral-400 transition-colors hover:bg-neutral-100 hover:text-neutral-600 dark:hover:bg-neutral-800 dark:hover:text-neutral-200"
+											title="문제 열기"
+										>
+											<OpenIcon />
+										</a>
+									</div>
 									<div className="mt-2 flex flex-wrap items-center gap-1.5">
 										<Badge variant={overdue ? "danger" : "info"}>
 											{formatReviewDate(problem.nextReviewDate)}
@@ -141,7 +153,7 @@ function ReviewProblemList({
 						</CardHeader>
 
 						<CardContent>
-							<div className="flex items-center justify-between border-t border-neutral-100 pt-3 dark:border-neutral-800">
+							<div className="flex items-center justify-between pt-3">
 								<div className="flex items-center gap-2.5">
 									<span className="text-xs tabular-nums text-neutral-400">
 										{problem.currentStage + 1}/{intervals.length}
@@ -151,22 +163,16 @@ function ReviewProblemList({
 										totalStages={intervals.length}
 									/>
 								</div>
-								<div className="flex items-center gap-2">
-									<a
-										href={problem.link}
-										target="_blank"
-										rel="noopener noreferrer"
-										className="text-sm font-medium text-neutral-500 transition-colors hover:text-neutral-900 dark:text-neutral-400 dark:hover:text-neutral-100"
-									>
-										문제 보기
-									</a>
-									<Button
-										size="sm"
-										onClick={() => handleReviewComplete(problem.id)}
-									>
-										완료
-									</Button>
-								</div>
+
+								<Button
+									size="sm"
+									onClick={() => handleReviewComplete(problem.id)}
+								>
+									<div className="w-4">
+										<CheckIcon />
+									</div>
+									복습 완료
+								</Button>
 							</div>
 						</CardContent>
 					</Card>
@@ -203,6 +209,47 @@ function CheckBadgeIcon() {
 				strokeLinecap="round"
 				strokeLinejoin="round"
 				d="M9 12.75 11.25 15 15 9.75M21 12c0 1.268-.63 2.39-1.593 3.068a3.745 3.745 0 0 1-1.043 3.296 3.745 3.745 0 0 1-3.296 1.043A3.745 3.745 0 0 1 12 21c-1.268 0-2.39-.63-3.068-1.593a3.746 3.746 0 0 1-3.296-1.043 3.745 3.745 0 0 1-1.043-3.296A3.745 3.745 0 0 1 3 12c0-1.268.63-2.39 1.593-3.068a3.745 3.745 0 0 1 1.043-3.296 3.746 3.746 0 0 1 3.296-1.043A3.746 3.746 0 0 1 12 3c1.268 0 2.39.63 3.068 1.593a3.746 3.746 0 0 1 3.296 1.043 3.746 3.746 0 0 1 1.043 3.296A3.745 3.745 0 0 1 21 12Z"
+			/>
+		</svg>
+	);
+}
+
+function OpenIcon() {
+	return (
+		<svg
+			role="img"
+			aria-label="Open"
+			xmlns="http://www.w3.org/2000/svg"
+			fill="none"
+			viewBox="0 0 24 24"
+			strokeWidth="1.5"
+			stroke="currentColor"
+			className="h-4 w-4"
+		>
+			<path
+				strokeLinecap="round"
+				strokeLinejoin="round"
+				d="M13.5 6H5.25A2.25 2.25 0 0 0 3 8.25v10.5A2.25 2.25 0 0 0 5.25 21h10.5A2.25 2.25 0 0 0 18 18.75V10.5m-10.5 6L21 3m0 0h-5.25M21 3v5.25"
+			/>
+		</svg>
+	);
+}
+
+function CheckIcon() {
+	return (
+		<svg
+			role="img"
+			aria-label="Check"
+			xmlns="http://www.w3.org/2000/svg"
+			fill="none"
+			viewBox="0 0 24 24"
+			stroke-width="1.5"
+			stroke="currentColor"
+		>
+			<path
+				stroke-linecap="round"
+				stroke-linejoin="round"
+				d="M9 12.75 11.25 15 15 9.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z"
 			/>
 		</svg>
 	);
