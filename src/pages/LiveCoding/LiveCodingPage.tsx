@@ -43,7 +43,7 @@ function LiveCodingContent() {
 		);
 	}
 
-	if (status === "completed" && session?.report) {
+	if (status === "completed" && session) {
 		return <SessionReportView session={session} onNewSession={resetSession} />;
 	}
 
