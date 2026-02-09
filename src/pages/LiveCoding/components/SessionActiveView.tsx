@@ -1,5 +1,7 @@
 import { useEffect, useRef, useState } from "react";
-import { Button, Input } from "../../../components/ui";
+import { MicIcon } from "@/src/components/shared";
+import { ClockIcon } from "@/src/components/shared/icons/ClockIcon";
+import { Button } from "../../../components/ui";
 import { cn } from "../../../lib/utils";
 import type { ChatMessage, SpeechState } from "../../../types";
 
@@ -26,9 +28,7 @@ export function SessionActiveView({
 		finalTranscript,
 		interimTranscript,
 		volume,
-		hasPermission,
 		toggleListening,
-		requestPermission,
 	} = speech;
 
 	const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -42,7 +42,10 @@ export function SessionActiveView({
 	}, [messages.length]);
 
 	return (
-		<div className="flex flex-col h-full">
+		<div
+			className="flex flex-col h-full bg-white
+  dark:bg-neutral-950"
+		>
 			<SessionActiveViewHeader
 				timeRemaining={timeRemaining}
 				isAILoading={isAILoading}
@@ -58,24 +61,17 @@ export function SessionActiveView({
 			/>
 
 			<div className="border-t border-gray-200 dark:border-gray-800 px-4 py-3">
-				{hasPermission !== true ? (
-					<MicPermissionGuide
-						hasPermission={hasPermission}
-						requestPermission={requestPermission}
-					/>
-				) : (
-					<VoiceInteractionField
-						isAILoading={isAILoading}
-						isListening={isListening}
-						isSpeaking={isSpeaking}
-						volume={volume}
-						toggleListening={toggleListening}
-						transcripts={{
-							finalTranscript,
-							interimTranscript,
-						}}
-					/>
-				)}
+				<VoiceInteractionField
+					isAILoading={isAILoading}
+					isListening={isListening}
+					isSpeaking={isSpeaking}
+					volume={volume}
+					toggleListening={toggleListening}
+					transcripts={{
+						finalTranscript,
+						interimTranscript,
+					}}
+				/>
 
 				<MessageInput
 					isAILoading={isAILoading}
@@ -95,59 +91,27 @@ function MessageBubble({ message }: MessageBubbleProps) {
 	const isInterviewer = message.role === "interviewer";
 
 	return (
-		<div
-			className={cn("flex items-start gap-2", !isInterviewer && "justify-end")}
-		>
-			{isInterviewer && (
-				<div className="w-8 h-8 rounded-full bg-blue-100 dark:bg-blue-900 flex items-center justify-center text-sm shrink-0">
-					AI
-				</div>
-			)}
-
+		<div className={cn("flex items-start", !isInterviewer && "justify-end")}>
 			<div
 				className={cn(
-					"rounded-lg px-3 py-2 max-w-[80%]",
+					"rounded-lg px-3 py-2 max-w-[85%]",
 					isInterviewer
 						? "bg-gray-100 dark:bg-gray-800"
-						: "bg-orange-500 dark:bg-orange-600 text-white",
+						: "bg-neutral-800 dark:bg-neutral-100",
 				)}
 			>
 				<p
 					className={cn(
 						"text-sm",
-						isInterviewer ? "text-gray-900 dark:text-white" : "text-white",
+						isInterviewer
+							? "text-gray-900 dark:text-white"
+							: "text-white dark:text-neutral-900",
 					)}
 				>
 					{message.content}
 				</p>
 			</div>
-
-			{!isInterviewer && (
-				<div className="w-8 h-8 rounded-full bg-orange-100 dark:bg-orange-900 flex items-center justify-center text-sm shrink-0">
-					나
-				</div>
-			)}
 		</div>
-	);
-}
-
-function MicIcon({ className }: { className?: string }) {
-	return (
-		<svg
-			xmlns="http://www.w3.org/2000/svg"
-			fill="none"
-			viewBox="0 0 24 24"
-			strokeWidth={1.5}
-			stroke="currentColor"
-			className={className}
-			aria-hidden="true"
-		>
-			<path
-				strokeLinecap="round"
-				strokeLinejoin="round"
-				d="M12 18.75a6 6 0 0 0 6-6v-1.5m-6 7.5a6 6 0 0 1-6-6v-1.5m6 7.5v3.75m-3.75 0h7.5M12 15.75a3 3 0 0 1-3-3V4.5a3 3 0 1 1 6 0v8.25a3 3 0 0 1-3 3Z"
-			/>
-		</svg>
 	);
 }
 
@@ -210,31 +174,28 @@ interface SessionActiveViewHeaderProps {
 
 function SessionActiveViewHeader({
 	timeRemaining,
-	isAILoading,
 	handleEnd,
 }: SessionActiveViewHeaderProps) {
 	return (
 		<header className="border-b border-gray-200 dark:border-gray-800 px-4 py-2 flex items-center justify-between">
 			<div className="flex items-center gap-2">
-				{timeRemaining !== null && (
-					<span
-						className={cn(
-							"text-lg font-mono font-semibold",
-							timeRemaining < 60
-								? "text-red-600 dark:text-red-400"
-								: timeRemaining < 300
-									? "text-amber-600 dark:text-amber-400"
-									: "text-gray-900 dark:text-white",
-						)}
-					>
-						{formatTime(timeRemaining)}
-					</span>
-				)}
-				{isAILoading && (
-					<span className="text-xs text-gray-500 dark:text-gray-400">
-						생각 중...
-					</span>
-				)}
+				<div className="flex gap-2 items-center">
+					<ClockIcon className="w-4 h-4" />
+					{timeRemaining !== null && (
+						<span
+							className={cn(
+								"text-lg font-mono font-semibold",
+								timeRemaining < 60
+									? "text-red-600 dark:text-red-400"
+									: timeRemaining < 300
+										? "text-amber-600 dark:text-amber-400"
+										: "text-gray-900 dark:text-white",
+							)}
+						>
+							{formatTime(timeRemaining)}
+						</span>
+					)}
+				</div>
 			</div>
 			<Button
 				variant="secondary"
@@ -253,10 +214,7 @@ function SessionActiveViewHeader({
 
 function AiThinkingBubble() {
 	return (
-		<div className="flex items-start gap-2">
-			<div className="w-8 h-8 rounded-full bg-blue-100 dark:bg-blue-900 flex items-center justify-center text-sm">
-				AI
-			</div>
+		<div className="flex items-start">
 			<div className="bg-gray-100 dark:bg-gray-800 rounded-lg px-3 py-2">
 				<LoadingDots />
 			</div>
@@ -309,55 +267,19 @@ function TranscriptBubble({
 	interimTranscript,
 }: TranscriptBubbleProps) {
 	return (
-		<div className="flex items-start gap-2 justify-end">
-			<div className="bg-orange-100 dark:bg-orange-900/30 rounded-lg px-3 py-2 max-w-[80%]">
-				<p className="text-sm">
-					{finalTranscript && (
-						<span className="text-orange-900 dark:text-orange-100">
-							{finalTranscript}
-						</span>
-					)}
+		<div className="flex items-start justify-end">
+			<div className="bg-neutral-200 dark:bg-neutral-800 rounded-lg px-3 py-2 max-w-[85%]">
+				<p className="text-sm text-neutral-700 dark:text-neutral-300">
+					{finalTranscript}
+					{finalTranscript && interimTranscript ? " " : ""}
 					{interimTranscript && (
-						<span className="text-orange-600/70 dark:text-orange-300/70 italic">
-							{finalTranscript ? " " : ""}
+						<span className="opacity-60">
 							{interimTranscript}
 							<span className="animate-pulse">|</span>
 						</span>
 					)}
 				</p>
 			</div>
-		</div>
-	);
-}
-
-interface MicPermissionGuideProps {
-	hasPermission: boolean | null;
-	requestPermission: () => void;
-}
-
-function MicPermissionGuide({
-	hasPermission,
-	requestPermission,
-}: MicPermissionGuideProps) {
-	return (
-		<div className="text-center py-2 mb-3">
-			<button
-				type="button"
-				onClick={requestPermission}
-				className="inline-flex items-center gap-2 px-4 py-2 bg-orange-500 hover:bg-orange-600 text-white rounded-lg transition-colors mb-2"
-			>
-				<MicIcon className="w-5 h-5" />
-				<span className="text-sm font-medium">
-					{hasPermission === false
-						? "다시 권한 요청하기"
-						: "마이크 권한 허용하기"}
-				</span>
-			</button>
-			<p className="text-xs text-gray-500 dark:text-gray-400">
-				버튼 클릭 후 <strong>브라우저 주소창 아래</strong>에 나타나는
-				<br />
-				권한 요청 팝업에서 "허용"을 선택해주세요
-			</p>
 		</div>
 	);
 }
@@ -374,24 +296,50 @@ function MessageInput({
 	onSendMessage,
 }: MessageInputProps) {
 	const [input, setInput] = useState("");
+	const textareaRef = useRef<HTMLTextAreaElement>(null);
 
-	const handleSubmit = (e: { preventDefault: () => void }) => {
-		e.preventDefault();
+	const adjustHeight = () => {
+		const el = textareaRef.current;
+		if (!el) return;
+		el.style.height = "auto";
+		el.style.height = `${Math.min(el.scrollHeight, 120)}px`;
+	};
+
+	const handleSubmit = () => {
 		if (!input.trim() || isAILoading) return;
-
 		const message = input.trim();
 		setInput("");
+		if (textareaRef.current) {
+			textareaRef.current.style.height = "auto";
+		}
 		onSendMessage(message);
 	};
 
 	return (
-		<form onSubmit={handleSubmit} className="flex gap-2">
-			<Input
+		<form
+			onSubmit={(e) => {
+				e.preventDefault();
+				handleSubmit();
+			}}
+			className="flex items-end gap-2"
+		>
+			<textarea
+				ref={textareaRef}
 				value={input}
-				onChange={(e) => setInput(e.target.value)}
-				placeholder="또는 텍스트로 입력..."
+				onChange={(e) => {
+					setInput(e.target.value);
+					adjustHeight();
+				}}
+				onKeyDown={(e) => {
+					if (e.key === "Enter" && !e.shiftKey) {
+						e.preventDefault();
+						handleSubmit();
+					}
+				}}
+				placeholder="텍스트를 입력해주세요"
 				disabled={isAILoading || isListening}
-				className="flex-1"
+				rows={1}
+				className="flex-1 resize-none rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-neutral-900 px-3 py-2 text-sm text-gray-900 dark:text-white placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-neutral-100 disabled:opacity-50"
 				aria-label="메시지 입력"
 			/>
 			<Button
