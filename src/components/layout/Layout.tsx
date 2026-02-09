@@ -42,7 +42,7 @@ function NavItem({ to, icon, label, end }: NavItemProps) {
 				)
 			}
 		>
-			<span className="transition-transform duration-150 group-hover:scale-110 group-active:scale-95">
+			<span className="transition-transform duration-150 group-hover:scale-105 group-active:scale-95">
 				{icon}
 			</span>
 			<span className="text-[10px] font-medium tracking-wide">{label}</span>
