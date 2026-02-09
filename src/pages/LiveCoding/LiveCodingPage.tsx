@@ -1,9 +1,17 @@
 import { SessionActiveView } from "./components/SessionActiveView";
 import { SessionReportView } from "./components/SessionReportView";
 import { SessionSetupView } from "./components/SessionSetupView";
-import { useLiveSession } from "./hooks/useLiveSession";
+import { SessionProvider, useSessionActions, useSessionState } from "./context";
 
 export function LiveCodingPage() {
+	return (
+		<SessionProvider>
+			<LiveCodingContent />
+		</SessionProvider>
+	);
+}
+
+function LiveCodingContent() {
 	const {
 		status,
 		session,
@@ -12,11 +20,9 @@ export function LiveCodingPage() {
 		problemInfo,
 		isAILoading,
 		speech,
-		startSession,
-		endSession,
-		resetSession,
-		sendMessage,
-	} = useLiveSession();
+	} = useSessionState();
+	const { startSession, endSession, resetSession, sendMessage } =
+		useSessionActions();
 
 	if (status === "idle") {
 		return (
