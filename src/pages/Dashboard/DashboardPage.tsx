@@ -4,7 +4,6 @@ import {
 	CheckBadgeIcon,
 	CheckIcon,
 	EmptyState,
-	LoadingSpinner,
 	OpenIcon,
 	ProgressIndicator,
 } from "../../components/shared";
@@ -31,7 +30,7 @@ export function DashboardPage() {
 	const { settings } = useSettings();
 
 	if (loading) {
-		return <DashboardPageSkeleton />;
+		return null;
 	}
 
 	return (
@@ -179,17 +178,6 @@ function ReviewProblemList({
 					</Card>
 				);
 			})}
-		</div>
-	);
-}
-
-function DashboardPageSkeleton() {
-	return (
-		<div className="flex h-full items-center justify-center">
-			<div className="flex items-center gap-2 text-neutral-400">
-				<LoadingSpinner />
-				<span className="text-sm">불러오는 중...</span>
-			</div>
 		</div>
 	);
 }

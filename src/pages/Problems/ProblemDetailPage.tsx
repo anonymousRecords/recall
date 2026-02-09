@@ -1,10 +1,6 @@
 import { format } from "date-fns";
 import { useParams } from "react-router";
-import {
-	ArrowLeftIcon,
-	LoadingSpinner,
-	TagInput,
-} from "../../components/shared";
+import { ArrowLeftIcon, TagInput } from "../../components/shared";
 import { Button, Input, Select, Textarea } from "../../components/ui";
 import type { ProblemStatus } from "../../types";
 import { type ProblemForm, useProblemForm } from "./hooks/useProblemForm";
@@ -37,7 +33,7 @@ export function ProblemDetailPage() {
 	} = useProblemForm(id);
 
 	if (loading) {
-		return <ProblemDetailPageSkeleton />;
+		return null;
 	}
 
 	return (
@@ -214,17 +210,6 @@ function FormFieldActions({
 			<Button type="submit" className="flex-1" disabled={saving}>
 				{saving ? "저장 중..." : isNew ? "등록" : "저장"}
 			</Button>
-		</div>
-	);
-}
-
-function ProblemDetailPageSkeleton() {
-	return (
-		<div className="flex h-full items-center justify-center">
-			<div className="flex items-center gap-2 text-neutral-400">
-				<LoadingSpinner />
-				<span className="text-sm">불러오는 중...</span>
-			</div>
 		</div>
 	);
 }

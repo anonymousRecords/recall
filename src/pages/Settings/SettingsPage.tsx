@@ -1,5 +1,4 @@
 import { useEffect, useRef, useState } from "react";
-import { LoadingSpinner } from "../../components/shared";
 import {
 	Button,
 	Card,
@@ -50,7 +49,7 @@ export function SettingsPage() {
 	}, [message]);
 
 	if (generalSettings.loading) {
-		return <SettingsSkeleton />;
+		return null;
 	}
 
 	return (
@@ -293,17 +292,6 @@ function AppInfoFooter() {
 			<p className="mt-0.5 text-xs text-neutral-300 dark:text-neutral-600">
 				에빙하우스 망각곡선 기반 복습 관리
 			</p>
-		</div>
-	);
-}
-
-function SettingsSkeleton() {
-	return (
-		<div className="flex h-full items-center justify-center">
-			<div className="flex items-center gap-2 text-neutral-400">
-				<LoadingSpinner />
-				<span className="text-sm">불러오는 중...</span>
-			</div>
 		</div>
 	);
 }

@@ -53,7 +53,7 @@ export function SessionSetupView({
 	const [error, setError] = useState<string | null>(null);
 
 	if (settingsLoading) {
-		return <SessionSetupSkeleton />;
+		return null;
 	}
 
 	return (
@@ -116,14 +116,6 @@ export function SessionSetupView({
 					</Button>
 				</div>
 			</div>
-		</div>
-	);
-}
-
-function SessionSetupSkeleton() {
-	return (
-		<div className="flex h-full items-center justify-center">
-			<p className="text-gray-500 dark:text-gray-400">로딩 중...</p>
 		</div>
 	);
 }

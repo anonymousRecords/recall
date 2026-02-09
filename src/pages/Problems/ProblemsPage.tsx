@@ -1,10 +1,6 @@
 import { useState } from "react";
 import { Link } from "react-router";
-import {
-	DocumentIcon,
-	EmptyState,
-	LoadingSpinner,
-} from "../../components/shared";
+import { DocumentIcon, EmptyState } from "../../components/shared";
 import { Button } from "../../components/ui";
 import { useProblems, useSettings } from "../../hooks";
 import type { Problem, ProblemStatus, Settings } from "../../types";
@@ -26,7 +22,7 @@ export function ProblemsPage() {
 	);
 
 	if (loading) {
-		return <ProblemPageSkeleton />;
+		return null;
 	}
 
 	return (
@@ -120,14 +116,3 @@ const getFilteredProblems = (
 		return matchesSearch && matchesStatus;
 	});
 };
-
-function ProblemPageSkeleton() {
-	return (
-		<div className="flex h-full items-center justify-center">
-			<div className="flex items-center gap-2 text-neutral-400">
-				<LoadingSpinner />
-				<span className="text-sm">불러오는 중...</span>
-			</div>
-		</div>
-	);
-}
