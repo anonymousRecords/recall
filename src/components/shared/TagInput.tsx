@@ -1,5 +1,6 @@
 import { type KeyboardEvent, useState } from "react";
 import { cn } from "../../lib/utils";
+import { CloseIcon } from "./icons";
 
 interface TagInputProps {
 	value: string[];
@@ -69,7 +70,7 @@ export function TagInput({
 							onClick={() => removeTag(tag)}
 							className="text-neutral-400 transition-colors hover:text-neutral-600 dark:hover:text-neutral-200"
 						>
-							<CloseIcon />
+							<CloseIcon className="h-3.5 w-3.5" />
 						</button>
 					</span>
 				))}
@@ -83,26 +84,5 @@ export function TagInput({
 				/>
 			</div>
 		</div>
-	);
-}
-
-function CloseIcon() {
-	return (
-		<svg
-			role="img"
-			aria-label="Close"
-			xmlns="http://www.w3.org/2000/svg"
-			fill="none"
-			viewBox="0 0 24 24"
-			strokeWidth="2"
-			stroke="currentColor"
-			className="h-3.5 w-3.5"
-		>
-			<path
-				strokeLinecap="round"
-				strokeLinejoin="round"
-				d="M6 18 18 6M6 6l12 12"
-			/>
-		</svg>
 	);
 }

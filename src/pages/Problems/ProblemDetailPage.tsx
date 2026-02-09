@@ -1,6 +1,10 @@
 import { format } from "date-fns";
 import { useParams } from "react-router";
-import { LoadingSpinner, TagInput } from "../../components/shared";
+import {
+	ArrowLeftIcon,
+	LoadingSpinner,
+	TagInput,
+} from "../../components/shared";
 import { Button, Input, Select, Textarea } from "../../components/ui";
 import type { ProblemStatus } from "../../types";
 import { type ProblemForm, useProblemForm } from "./hooks/useProblemForm";
@@ -175,7 +179,7 @@ function ProblemDetailPageHeader({
 					onClick={onBack}
 					className="rounded-md p-1.5 text-neutral-400 transition-colors hover:bg-neutral-100 hover:text-neutral-600 dark:hover:bg-neutral-800 dark:hover:text-neutral-200"
 				>
-					<BackButtonIcon />
+					<ArrowLeftIcon className="h-5 w-5" />
 				</button>
 
 				<h1 className="text-lg font-semibold tracking-tight text-neutral-900 dark:text-white">
@@ -222,26 +226,5 @@ function ProblemDetailPageSkeleton() {
 				<span className="text-sm">불러오는 중...</span>
 			</div>
 		</div>
-	);
-}
-
-function BackButtonIcon() {
-	return (
-		<svg
-			role="img"
-			aria-label="BackButton"
-			xmlns="http://www.w3.org/2000/svg"
-			fill="none"
-			viewBox="0 0 24 24"
-			strokeWidth="1.5"
-			stroke="currentColor"
-			className="h-5 w-5"
-		>
-			<path
-				strokeLinecap="round"
-				strokeLinejoin="round"
-				d="M15.75 19.5 8.25 12l7.5-7.5"
-			/>
-		</svg>
 	);
 }

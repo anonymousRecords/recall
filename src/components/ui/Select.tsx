@@ -1,5 +1,6 @@
 import { forwardRef, type SelectHTMLAttributes } from "react";
 import { cn } from "../../lib/utils";
+import { ChevronDownIcon } from "../shared";
 
 interface SelectProps extends SelectHTMLAttributes<HTMLSelectElement> {
 	label?: string;
@@ -46,7 +47,7 @@ export const Select = forwardRef<HTMLSelectElement, SelectProps>(
 						))}
 					</select>
 					<div className="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-2">
-						<ChevronDownIcon />
+						<ChevronDownIcon className="h-4 w-4 text-neutral-400" />
 					</div>
 				</div>
 				{hint && !error && (
@@ -63,25 +64,5 @@ export const Select = forwardRef<HTMLSelectElement, SelectProps>(
 		);
 	},
 );
-
-function ChevronDownIcon() {
-	return (
-		<svg
-			role="img"
-			aria-label="ChevronDown"
-			className="h-4 w-4 text-neutral-400"
-			fill="none"
-			viewBox="0 0 24 24"
-			strokeWidth="2"
-			stroke="currentColor"
-		>
-			<path
-				strokeLinecap="round"
-				strokeLinejoin="round"
-				d="m19.5 8.25-7.5 7.5-7.5-7.5"
-			/>
-		</svg>
-	);
-}
 
 Select.displayName = "Select";
