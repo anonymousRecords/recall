@@ -125,8 +125,9 @@ function InterviewGuideCard() {
 		<Card>
 			<CardContent className="py-4">
 				<p className="text-sm text-gray-600 dark:text-gray-400">
-					프로그래머스 문제 페이지에서 실제 면접처럼 연습하세요. AI 면접관이
-					질문하고 피드백을 제공합니다.
+					프로그래머스에서 실제 면접처럼 연습하세요.
+					<br />
+					AI 면접관이 질문하고 피드백을 제공해줘요.
 				</p>
 			</CardContent>
 		</Card>
@@ -158,10 +159,17 @@ function ProblemInfoCard({ problemInfo }: ProblemInfoProps) {
 function StepInstructionCard() {
 	return (
 		<Card>
-			<CardContent className="py-4">
-				<p className="text-sm text-amber-600 dark:text-amber-400">
+			<CardContent className="py-4 flex flex-col gap-4">
+				<p className="text-sm text-gray-900 dark:text-white">
 					프로그래머스 문제 페이지에서 확장을 열어주세요.
 				</p>
+				<Button
+					variant="secondary"
+					size="sm"
+					onClick={() => window.open("https://programmers.co.kr", "_blank")}
+				>
+					프로그래머스 바로가기
+				</Button>
 			</CardContent>
 		</Card>
 	);
@@ -171,12 +179,13 @@ function ApiKeyAlertCard() {
 	const navigate = useNavigate();
 	return (
 		<Card>
-			<CardContent className="py-4">
+			<CardContent className="py-4 flex flex-col gap-4">
 				<p className="text-sm text-red-600 dark:text-red-400 mb-2">
-					API 키가 설정되지 않았습니다.
+					API 키가 설정되지 않았어요. <br />
+					설정에서 API 키를 입력해주세요.
 				</p>
 				<Button
-					variant="secondary"
+					variant="primary"
 					size="sm"
 					onClick={() => navigate("/settings")}
 				>
@@ -228,9 +237,9 @@ function InterviewSessionSettings({
 						}
 					/>
 					<p className="text-xs text-gray-500 dark:text-gray-400 mt-2">
-						{style === "friendly" && "친절하게 힌트를 많이 제공합니다."}
-						{style === "normal" && "적절한 질문과 피드백을 제공합니다."}
-						{style === "pressure" && "날카로운 질문과 시간 압박을 줍니다."}
+						{style === "friendly" && "친절하게 힌트를 많이 제공해요."}
+						{style === "normal" && "적절한 질문과 피드백을 제공해요."}
+						{style === "pressure" && "날카로운 질문과 시간 압박을 줘요."}
 					</p>
 				</CardContent>
 			</Card>
