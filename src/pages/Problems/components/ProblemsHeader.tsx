@@ -110,7 +110,7 @@ function FilterButton({ active, onClick, children }: FilterButtonProps) {
 			type="button"
 			onClick={onClick}
 			className={cn(
-				"rounded-full px-3 py-1 text-xs font-medium transition-all duration-150",
+				"rounded-full px-4 py-1.5 text-xs font-medium transition-all duration-150",
 				active
 					? "bg-neutral-900 text-white dark:bg-white dark:text-neutral-900"
 					: "bg-neutral-100 text-neutral-500 hover:bg-neutral-200 hover:text-neutral-700 dark:bg-neutral-800 dark:text-neutral-400 dark:hover:bg-neutral-700 dark:hover:text-neutral-300",

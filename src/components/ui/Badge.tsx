@@ -15,7 +15,7 @@ export function Badge({
 	return (
 		<span
 			className={cn(
-				"inline-flex items-center rounded-md px-2 py-0.5 text-xs font-medium ring-1 ring-inset",
+				"inline-flex items-center rounded-2xl px-3 py-1.5 text-xs font-medium ring-1 ring-inset",
 				"transition-colors duration-150",
 				{
 					// Default

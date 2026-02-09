@@ -28,13 +28,15 @@ export function ProblemRow({ problem, intervals, onDelete }: ProblemRowProps) {
 					>
 						{problem.title}
 					</Link>
-					<div className="mt-1.5 flex flex-wrap items-center gap-1.5">
+
+					<div className="mt-4 flex flex-wrap items-center gap-1.5">
 						<Badge>{problem.site}</Badge>
 						{getStatusBadge({ problem, overdue, future })}
 						{problem.difficulty && (
 							<Badge variant="default">{problem.difficulty}</Badge>
 						)}
 					</div>
+
 					{problem.tags.length > 0 && (
 						<div className="mt-2 flex flex-wrap gap-1.5">
 							{problem.tags.map((tag) => (
@@ -48,6 +50,7 @@ export function ProblemRow({ problem, intervals, onDelete }: ProblemRowProps) {
 						</div>
 					)}
 				</div>
+
 				<div className="flex flex-col items-end gap-2">
 					<ProgressIndicator
 						currentStage={problem.currentStage}
