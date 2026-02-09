@@ -197,18 +197,59 @@ function SessionActiveViewHeader({
 					)}
 				</div>
 			</div>
-			<Button
-				variant="secondary"
-				size="sm"
-				onClick={() => {
-					if (window.confirm("세션을 종료하시겠습니까?")) {
-						handleEnd();
-					}
-				}}
-			>
+			<EndSessionButton onEnd={handleEnd} />
+		</header>
+	);
+}
+
+function EndSessionButton({ onEnd }: { onEnd: () => void }) {
+	const [open, setOpen] = useState(false);
+	const ref = useRef<HTMLDivElement>(null);
+
+	useEffect(() => {
+		if (!open) return;
+		const handleClickOutside = (e: MouseEvent) => {
+			if (ref.current && !ref.current.contains(e.target as Node)) {
+				setOpen(false);
+			}
+		};
+		document.addEventListener("mousedown", handleClickOutside);
+		return () => document.removeEventListener("mousedown", handleClickOutside);
+	}, [open]);
+
+	return (
+		<div ref={ref} className="relative">
+			<Button variant="secondary" size="sm" onClick={() => setOpen(!open)}>
 				종료
 			</Button>
-		</header>
+			{open && (
+				<div className="absolute right-0 top-full mt-1 z-10 bg-white dark:bg-neutral-900 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg p-3 w-48">
+					<p className="text-sm text-gray-700 dark:text-gray-300 mb-2">
+						세션을 종료할까요?
+					</p>
+					<div className="flex gap-2">
+						<Button
+							variant="secondary"
+							size="sm"
+							className="flex-1"
+							onClick={() => setOpen(false)}
+						>
+							취소
+						</Button>
+						<Button
+							size="sm"
+							className="flex-1"
+							onClick={() => {
+								setOpen(false);
+								onEnd();
+							}}
+						>
+							종료
+						</Button>
+					</div>
+				</div>
+			)}
+		</div>
 	);
 }
 
