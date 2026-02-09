@@ -11,7 +11,7 @@ export function Card({ children, className, hover = false }: CardProps) {
 	return (
 		<div
 			className={cn(
-				"rounded-xl border border-neutral-200/80 bg-white p-4",
+				"rounded-md border border-neutral-200/80 bg-white p-4",
 				"dark:border-neutral-800 dark:bg-neutral-900/50",
 				"transition-all duration-150 ease-out",
 				hover &&
