@@ -26,44 +26,75 @@ export function ProblemsHeader({
 					<Button size="sm">추가</Button>
 				</Link>
 			</div>
+
 			<div className="space-y-3 px-4 py-3">
-				<div className="relative">
-					<SearchIcon className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-neutral-400" />
-					<Input
-						placeholder="검색..."
-						value={search}
-						onChange={(e) => setSearch(e.target.value)}
-						className="pl-9"
-					/>
-				</div>
-				<div className="flex gap-1.5">
-					<FilterButton
-						active={filterStatus === "all"}
-						onClick={() => setFilterStatus("all")}
-					>
-						전체
-					</FilterButton>
-					<FilterButton
-						active={filterStatus === "active"}
-						onClick={() => setFilterStatus("active")}
-					>
-						진행중
-					</FilterButton>
-					<FilterButton
-						active={filterStatus === "completed"}
-						onClick={() => setFilterStatus("completed")}
-					>
-						완료
-					</FilterButton>
-					<FilterButton
-						active={filterStatus === "archived"}
-						onClick={() => setFilterStatus("archived")}
-					>
-						보관
-					</FilterButton>
-				</div>
+				<SearchBar search={search} setSearch={setSearch} />
+				<StatusFilterGroup
+					filterStatus={filterStatus}
+					setFilterStatus={setFilterStatus}
+				/>
 			</div>
 		</header>
+	);
+}
+
+interface SearchBarProps {
+	search: string;
+	setSearch: (search: string) => void;
+}
+
+function SearchBar({ search, setSearch }: SearchBarProps) {
+	return (
+		<div className="relative">
+			<SearchIcon className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-neutral-400" />
+			<Input
+				placeholder="검색..."
+				value={search}
+				onChange={(e) => setSearch(e.target.value)}
+				className="pl-9"
+			/>
+		</div>
+	);
+}
+
+interface StatusFilterGroupProps {
+	filterStatus: "all" | "active" | "completed" | "archived";
+	setFilterStatus: (
+		status: "all" | "active" | "completed" | "archived",
+	) => void;
+}
+
+function StatusFilterGroup({
+	filterStatus,
+	setFilterStatus,
+}: StatusFilterGroupProps) {
+	return (
+		<div className="flex gap-1.5">
+			<FilterButton
+				active={filterStatus === "all"}
+				onClick={() => setFilterStatus("all")}
+			>
+				전체
+			</FilterButton>
+			<FilterButton
+				active={filterStatus === "active"}
+				onClick={() => setFilterStatus("active")}
+			>
+				진행중
+			</FilterButton>
+			<FilterButton
+				active={filterStatus === "completed"}
+				onClick={() => setFilterStatus("completed")}
+			>
+				완료
+			</FilterButton>
+			<FilterButton
+				active={filterStatus === "archived"}
+				onClick={() => setFilterStatus("archived")}
+			>
+				보관
+			</FilterButton>
+		</div>
 	);
 }
 
@@ -93,6 +124,8 @@ function FilterButton({ active, onClick, children }: FilterButtonProps) {
 function SearchIcon({ className }: { className?: string }) {
 	return (
 		<svg
+			role="img"
+			aria-label="Search"
 			className={className}
 			fill="none"
 			viewBox="0 0 24 24"
