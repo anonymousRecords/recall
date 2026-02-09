@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { LoadingSpinner } from "../../components/shared";
 import {
 	Button,
@@ -36,25 +36,18 @@ export function SettingsPage() {
 
 	const [saving, setSaving] = useState(false);
 	const [message, setMessage] = useState<SettingsMessage | null>(null);
+	const timerRef = useRef<ReturnType<typeof setTimeout>>(undefined);
 
-	const handleSave = async () => {
-		setMessage(null);
-
-		const error = generalSettings.validate();
-		if (error) {
-			setMessage({ type: "error", text: error });
+	useEffect(() => {
+		if (message === null) {
 			return;
 		}
 
-		setSaving(true);
-		try {
-			await generalSettings.save();
-			await liveCoding.save();
-			setMessage({ type: "success", text: "설정이 저장되었습니다" });
-		} finally {
-			setSaving(false);
-		}
-	};
+		clearTimeout(timerRef.current);
+		timerRef.current = setTimeout(() => setMessage(null), 3000);
+
+		return () => clearTimeout(timerRef.current);
+	}, [message]);
 
 	if (generalSettings.loading) {
 		return <SettingsSkeleton />;
@@ -97,8 +90,28 @@ export function SettingsPage() {
 					)}
 
 					<SettingsActions
-						onReset={generalSettings.reset}
-						onSave={handleSave}
+						onReset={() => {
+							generalSettings.reset();
+							setMessage({ type: "success", text: "설정이 초기화되었습니다" });
+						}}
+						onSave={async () => {
+							setMessage(null);
+
+							const error = generalSettings.validate();
+							if (error) {
+								setMessage({ type: "error", text: error });
+								return;
+							}
+
+							setSaving(true);
+							try {
+								await generalSettings.save();
+								await liveCoding.save();
+								setMessage({ type: "success", text: "설정이 저장되었습니다" });
+							} finally {
+								setSaving(false);
+							}
+						}}
 						saving={saving}
 					/>
 				</div>
