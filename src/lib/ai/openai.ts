@@ -9,7 +9,10 @@ export class OpenAIClient implements AIClient {
 		this.apiKey = apiKey;
 	}
 
-	async chat(messages: { role: string; content: string }[]): Promise<string> {
+	async chat(
+		messages: { role: string; content: string }[],
+		options?: { maxTokens?: number },
+	): Promise<string> {
 		const response = await fetch(`${this.baseUrl}/chat/completions`, {
 			method: "POST",
 			headers: {
@@ -22,7 +25,7 @@ export class OpenAIClient implements AIClient {
 					role: m.role as "system" | "user" | "assistant",
 					content: m.content,
 				})),
-				max_tokens: 300,
+				max_tokens: options?.maxTokens ?? 300,
 				temperature: 0.7,
 			}),
 		});

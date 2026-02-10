@@ -32,6 +32,7 @@ export interface ChatMessage {
 	content: string;
 	timestamp: number;
 	codeContext?: string;
+	notes?: string;
 }
 
 export interface SessionConfig {
@@ -53,6 +54,8 @@ export interface SessionReport {
 	feedback: string[];
 	strengths: string[];
 	improvements: string[];
+	supportingQuotes?: { quote: string; analysis: string }[];
+	sampleAnswer?: string;
 }
 
 export interface LiveSession {
@@ -128,6 +131,9 @@ export interface SpeechState {
 }
 
 export interface AIClient {
-	chat(messages: { role: string; content: string }[]): Promise<string>;
+	chat(
+		messages: { role: string; content: string }[],
+		options?: { maxTokens?: number },
+	): Promise<string>;
 	testConnection(): Promise<boolean>;
 }

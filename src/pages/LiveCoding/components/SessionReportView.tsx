@@ -37,6 +37,12 @@ export function SessionReportView({
 				{report.feedback.length > 0 && <FeddbackCard report={report} />}
 				{report.strengths.length > 0 && <StrengthCard report={report} />}
 				{report.improvements.length > 0 && <ImprovementCard report={report} />}
+				{report.supportingQuotes && report.supportingQuotes.length > 0 && (
+					<SupportingQuotesCard quotes={report.supportingQuotes} />
+				)}
+				{report.sampleAnswer && (
+					<SampleAnswerCard sampleAnswer={report.sampleAnswer} />
+				)}
 
 				<div className="flex gap-3">
 					<Button variant="secondary" className="flex-1" onClick={onNewSession}>
@@ -221,6 +227,57 @@ function ImprovementCard({ report }: ImprovementCardProps) {
 						</li>
 					))}
 				</ul>
+			</CardContent>
+		</Card>
+	);
+}
+
+interface SupportingQuotesCardProps {
+	quotes: { quote: string; analysis: string }[];
+}
+
+function SupportingQuotesCard({ quotes }: SupportingQuotesCardProps) {
+	return (
+		<Card>
+			<CardHeader>
+				<CardTitle className="text-base text-blue-600 dark:text-blue-400">
+					근거 인용
+				</CardTitle>
+			</CardHeader>
+			<CardContent>
+				<ul className="space-y-3">
+					{quotes.map((item) => (
+						<li key={item.quote} className="text-sm">
+							<p className="text-gray-500 dark:text-gray-400 italic border-l-2 border-blue-300 dark:border-blue-600 pl-3 mb-1">
+								"{item.quote}"
+							</p>
+							<p className="text-gray-700 dark:text-gray-300 pl-3">
+								{item.analysis}
+							</p>
+						</li>
+					))}
+				</ul>
+			</CardContent>
+		</Card>
+	);
+}
+
+interface SampleAnswerCardProps {
+	sampleAnswer: string;
+}
+
+function SampleAnswerCard({ sampleAnswer }: SampleAnswerCardProps) {
+	return (
+		<Card>
+			<CardHeader>
+				<CardTitle className="text-base text-purple-600 dark:text-purple-400">
+					모범 답안
+				</CardTitle>
+			</CardHeader>
+			<CardContent>
+				<p className="text-sm text-gray-700 dark:text-gray-300">
+					{sampleAnswer}
+				</p>
 			</CardContent>
 		</Card>
 	);

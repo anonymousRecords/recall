@@ -14,7 +14,19 @@ import type { useInterviewer } from "../hooks/useInterviewer";
 import type { useSpeech } from "../hooks/useSpeech";
 import type { SessionAction, SessionState } from "./sessionReducer";
 
-const CODE_CHANGE_DEBOUNCE_MS = 3000;
+const CODE_CHANGE_DEBOUNCE_MS = 8000;
+const AI_QUESTION_COOLDOWN_MS = 45000;
+
+function parseAIResponse(response: string): {
+	content: string;
+	notes?: string;
+} {
+	const parts = response.split("#NOTES#");
+	return {
+		content: parts[0].trim(),
+		notes: parts.length > 1 ? parts[1].trim() : undefined,
+	};
+}
 
 interface CoordinatorDeps {
 	state: SessionState;
@@ -37,6 +49,7 @@ export function useSessionCoordinator({
 	const endSessionRef = useRef<() => Promise<void>>(async () => {});
 	const codeChangeTimeoutRef = useRef<number | null>(null);
 	const lastCodeChangeTimeRef = useRef<number>(Date.now());
+	const lastAIQuestionTimeRef = useRef<number>(0);
 
 	// Session Lifecycle
 
@@ -85,21 +98,23 @@ export function useSessionCoordinator({
 			await codeMonitor.startMonitoring();
 
 			try {
-				const greeting = await interviewer.sendToAI({
+				const rawGreeting = await interviewer.sendToAI({
 					type: "greeting",
 					problemInfo: codeMonitor.problemInfo,
 					interviewerStyle: config.interviewerStyle,
 				});
+				const { content, notes } = parseAIResponse(rawGreeting);
 
 				const aiMessage: ChatMessage = {
 					id: crypto.randomUUID(),
 					role: "interviewer",
-					content: greeting,
+					content,
+					notes,
 					timestamp: Date.now(),
 				};
 
 				dispatch({ type: "SET_MESSAGES", messages: [aiMessage] });
-				speech.speak(greeting);
+				speech.speak(content);
 			} catch (error) {
 				console.error("[Recall] AI 인사 실패:", error);
 			}
@@ -168,7 +183,7 @@ export function useSessionCoordinator({
 			dispatch({ type: "ADD_MESSAGE", message: userMessage });
 
 			try {
-				const response = await interviewer.sendToAI({
+				const rawResponse = await interviewer.sendToAI({
 					type: "user_message",
 					content: text,
 					codeContext: codeMonitor.currentCode,
@@ -176,16 +191,18 @@ export function useSessionCoordinator({
 					problemInfo: sessionConfig.problemInfo,
 					interviewerStyle: sessionConfig.interviewerStyle,
 				});
+				const { content, notes } = parseAIResponse(rawResponse);
 
 				const aiMessage: ChatMessage = {
 					id: crypto.randomUUID(),
 					role: "interviewer",
-					content: response,
+					content,
+					notes,
 					timestamp: Date.now(),
 				};
 				dispatch({ type: "ADD_MESSAGE", message: aiMessage });
 
-				speech.speak(response);
+				speech.speak(content);
 			} catch (error) {
 				console.error("[Recall] AI 응답 실패:", error);
 			}
@@ -220,6 +237,9 @@ export function useSessionCoordinator({
 		if (speech.isSpeaking || interviewer.isLoading) return;
 
 		codeChangeTimeoutRef.current = window.setTimeout(async () => {
+			const timeSinceLastQuestion = Date.now() - lastAIQuestionTimeRef.current;
+			if (timeSinceLastQuestion < AI_QUESTION_COOLDOWN_MS) return;
+
 			const currentState = stateRef.current;
 			try {
 				const response = await interviewer.sendToAI({
@@ -238,14 +258,17 @@ export function useSessionCoordinator({
 				});
 
 				if (response) {
+					lastAIQuestionTimeRef.current = Date.now();
+					const { content, notes } = parseAIResponse(response);
 					const aiMessage: ChatMessage = {
 						id: crypto.randomUUID(),
 						role: "interviewer",
-						content: response,
+						content,
+						notes,
 						timestamp: Date.now(),
 					};
 					dispatch({ type: "ADD_MESSAGE", message: aiMessage });
-					speech.speak(response);
+					speech.speak(content);
 				}
 			} catch (error) {
 				console.error("[Recall] 코드 분석 실패:", error);

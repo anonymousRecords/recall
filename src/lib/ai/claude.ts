@@ -9,7 +9,10 @@ export class ClaudeClient implements AIClient {
 		this.apiKey = apiKey;
 	}
 
-	async chat(messages: { role: string; content: string }[]): Promise<string> {
+	async chat(
+		messages: { role: string; content: string }[],
+		options?: { maxTokens?: number },
+	): Promise<string> {
 		const systemMessage =
 			messages.find((m) => m.role === "system")?.content || "";
 		const chatMessages = messages
@@ -33,7 +36,7 @@ export class ClaudeClient implements AIClient {
 			},
 			body: JSON.stringify({
 				model: this.model,
-				max_tokens: 300,
+				max_tokens: options?.maxTokens ?? 300,
 				system: systemMessage,
 				messages: chatMessages,
 			}),

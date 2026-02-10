@@ -89,7 +89,8 @@ export function useInterviewer({ provider, apiKey }: UseInterviewerOptions) {
 							{ role: "user", content: analysisPrompt },
 						]);
 
-						if (response.trim().toUpperCase() === "SKIP") {
+						const visiblePart = response.split("#NOTES#")[0].trim();
+						if (visiblePart.toUpperCase() === "SKIP") {
 							return "";
 						}
 						break;
@@ -103,14 +104,17 @@ export function useInterviewer({ provider, apiKey }: UseInterviewerOptions) {
 							request.duration,
 						);
 
-						response = await client.chat([
-							{
-								role: "system",
-								content:
-									"당신은 코딩 면접 평가자입니다. 반드시 유효한 JSON 형식으로만 응답하세요.",
-							},
-							{ role: "user", content: reportPrompt },
-						]);
+						response = await client.chat(
+							[
+								{
+									role: "system",
+									content:
+										"당신은 코딩 면접 평가자입니다. 반드시 유효한 JSON 형식으로만 응답하세요.",
+								},
+								{ role: "user", content: reportPrompt },
+							],
+							{ maxTokens: 1024 },
+						);
 						break;
 					}
 
@@ -140,6 +144,29 @@ export function useInterviewer({ provider, apiKey }: UseInterviewerOptions) {
 			duration: number,
 			problemInfo: ProblemInfo,
 		): Promise<SessionReport> => {
+			const userMessages = messages.filter((m) => m.role === "user");
+			const hasMinimalInteraction =
+				userMessages.length >= 2 || duration >= 120;
+
+			if (!hasMinimalInteraction) {
+				return {
+					duration,
+					messageCount: messages.length,
+					scores: {
+						understanding: 0,
+						communication: 0,
+						codeQuality: 0,
+						timeManagement: 0,
+					},
+					feedback: [
+						"세션 데이터가 충분하지 않아 평가를 생성할 수 없습니다.",
+						"더 의미 있는 리포트를 위해 면접관과 대화하며 문제를 풀어보세요.",
+					],
+					strengths: [],
+					improvements: [],
+				};
+			}
+
 			const response = await sendToAI({
 				type: "generate_report",
 				messages,
@@ -161,10 +188,10 @@ export function useInterviewer({ provider, apiKey }: UseInterviewerOptions) {
 					duration,
 					messageCount: messages.length,
 					scores: {
-						understanding: 70,
-						communication: 70,
-						codeQuality: 70,
-						timeManagement: 70,
+						understanding: 0,
+						communication: 0,
+						codeQuality: 0,
+						timeManagement: 0,
 					},
 					feedback: ["리포트 생성 중 오류가 발생했습니다."],
 					strengths: [],
