@@ -1,4 +1,5 @@
 export { ArrowLeftIcon } from "./ArrowLeftIcon";
+export { ChartIcon } from "./ChartIcon";
 export { CheckBadgeIcon } from "./CheckBadgeIcon";
 export { CheckIcon } from "./CheckIcon";
 export { ChevronDownIcon } from "./ChevronDownIcon";

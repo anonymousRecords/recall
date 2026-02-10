@@ -1,7 +1,13 @@
-import type { ReactNode } from "react";
+import { type ReactNode, useCallback } from "react";
 import { NavLink } from "react-router";
 import { cn } from "../../lib/utils";
-import { HomeIcon, ListIcon, MicIcon, SettingsIcon } from "../shared";
+import {
+	ChartIcon,
+	HomeIcon,
+	ListIcon,
+	MicIcon,
+	SettingsIcon,
+} from "../shared";
 
 interface LayoutProps {
 	children: ReactNode;
@@ -25,6 +31,7 @@ export function Layout({ children }: LayoutProps) {
 					icon={<MicIcon className="h-6 w-6" />}
 					label="라이브"
 				/>
+				<AnalyticsNavItem />
 				<NavItem
 					to="/settings"
 					icon={<SettingsIcon className="h-6 w-6" />}
@@ -61,5 +68,26 @@ function NavItem({ to, icon, label, end }: NavItemProps) {
 			</span>
 			<span className="text-[10px] font-medium tracking-wide">{label}</span>
 		</NavLink>
+	);
+}
+
+function AnalyticsNavItem() {
+	const openAnalytics = useCallback(() => {
+		const analyticsUrl = browser.runtime.getURL("/analytics.html");
+
+		browser.tabs.create({ url: analyticsUrl });
+	}, []);
+
+	return (
+		<button
+			type="button"
+			onClick={openAnalytics}
+			className="group flex flex-col items-center gap-1 px-4 py-2 transition-all duration-150 text-neutral-400 hover:text-neutral-600 dark:text-neutral-500 dark:hover:text-neutral-300"
+		>
+			<span className="transition-transform duration-150 group-hover:scale-105 group-active:scale-95">
+				<ChartIcon className="h-6 w-6" />
+			</span>
+			<span className="text-[10px] font-medium tracking-wide">분석</span>
+		</button>
 	);
 }
