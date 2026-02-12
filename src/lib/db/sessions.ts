@@ -56,3 +56,18 @@ export async function getRecentSessions(limit = 10): Promise<LiveSession[]> {
 export async function deleteSession(id: string): Promise<void> {
 	await db.liveSessions.delete(id);
 }
+
+export async function getCompletedSessions(): Promise<LiveSession[]> {
+	const all = await db.liveSessions
+		.orderBy("startedAt")
+		.reverse()
+		.toArray();
+	return all.filter((s) => s.status === "completed" && s.report);
+}
+
+export async function getSessionReports(
+	limit?: number,
+): Promise<LiveSession[]> {
+	const completed = await getCompletedSessions();
+	return limit ? completed.slice(0, limit) : completed;
+}
