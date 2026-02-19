@@ -1,4 +1,4 @@
-import type { AIClient } from "../../types";
+import type { AIClient, AIResponse } from "../../types";
 
 export class OpenAIClient implements AIClient {
 	private apiKey: string;
@@ -12,7 +12,7 @@ export class OpenAIClient implements AIClient {
 	async chat(
 		messages: { role: string; content: string }[],
 		options?: { maxTokens?: number },
-	): Promise<string> {
+	): Promise<AIResponse> {
 		const response = await fetch(`${this.baseUrl}/chat/completions`, {
 			method: "POST",
 			headers: {
@@ -38,7 +38,13 @@ export class OpenAIClient implements AIClient {
 		}
 
 		const data = await response.json();
-		return data.choices[0]?.message?.content || "";
+		return {
+			content: data.choices[0]?.message?.content || "",
+			usage: {
+				promptTokens: data.usage?.prompt_tokens ?? 0,
+				completionTokens: data.usage?.completion_tokens ?? 0,
+			},
+		};
 	}
 
 	async testConnection(): Promise<boolean> {

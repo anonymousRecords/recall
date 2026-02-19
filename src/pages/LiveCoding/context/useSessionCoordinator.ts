@@ -62,6 +62,8 @@ export function useSessionCoordinator({
 				throw new Error("문제 정보를 찾을 수 없습니다.");
 			}
 
+			interviewer.resetUsage();
+
 			if (speech.hasPermission !== true) {
 				const granted = await speech.requestPermission();
 				if (!granted) {

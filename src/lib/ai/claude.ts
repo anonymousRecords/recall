@@ -1,4 +1,4 @@
-import type { AIClient } from "../../types";
+import type { AIClient, AIResponse } from "../../types";
 
 export class ClaudeClient implements AIClient {
 	private apiKey: string;
@@ -12,7 +12,7 @@ export class ClaudeClient implements AIClient {
 	async chat(
 		messages: { role: string; content: string }[],
 		options?: { maxTokens?: number },
-	): Promise<string> {
+	): Promise<AIResponse> {
 		const systemMessage =
 			messages.find((m) => m.role === "system")?.content || "";
 		const chatMessages = messages
@@ -50,7 +50,13 @@ export class ClaudeClient implements AIClient {
 		}
 
 		const data = await response.json();
-		return data.content[0]?.text || "";
+		return {
+			content: data.content[0]?.text || "",
+			usage: {
+				promptTokens: data.usage?.input_tokens ?? 0,
+				completionTokens: data.usage?.output_tokens ?? 0,
+			},
+		};
 	}
 
 	async testConnection(): Promise<boolean> {

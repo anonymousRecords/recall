@@ -1,5 +1,6 @@
-import { useCallback, useState } from "react";
+import { useCallback, useRef, useState } from "react";
 import { createAIClient } from "../../../lib/ai";
+import { calculateCost } from "../../../lib/ai/cost";
 import {
 	formatMessagesForAI,
 	getCodeAnalysisPrompt,
@@ -11,6 +12,7 @@ import {
 import type {
 	AIProvider,
 	AIRequest,
+	AIUsage,
 	ChatMessage,
 	ProblemInfo,
 	SessionReport,
@@ -25,6 +27,26 @@ export function useInterviewer({ provider, apiKey }: UseInterviewerOptions) {
 	const [isLoading, setIsLoading] = useState(false);
 	const [error, setError] = useState<string | null>(null);
 
+	const usageRef = useRef<{
+		totalPromptTokens: number;
+		totalCompletionTokens: number;
+		callCount: number;
+	}>({ totalPromptTokens: 0, totalCompletionTokens: 0, callCount: 0 });
+
+	const accumulateUsage = useCallback((usage: AIUsage) => {
+		usageRef.current.totalPromptTokens += usage.promptTokens;
+		usageRef.current.totalCompletionTokens += usage.completionTokens;
+		usageRef.current.callCount += 1;
+	}, []);
+
+	const resetUsage = useCallback(() => {
+		usageRef.current = {
+			totalPromptTokens: 0,
+			totalCompletionTokens: 0,
+			callCount: 0,
+		};
+	}, []);
+
 	const sendToAI = useCallback(
 		async (request: AIRequest): Promise<string> => {
 			if (!apiKey) {
@@ -36,7 +58,7 @@ export function useInterviewer({ provider, apiKey }: UseInterviewerOptions) {
 
 			try {
 				const client = createAIClient(provider, apiKey);
-				let response: string;
+				let content: string;
 
 				switch (request.type) {
 					case "greeting": {
@@ -44,10 +66,12 @@ export function useInterviewer({ provider, apiKey }: UseInterviewerOptions) {
 							request.interviewerStyle,
 							request.problemInfo,
 						);
-						response = await client.chat([
+						const aiResponse = await client.chat([
 							{ role: "system", content: systemPrompt },
 							{ role: "user", content: getGreetingPrompt() },
 						]);
+						accumulateUsage(aiResponse.usage);
+						content = aiResponse.content;
 						break;
 					}
 
@@ -57,7 +81,7 @@ export function useInterviewer({ provider, apiKey }: UseInterviewerOptions) {
 							request.problemInfo,
 						);
 						const formattedMessages = formatMessagesForAI(request.messages);
-						response = await client.chat([
+						const aiResponse = await client.chat([
 							{ role: "system", content: systemPrompt },
 							...formattedMessages,
 							{
@@ -68,6 +92,8 @@ export function useInterviewer({ provider, apiKey }: UseInterviewerOptions) {
 								),
 							},
 						]);
+						accumulateUsage(aiResponse.usage);
+						content = aiResponse.content;
 						break;
 					}
 
@@ -83,13 +109,15 @@ export function useInterviewer({ provider, apiKey }: UseInterviewerOptions) {
 							request.pauseDuration,
 						);
 
-						response = await client.chat([
+						const aiResponse = await client.chat([
 							{ role: "system", content: systemPrompt },
 							...formattedMessages,
 							{ role: "user", content: analysisPrompt },
 						]);
+						accumulateUsage(aiResponse.usage);
+						content = aiResponse.content;
 
-						const visiblePart = response.split("#NOTES#")[0].trim();
+						const visiblePart = content.split("#NOTES#")[0].trim();
 						if (visiblePart.toUpperCase() === "SKIP") {
 							return "";
 						}
@@ -104,7 +132,7 @@ export function useInterviewer({ provider, apiKey }: UseInterviewerOptions) {
 							request.duration,
 						);
 
-						response = await client.chat(
+						const aiResponse = await client.chat(
 							[
 								{
 									role: "system",
@@ -115,6 +143,8 @@ export function useInterviewer({ provider, apiKey }: UseInterviewerOptions) {
 							],
 							{ maxTokens: 1024 },
 						);
+						accumulateUsage(aiResponse.usage);
+						content = aiResponse.content;
 						break;
 					}
 
@@ -122,7 +152,7 @@ export function useInterviewer({ provider, apiKey }: UseInterviewerOptions) {
 						throw new Error("알 수 없는 요청 타입입니다.");
 				}
 
-				return response;
+				return content;
 			} catch (err) {
 				const errorMessage =
 					err instanceof Error
@@ -134,7 +164,7 @@ export function useInterviewer({ provider, apiKey }: UseInterviewerOptions) {
 				setIsLoading(false);
 			}
 		},
-		[provider, apiKey],
+		[provider, apiKey, accumulateUsage],
 	);
 
 	const generateReport = useCallback(
@@ -182,7 +212,25 @@ export function useInterviewer({ provider, apiKey }: UseInterviewerOptions) {
 				}
 
 				const report = JSON.parse(jsonMatch[0]) as SessionReport;
-				return { ...report, duration, messageCount: messages.length };
+				const { totalPromptTokens, totalCompletionTokens, callCount } =
+					usageRef.current;
+
+				return {
+					...report,
+					duration,
+					messageCount: messages.length,
+					tokenUsage: {
+						totalPromptTokens,
+						totalCompletionTokens,
+						estimatedCost: calculateCost(
+							provider,
+							totalPromptTokens,
+							totalCompletionTokens,
+						),
+						provider,
+						callCount,
+					},
+				};
 			} catch {
 				return {
 					duration,
@@ -199,7 +247,7 @@ export function useInterviewer({ provider, apiKey }: UseInterviewerOptions) {
 				};
 			}
 		},
-		[sendToAI],
+		[sendToAI, provider],
 	);
 
 	const testConnection = useCallback(async (): Promise<boolean> => {
@@ -217,6 +265,7 @@ export function useInterviewer({ provider, apiKey }: UseInterviewerOptions) {
 		sendToAI,
 		generateReport,
 		testConnection,
+		resetUsage,
 		isLoading,
 		error,
 	};

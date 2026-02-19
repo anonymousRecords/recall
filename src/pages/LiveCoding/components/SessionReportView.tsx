@@ -44,9 +44,19 @@ export function SessionReportView({
 					<SampleAnswerCard sampleAnswer={report.sampleAnswer} />
 				)}
 
-				<div className="flex gap-3">
-					<Button variant="secondary" className="flex-1" onClick={onNewSession}>
+				<div className="flex flex-col gap-3">
+					<Button variant="secondary" className="w-full" onClick={onNewSession}>
 						새로운 세션 시작
+					</Button>
+					<Button
+						variant="ghost"
+						className="w-full"
+						onClick={() => {
+							const url = browser.runtime.getURL("/analytics.html");
+							browser.tabs.create({ url });
+						}}
+					>
+						전체 세션 분석 보기
 					</Button>
 				</div>
 			</div>
@@ -113,6 +123,7 @@ interface BasicInfoReportCardProps {
 }
 
 function BasicInfoReportCard({ report }: BasicInfoReportCardProps) {
+	const tu = report.tokenUsage;
 	return (
 		<Card>
 			<CardHeader>
@@ -122,6 +133,15 @@ function BasicInfoReportCard({ report }: BasicInfoReportCardProps) {
 				<div className="flex flex-col gap-2 text-sm text-gray-500 dark:text-gray-400">
 					<span>소요 시간: {formatDuration(report.duration)}</span>
 					<span>대화 횟수: {report.messageCount}회</span>
+					{tu && (
+						<>
+							<span>
+								토큰 사용: {(tu.totalPromptTokens + tu.totalCompletionTokens).toLocaleString()}
+								{" "}({tu.callCount}회 호출)
+							</span>
+							<span>예상 비용: ${tu.estimatedCost.toFixed(4)}</span>
+						</>
+					)}
 				</div>
 			</CardContent>
 		</Card>

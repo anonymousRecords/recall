@@ -42,6 +42,16 @@ export interface SessionConfig {
 	language: string;
 }
 
+export interface AIUsage {
+	promptTokens: number;
+	completionTokens: number;
+}
+
+export interface AIResponse {
+	content: string;
+	usage: AIUsage;
+}
+
 export interface SessionReport {
 	duration: number;
 	messageCount: number;
@@ -56,6 +66,13 @@ export interface SessionReport {
 	improvements: string[];
 	supportingQuotes?: { quote: string; analysis: string }[];
 	sampleAnswer?: string;
+	tokenUsage?: {
+		totalPromptTokens: number;
+		totalCompletionTokens: number;
+		estimatedCost: number;
+		provider: AIProvider;
+		callCount: number;
+	};
 }
 
 export interface LiveSession {
@@ -134,6 +151,6 @@ export interface AIClient {
 	chat(
 		messages: { role: string; content: string }[],
 		options?: { maxTokens?: number },
-	): Promise<string>;
+	): Promise<AIResponse>;
 	testConnection(): Promise<boolean>;
 }
