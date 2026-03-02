@@ -13,16 +13,12 @@ export function StatCard({ label, value, sub }: StatCardProps) {
 	return (
 		<Card>
 			<CardContent>
-				<p className="text-xs text-neutral-500 dark:text-neutral-400 mb-1">
-					{label}
-				</p>
-				<p className="text-2xl font-bold text-neutral-900 dark:text-white tracking-tight">
+				<p className="font-mono text-[11px] text-[#858585] mb-1">{label}</p>
+				<p className="font-mono text-xl font-medium text-[#dcdcaa] tracking-tight">
 					{value}
 				</p>
 				{sub && (
-					<p className="text-xs text-neutral-400 dark:text-neutral-500 mt-0.5">
-						{sub}
-					</p>
+					<p className="font-mono text-[10px] text-[#858585] mt-0.5">{sub}</p>
 				)}
 			</CardContent>
 		</Card>

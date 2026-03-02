@@ -19,10 +19,10 @@ import { StatCard } from "./components/StatCard";
 type FilterPeriod = "recent10" | "recent30d" | "all";
 
 const SCORE_COLORS = {
-	understanding: "#3b82f6",
-	communication: "#10b981",
-	codeQuality: "#f59e0b",
-	timeManagement: "#8b5cf6",
+	understanding: "#569cd6",
+	communication: "#4ec9b0",
+	codeQuality: "#dcdcaa",
+	timeManagement: "#ce9178",
 };
 
 const STYLE_LABELS: Record<string, string> = {
@@ -90,11 +90,11 @@ function AnalyticsPageContent() {
 	];
 
 	const costBarData = filtered
-		.filter((t) => t.tokenUsage)
+		.filter((t) => t.tokenUsage != null)
 		.map((t) => ({
 			label: t.label,
-			value: t.tokenUsage!.cost,
-			color: "#6366f1",
+			value: t.tokenUsage?.cost ?? 0,
+			color: "#569cd6",
 		}));
 
 	const styleChartGroups = stats.styleComparison.map((sc) => ({
@@ -126,59 +126,63 @@ function AnalyticsPageContent() {
 	const providerChartGroups = stats.providerComparison.map((pc) => ({
 		name: pc.provider === "openai" ? "OpenAI" : "Claude",
 		values: [
-			{ label: "평균 점수", value: pc.avgScore, color: "#3b82f6" },
+			{ label: "평균 점수", value: pc.avgScore, color: "#569cd6" },
 			{
 				label: "비용(x1000)",
 				value: Math.round(pc.totalCost * 1000),
-				color: "#f59e0b",
+				color: "#dcdcaa",
 			},
 		],
 	}));
 
 	return (
-		<div className="min-h-screen bg-neutral-50 dark:bg-neutral-950">
+		<div className="h-full overflow-y-auto bg-[#1e1e1e]">
 			<div className="mx-auto max-w-5xl px-6 py-8">
-				<header className="flex items-center justify-between mb-8">
-					<h1 className="text-2xl font-bold text-neutral-900 dark:text-white tracking-tight">
-						면접 분석 대시보드
-					</h1>
-					<div className="flex gap-1 rounded-lg bg-neutral-100 dark:bg-neutral-800 p-1">
-						{(
-							[
-								["recent10", "최근 10회"],
-								["recent30d", "최근 30일"],
-								["all", "전체"],
-							] as const
-						).map(([key, label]) => (
-							<button
-								key={key}
-								type="button"
-								onClick={() => setFilter(key)}
-								className={cn(
-									"px-3 py-1.5 text-xs font-medium rounded-md transition-colors",
-									filter === key
-										? "bg-white dark:bg-neutral-700 text-neutral-900 dark:text-white shadow-sm"
-										: "text-neutral-500 dark:text-neutral-400 hover:text-neutral-700 dark:hover:text-neutral-200",
-								)}
-							>
-								{label}
-							</button>
-						))}
+				<header className="mb-8">
+					<p className="font-mono text-[12px] text-[#858585] mb-0.5">
+						{"// analytics"}
+					</p>
+					<div className="flex items-center justify-between">
+						<p className="font-mono text-[13px] text-[#dcdcaa]">
+							$ total: {stats.totalInterviews} interviews
+						</p>
+						<div className="flex gap-1">
+							{(
+								[
+									["recent10", "recent10"],
+									["recent30d", "recent30d"],
+									["all", "all"],
+								] as const
+							).map(([key, label]) => (
+								<button
+									key={key}
+									type="button"
+									onClick={() => setFilter(key)}
+									className={cn(
+										"px-2.5 py-1 font-mono text-[11px] rounded-none border transition-colors",
+										filter === key
+											? "bg-[#094771] border-[#569cd6] text-[#569cd6]"
+											: "bg-transparent border-[#3e3e42] text-[#858585] hover:text-[#d4d4d4] hover:border-[#525252]",
+									)}
+								>
+									[{label}]
+								</button>
+							))}
+						</div>
 					</div>
 				</header>
 
 				{stats.totalInterviews === 0 ? (
-					<div className="text-center py-20">
-						<p className="text-neutral-400 dark:text-neutral-500 text-lg">
-							아직 완료된 면접이 없습니다.
-						</p>
-						<p className="text-neutral-400 dark:text-neutral-500 text-sm mt-1">
-							면접을 진행하면 분석 데이터가 여기에 표시됩니다.
-						</p>
+					<div className="py-20 font-mono text-[13px] text-[#858585]">
+						<p>$ ls interviews/</p>
+						<p className="mt-1">(no items)</p>
+						<p className="mt-3">&gt; no completed interviews found.</p>
+						<p>&gt; complete a live coding session to see analytics.</p>
+						<p className="mt-2 cursor-blink">█</p>
 					</div>
 				) : (
 					<>
-						<section className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+						<section className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-8">
 							<StatCard label="총 면접" value={String(stats.totalInterviews)} />
 							<StatCard
 								label="평균 점수"
@@ -197,9 +201,9 @@ function AnalyticsPageContent() {
 						</section>
 
 						{filtered.length > 0 && (
-							<Card className="mb-8">
+							<Card className="mb-6">
 								<CardHeader>
-									<CardTitle>점수 추이</CardTitle>
+									<CardTitle>{"// 점수 추이"}</CardTitle>
 								</CardHeader>
 								<CardContent>
 									<LineChart series={lineSeries} labels={lineLabels} />
@@ -207,11 +211,11 @@ function AnalyticsPageContent() {
 							</Card>
 						)}
 
-						<div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
+						<div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
 							{styleChartGroups.length > 0 && (
 								<Card>
 									<CardHeader>
-										<CardTitle>스타일별 평균 점수</CardTitle>
+										<CardTitle>{"// 스타일별 평균 점수"}</CardTitle>
 									</CardHeader>
 									<CardContent>
 										<ComparisonChart groups={styleChartGroups} />
@@ -222,7 +226,7 @@ function AnalyticsPageContent() {
 							{providerChartGroups.length > 0 && (
 								<Card>
 									<CardHeader>
-										<CardTitle>프로바이더별 비교</CardTitle>
+										<CardTitle>{"// 프로바이더별 비교"}</CardTitle>
 									</CardHeader>
 									<CardContent>
 										<ComparisonChart groups={providerChartGroups} />
@@ -232,9 +236,9 @@ function AnalyticsPageContent() {
 						</div>
 
 						{costBarData.length > 0 && (
-							<Card className="mb-8">
+							<Card className="mb-6">
 								<CardHeader>
-									<CardTitle>면접당 토큰 비용</CardTitle>
+									<CardTitle>{"// 면접당 토큰 비용"}</CardTitle>
 								</CardHeader>
 								<CardContent>
 									<BarChart
@@ -247,7 +251,7 @@ function AnalyticsPageContent() {
 
 						<Card>
 							<CardHeader>
-								<CardTitle>면접 히스토리</CardTitle>
+								<CardTitle>{"// 면접 히스토리"}</CardTitle>
 							</CardHeader>
 							<CardContent>
 								<InterviewTable interviews={stats.recentInterviews} />

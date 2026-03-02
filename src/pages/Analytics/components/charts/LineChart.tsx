@@ -60,8 +60,8 @@ export function LineChart({ series, labels }: LineChartProps) {
             y1={toY(v)}
             x2={CHART_WIDTH - PADDING.right}
             y2={toY(v)}
-            stroke="currentColor"
-            strokeOpacity={0.1}
+            stroke="#3e3e42"
+            strokeOpacity={0.6}
             strokeDasharray="4 4"
           />
           <text
@@ -69,8 +69,9 @@ export function LineChart({ series, labels }: LineChartProps) {
             y={toY(v)}
             textAnchor="end"
             dominantBaseline="middle"
-            className="fill-neutral-400 dark:fill-neutral-500"
+            fill="#858585"
             fontSize={10}
+            fontFamily="monospace"
           >
             {v}
           </text>
@@ -89,19 +90,18 @@ export function LineChart({ series, labels }: LineChartProps) {
               strokeWidth={2}
               strokeLinecap="round"
               strokeLinejoin="round"
+              opacity={0.85}
             />
             {s.data.map((v, i) => (
               // biome-ignore lint/a11y/noStaticElementInteractions: static chart
               <circle
-                key={s.name}
+                key={`${s.name}-${i}`}
                 cx={toX(i)}
                 cy={toY(v)}
                 r={3.5}
                 fill={s.color}
                 className="cursor-pointer"
-                onMouseEnter={(e) => {
-                  const svg = e.currentTarget.ownerSVGElement;
-                  if (!svg) return;
+                onMouseEnter={() => {
                   setTooltip({
                     x: toX(i),
                     y: toY(v) - 12,
@@ -121,8 +121,9 @@ export function LineChart({ series, labels }: LineChartProps) {
           x={toX(i)}
           y={CHART_HEIGHT - 6}
           textAnchor="middle"
-          className="fill-neutral-400 dark:fill-neutral-500"
+          fill="#858585"
           fontSize={9}
+          fontFamily="monospace"
         >
           {label.length > 8 ? `${label.slice(0, 8)}..` : label}
         </text>
@@ -131,19 +132,22 @@ export function LineChart({ series, labels }: LineChartProps) {
       {tooltip && (
         <g>
           <rect
-            x={tooltip.x - 40}
+            x={tooltip.x - 48}
             y={tooltip.y - 14}
-            width={80}
+            width={96}
             height={18}
-            rx={4}
-            className="fill-neutral-800 dark:fill-neutral-200"
+            rx={0}
+            fill="#252526"
+            stroke="#3e3e42"
+            strokeWidth={1}
           />
           <text
             x={tooltip.x}
             y={tooltip.y - 2}
             textAnchor="middle"
-            className="fill-white dark:fill-neutral-900"
+            fill="#d4d4d4"
             fontSize={10}
+            fontFamily="monospace"
             fontWeight={500}
           >
             {tooltip.content}
@@ -151,14 +155,14 @@ export function LineChart({ series, labels }: LineChartProps) {
         </g>
       )}
 
-      <g className="fill-neutral-400 dark:fill-neutral-500">
+      <g fill="#858585" fontFamily="monospace">
         {series.map((s, i) => (
           <g
             key={s.name}
             transform={`translate(${PADDING.left + i * 100}, ${PADDING.top - 8})`}
           >
-            <rect width={8} height={8} rx={2} fill={s.color} />
-            <text x={12} y={8} fontSize={9}>
+            <rect width={8} height={8} rx={0} fill={s.color} opacity={0.85} />
+            <text x={12} y={8} fontSize={9} fill="#858585">
               {s.name}
             </text>
           </g>

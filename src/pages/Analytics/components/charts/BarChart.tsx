@@ -14,7 +14,7 @@ interface BarChartProps {
 const PADDING = { top: 16, right: 16, bottom: 40, left: 50 };
 const CHART_HEIGHT = 220;
 const CHART_WIDTH = 600;
-const DEFAULT_COLOR = "#525252";
+const DEFAULT_COLOR = "#569cd6";
 
 export function BarChart({
   data,
@@ -49,8 +49,8 @@ export function BarChart({
               y1={y}
               x2={CHART_WIDTH - PADDING.right}
               y2={y}
-              stroke="currentColor"
-              strokeOpacity={0.1}
+              stroke="#3e3e42"
+              strokeOpacity={0.6}
               strokeDasharray="4 4"
             />
             <text
@@ -58,7 +58,7 @@ export function BarChart({
               y={y}
               textAnchor="end"
               dominantBaseline="middle"
-              className="fill-neutral-400 dark:fill-neutral-500"
+              fill="#858585"
               fontSize={10}
             >
               {formatValue(v)}
@@ -87,28 +87,41 @@ export function BarChart({
               y={y}
               width={barWidth}
               height={barH}
-              rx={3}
+              rx={0}
               fill={color}
-              opacity={isHovered ? 1 : 0.8}
+              opacity={isHovered ? 1 : 0.75}
             />
             {isHovered && (
-              <text
-                x={x + barWidth / 2}
-                y={y - 6}
-                textAnchor="middle"
-                className="fill-neutral-700 dark:fill-neutral-200"
-                fontSize={10}
-                fontWeight={600}
-              >
-                {formatValue(d.value)}
-              </text>
+              <>
+                <rect
+                  x={x + barWidth / 2 - 36}
+                  y={y - 22}
+                  width={72}
+                  height={16}
+                  rx={0}
+                  fill="#252526"
+                  stroke="#3e3e42"
+                  strokeWidth={1}
+                />
+                <text
+                  x={x + barWidth / 2}
+                  y={y - 11}
+                  textAnchor="middle"
+                  fill="#d4d4d4"
+                  fontSize={10}
+                  fontFamily="monospace"
+                >
+                  {formatValue(d.value)}
+                </text>
+              </>
             )}
             <text
               x={x + barWidth / 2}
               y={CHART_HEIGHT - 8}
               textAnchor="middle"
-              className="fill-neutral-400 dark:fill-neutral-500"
+              fill="#858585"
               fontSize={9}
+              fontFamily="monospace"
             >
               {d.label.length > 8 ? `${d.label.slice(0, 8)}..` : d.label}
             </text>

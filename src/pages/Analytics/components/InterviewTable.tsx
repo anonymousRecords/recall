@@ -15,17 +15,17 @@ const STYLE_LABELS: Record<string, string> = {
 export function InterviewTable({ interviews }: InterviewTableProps) {
 	if (interviews.length === 0) {
 		return (
-			<p className="text-sm text-neutral-400 dark:text-neutral-500 text-center py-8">
-				완료된 면접이 없습니다.
+			<p className="font-mono text-[12px] text-[#858585] text-center py-8">
+				&gt; no completed interviews found.
 			</p>
 		);
 	}
 
 	return (
 		<div className="overflow-x-auto">
-			<table className="w-full text-sm">
+			<table className="w-full font-mono text-[12px]">
 				<thead>
-					<tr className="border-b border-neutral-200 dark:border-neutral-800 text-left text-neutral-500 dark:text-neutral-400">
+					<tr className="border-b border-[#3e3e42] text-left text-[#858585]">
 						<th className="pb-2 pr-4 font-medium">날짜</th>
 						<th className="pb-2 pr-4 font-medium">문제</th>
 						<th className="pb-2 pr-4 font-medium">스타일</th>
@@ -54,29 +54,29 @@ export function InterviewTable({ interviews }: InterviewTableProps) {
 						return (
 							<tr
 								key={s.id}
-								className="border-b border-neutral-100 dark:border-neutral-800/50 hover:bg-neutral-50 dark:hover:bg-neutral-900/50 transition-colors"
+								className="border-b border-[#2d2d2d] hover:bg-[#2a2d2e] transition-colors"
 							>
-								<td className="py-2.5 pr-4 text-neutral-500 dark:text-neutral-400 whitespace-nowrap">
+								<td className="py-2.5 pr-4 text-[#858585] whitespace-nowrap">
 									{format(new Date(s.startedAt), "M/d HH:mm", {
 										locale: ko,
 									})}
 								</td>
-								<td className="py-2.5 pr-4 text-neutral-800 dark:text-neutral-200 max-w-[200px] truncate">
+								<td className="py-2.5 pr-4 text-[#d4d4d4] max-w-[200px] truncate">
 									{s.config.problemInfo.title}
 								</td>
-								<td className="py-2.5 pr-4 text-neutral-500 dark:text-neutral-400">
+								<td className="py-2.5 pr-4 text-[#ce9178]">
 									{STYLE_LABELS[s.config.interviewerStyle] ??
 										s.config.interviewerStyle}
 								</td>
 								<td className="py-2.5 pr-4 text-right font-medium">
-									<span className={getScoreColor(avg)}>{avg}</span>
+									<span style={{ color: getScoreColor(avg) }}>{avg}</span>
 								</td>
-								<td className="py-2.5 pr-4 text-right text-neutral-500 dark:text-neutral-400">
+								<td className="py-2.5 pr-4 text-right text-[#858585]">
 									{totalTokens != null
 										? totalTokens.toLocaleString()
 										: "-"}
 								</td>
-								<td className="py-2.5 text-right text-neutral-500 dark:text-neutral-400">
+								<td className="py-2.5 text-right text-[#858585]">
 									{cost != null ? `$${cost.toFixed(4)}` : "-"}
 								</td>
 							</tr>
@@ -89,7 +89,7 @@ export function InterviewTable({ interviews }: InterviewTableProps) {
 }
 
 function getScoreColor(score: number): string {
-	if (score >= 80) return "text-green-600 dark:text-green-400";
-	if (score >= 60) return "text-amber-600 dark:text-amber-400";
-	return "text-red-600 dark:text-red-400";
+	if (score >= 80) return "#4ec9b0";
+	if (score >= 60) return "#dcdcaa";
+	return "#f44747";
 }
