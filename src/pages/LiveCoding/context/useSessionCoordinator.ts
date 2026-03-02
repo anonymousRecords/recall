@@ -13,6 +13,7 @@ import type { useCodeMonitor } from "../hooks/useCodeMonitor";
 import type { useInterviewer } from "../hooks/useInterviewer";
 import type { useSpeech } from "../hooks/useSpeech";
 import type { SessionAction, SessionState } from "./sessionReducer";
+import { shouldTriggerAI } from "../../../lib/utils/code-gating";
 
 const CODE_CHANGE_DEBOUNCE_MS = 8000;
 const AI_QUESTION_COOLDOWN_MS = 45000;
@@ -239,10 +240,16 @@ export function useSessionCoordinator({
 		if (speech.isSpeaking || interviewer.isLoading) return;
 
 		codeChangeTimeoutRef.current = window.setTimeout(async () => {
+			const currentState = stateRef.current;
+
+			if (
+				!shouldTriggerAI(currentState.previousCode, codeMonitor.currentCode)
+			) {
+				return;
+			}
+
 			const timeSinceLastQuestion = Date.now() - lastAIQuestionTimeRef.current;
 			if (timeSinceLastQuestion < AI_QUESTION_COOLDOWN_MS) return;
-
-			const currentState = stateRef.current;
 			try {
 				const response = await interviewer.sendToAI({
 					type: "code_changed",
