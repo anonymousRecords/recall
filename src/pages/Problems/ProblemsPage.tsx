@@ -5,6 +5,7 @@ import {
 } from "@tanstack/react-query";
 import { Suspense, useMemo, useState } from "react";
 import { Link } from "react-router";
+import { PageLayout } from "../../components/layout";
 import { DocumentIcon, EmptyState } from "../../components/shared";
 import { Button } from "../../components/ui";
 import { deleteProblem } from "../../lib/db/problems";
@@ -46,14 +47,16 @@ function ProblemsPageContent() {
 	);
 
 	return (
-		<div className="flex h-full flex-col bg-white dark:bg-neutral-950">
-			<ProblemsHeader
-				search={search}
-				setSearch={setSearch}
-				filterStatus={filterStatus}
-				setFilterStatus={setFilterStatus}
-			/>
-
+		<PageLayout
+			header={
+				<ProblemsHeader
+					search={search}
+					setSearch={setSearch}
+					filterStatus={filterStatus}
+					setFilterStatus={setFilterStatus}
+				/>
+			}
+		>
 			<div className="flex flex-1 flex-col overflow-auto">
 				<ProblemList
 					filteredProblems={filteredProblems}
@@ -66,7 +69,7 @@ function ProblemsPageContent() {
 					search={search}
 				/>
 			</div>
-		</div>
+		</PageLayout>
 	);
 }
 

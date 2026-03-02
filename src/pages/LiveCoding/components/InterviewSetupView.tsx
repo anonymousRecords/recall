@@ -1,6 +1,7 @@
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { useState } from "react";
 import { useNavigate } from "react-router";
+import { PageHeader, PageLayout } from "../../../components/layout";
 import {
 	Button,
 	Card,
@@ -51,16 +52,7 @@ export function InterviewSetupView({
 	const [error, setError] = useState<string | null>(null);
 
 	return (
-		<div
-			className="flex flex-col h-full bg-white
-  dark:bg-neutral-950"
-		>
-			<header className="border-b border-gray-200 dark:border-gray-800 px-4 py-3">
-				<h1 className="text-lg font-semibold text-gray-900 dark:text-white">
-					라이브 코딩
-				</h1>
-			</header>
-
+		<PageLayout header={<PageHeader title="라이브 코딩" />}>
 			<div className="flex-1 overflow-auto p-4">
 				<div className="space-y-4">
 					<InterviewGuideCard />
@@ -111,7 +103,7 @@ export function InterviewSetupView({
 					</Button>
 				</div>
 			</div>
-		</div>
+		</PageLayout>
 	);
 }
 

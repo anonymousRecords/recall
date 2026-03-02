@@ -1,4 +1,5 @@
 import { Suspense, useEffect, useRef, useState } from "react";
+import { PageHeader, PageLayout } from "../../components/layout";
 import {
 	Button,
 	Card,
@@ -57,9 +58,7 @@ function SettingsPageContent() {
 	}, [message]);
 
 	return (
-		<div className="flex h-full flex-col bg-white dark:bg-neutral-950">
-			<SettingsHeader />
-
+		<PageLayout header={<PageHeader title="설정" />}>
 			<div className="flex-1 overflow-auto p-4">
 				<div className="space-y-4">
 					<IntervalCard
@@ -123,17 +122,7 @@ function SettingsPageContent() {
 					<AppInfoFooter />
 				</div>
 			</div>
-		</div>
-	);
-}
-
-function SettingsHeader() {
-	return (
-		<header className="border-b border-neutral-200/60 bg-white px-4 py-4 dark:border-neutral-800 dark:bg-neutral-950">
-			<h1 className="text-lg font-semibold tracking-tight text-neutral-900 dark:text-white">
-				설정
-			</h1>
-		</header>
+		</PageLayout>
 	);
 }
 

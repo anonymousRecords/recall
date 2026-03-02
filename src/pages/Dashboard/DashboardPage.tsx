@@ -1,7 +1,12 @@
-import { useMutation, useQueryClient, useSuspenseQuery } from "@tanstack/react-query";
+import {
+	useMutation,
+	useQueryClient,
+	useSuspenseQuery,
+} from "@tanstack/react-query";
 import { Suspense, useMemo } from "react";
 import { Link } from "react-router";
 import type { Problem } from "@/src/types";
+import { PageLayout } from "../../components/layout";
 import {
 	CheckBadgeIcon,
 	CheckIcon,
@@ -58,13 +63,15 @@ function DashboardPageContent() {
 	const totalCount = problems.length;
 
 	return (
-		<div className="flex h-full flex-col bg-white dark:bg-neutral-950">
-			<DashboardHeader
-				overdueCount={overdueCount}
-				todayCount={todayCount}
-				totalCount={totalCount}
-			/>
-
+		<PageLayout
+			header={
+				<DashboardHeader
+					overdueCount={overdueCount}
+					todayCount={todayCount}
+					totalCount={totalCount}
+				/>
+			}
+		>
 			<div className="flex-1 overflow-auto">
 				<ReviewProblemList
 					problems={problems}
@@ -74,7 +81,7 @@ function DashboardPageContent() {
 					}}
 				/>
 			</div>
-		</div>
+		</PageLayout>
 	);
 }
 
@@ -90,7 +97,7 @@ function DashboardHeader({
 	totalCount,
 }: DashboardHeaderProps) {
 	return (
-		<header className="border-b border-neutral-200/60 bg-white px-4 py-4 dark:border-neutral-800 dark:bg-neutral-950">
+		<div className="px-4 py-3">
 			<h1 className="text-lg font-semibold tracking-tight text-neutral-900 dark:text-white">
 				오늘의 복습
 			</h1>
@@ -111,7 +118,7 @@ function DashboardHeader({
 					</span>
 				)}
 			</div>
-		</header>
+		</div>
 	);
 }
 

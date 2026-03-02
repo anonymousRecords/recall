@@ -1,5 +1,6 @@
 import { format } from "date-fns";
 import { useParams } from "react-router";
+import { PageLayout } from "../../components/layout";
 import { ArrowLeftIcon, TagInput } from "../../components/shared";
 import { Button, Input, Select, Textarea } from "../../components/ui";
 import type { ProblemStatus } from "../../types";
@@ -37,9 +38,9 @@ export function ProblemDetailPage() {
 	}
 
 	return (
-		<div className="flex h-full flex-col bg-white dark:bg-neutral-950">
-			<ProblemDetailPageHeader isNew={isNew} onBack={handleCancel} />
-
+		<PageLayout
+			header={<ProblemDetailPageHeader isNew={isNew} onBack={handleCancel} />}
+		>
 			<form onSubmit={handleSubmit} className="flex-1 overflow-auto p-4">
 				{createdAt && <RegistrationDate createdAt={createdAt} />}
 
@@ -56,7 +57,7 @@ export function ProblemDetailPage() {
 					handleCancel={handleCancel}
 				/>
 			</form>
-		</div>
+		</PageLayout>
 	);
 }
 
@@ -168,7 +169,7 @@ function ProblemDetailPageHeader({
 	onBack,
 }: ProblemDetailPageHeaderProps) {
 	return (
-		<header className="border-b border-neutral-200/60 bg-white px-4 py-4 dark:border-neutral-800 dark:bg-neutral-950">
+		<div className="px-4 py-3">
 			<div className="flex items-center gap-3">
 				<button
 					type="button"
@@ -182,7 +183,7 @@ function ProblemDetailPageHeader({
 					{isNew ? "새 문제 등록" : "문제 수정"}
 				</h1>
 			</div>
-		</header>
+		</div>
 	);
 }
 

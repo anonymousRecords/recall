@@ -14,7 +14,7 @@ const queryClient = new QueryClient({
 export function App() {
 	return (
 		<QueryClientProvider client={queryClient}>
-			<ReactQueryDevtools initialIsOpen={true} />
+			<ReactQueryDevtools initialIsOpen={false} />
 
 			<MemoryRouter initialEntries={["/"]}>
 				<AppRouter />

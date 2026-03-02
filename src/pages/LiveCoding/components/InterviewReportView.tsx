@@ -1,3 +1,4 @@
+import { PageHeader, PageLayout } from "../../../components/layout";
 import {
 	Button,
 	Card,
@@ -24,13 +25,7 @@ export function InterviewReportView({
 	}
 
 	return (
-		<div className="flex flex-col h-full bg-white dark:bg-neutral-950">
-			<header className="border-b border-gray-200 dark:border-gray-800 px-4 py-3">
-				<h1 className="text-lg font-semibold text-gray-900 dark:text-white">
-					면접 리포트
-				</h1>
-			</header>
-
+		<PageLayout header={<PageHeader title="면접 리포트" />}>
 			<div className="flex-1 overflow-auto p-4 space-y-4">
 				<BasicInfoReportCard report={report} />
 				<ScoreReportCard report={report} />
@@ -45,7 +40,11 @@ export function InterviewReportView({
 				)}
 
 				<div className="flex flex-col gap-3">
-					<Button variant="secondary" className="w-full" onClick={onNewInterview}>
+					<Button
+						variant="secondary"
+						className="w-full"
+						onClick={onNewInterview}
+					>
 						새로운 면접 시작
 					</Button>
 					<Button
@@ -60,7 +59,7 @@ export function InterviewReportView({
 					</Button>
 				</div>
 			</div>
-		</div>
+		</PageLayout>
 	);
 }
 
@@ -136,8 +135,11 @@ function BasicInfoReportCard({ report }: BasicInfoReportCardProps) {
 					{tu && (
 						<>
 							<span>
-								토큰 사용: {(tu.totalPromptTokens + tu.totalCompletionTokens).toLocaleString()}
-								{" "}({tu.callCount}회 호출)
+								토큰 사용:{" "}
+								{(
+									tu.totalPromptTokens + tu.totalCompletionTokens
+								).toLocaleString()}{" "}
+								({tu.callCount}회 호출)
 							</span>
 							<span>예상 비용: ${tu.estimatedCost.toFixed(4)}</span>
 						</>

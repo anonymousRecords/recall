@@ -18,8 +18,8 @@ export function ProblemsHeader({
 	setFilterStatus,
 }: ProblemsHeaderProps) {
 	return (
-		<header className="border-b border-neutral-200/60 bg-white dark:border-neutral-800 dark:bg-neutral-950">
-			<div className="flex items-center justify-between border-b border-neutral-100 px-4 py-4 dark:border-neutral-800/50">
+		<>
+			<div className="flex items-center justify-between border-b border-neutral-100 px-4 py-3 dark:border-neutral-800/50">
 				<h1 className="text-lg font-semibold tracking-tight text-neutral-900 dark:text-white">
 					문제 목록
 				</h1>
@@ -35,7 +35,7 @@ export function ProblemsHeader({
 					setFilterStatus={setFilterStatus}
 				/>
 			</div>
-		</header>
+		</>
 	);
 }
 
