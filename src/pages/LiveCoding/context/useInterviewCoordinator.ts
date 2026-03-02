@@ -1,19 +1,19 @@
 import { useCallback, useEffect, useRef } from "react";
 import {
-	completeSession,
-	createSession,
-	updateSession,
-} from "../../../lib/db/sessions";
+	completeInterview,
+	createInterview,
+	updateInterview,
+} from "../../../lib/db/interviews";
 import { shouldTriggerAI } from "../../../lib/utils/code-gating";
 import type {
 	ChatMessage,
+	InterviewConfig,
 	InterviewerStyle,
-	SessionConfig,
 } from "../../../types";
 import type { useCodeMonitor } from "../hooks/useCodeMonitor";
 import type { useInterviewer } from "../hooks/useInterviewer";
 import type { useSpeech } from "../hooks/useSpeech";
-import type { SessionAction, SessionState } from "./sessionReducer";
+import type { InterviewAction, InterviewState } from "./interviewReducer";
 
 const CODE_CHANGE_DEBOUNCE_MS = 8000;
 const AI_QUESTION_COOLDOWN_MS = 45000;
@@ -30,14 +30,14 @@ function parseAIResponse(response: string): {
 }
 
 interface CoordinatorDeps {
-	state: SessionState;
-	dispatch: React.Dispatch<SessionAction>;
+	state: InterviewState;
+	dispatch: React.Dispatch<InterviewAction>;
 	speech: ReturnType<typeof useSpeech>;
 	codeMonitor: ReturnType<typeof useCodeMonitor>;
 	interviewer: ReturnType<typeof useInterviewer>;
 }
 
-export function useSessionCoordinator({
+export function useInterviewCoordinator({
 	state,
 	dispatch,
 	speech,
@@ -47,14 +47,14 @@ export function useSessionCoordinator({
 	const stateRef = useRef(state);
 	stateRef.current = state;
 
-	const endSessionRef = useRef<() => Promise<void>>(async () => {});
+	const endInterviewRef = useRef<() => Promise<void>>(async () => {});
 	const codeChangeTimeoutRef = useRef<number | null>(null);
 	const lastCodeChangeTimeRef = useRef<number>(Date.now());
 	const lastAIQuestionTimeRef = useRef<number>(0);
 
-	// Session Lifecycle
+	// Interview Lifecycle
 
-	const startSession = useCallback(
+	const startInterview = useCallback(
 		async (config: {
 			timeLimit: number | null;
 			interviewerStyle: InterviewerStyle;
@@ -72,15 +72,15 @@ export function useSessionCoordinator({
 				}
 			}
 
-			const sessionConfig: SessionConfig = {
+			const interviewConfig: InterviewConfig = {
 				problemInfo: codeMonitor.problemInfo,
 				timeLimit: config.timeLimit,
 				interviewerStyle: config.interviewerStyle,
 				language: codeMonitor.language,
 			};
 
-			const newSession = await createSession({
-				config: sessionConfig,
+			const newInterview = await createInterview({
+				config: interviewConfig,
 				status: "active",
 				messages: [],
 				codeSnapshots: [],
@@ -88,9 +88,9 @@ export function useSessionCoordinator({
 			});
 
 			dispatch({
-				type: "START_SESSION",
-				session: newSession,
-				config: sessionConfig,
+				type: "START_INTERVIEW",
+				interview: newInterview,
+				config: interviewConfig,
 				initialCode: codeMonitor.currentCode,
 			});
 
@@ -125,9 +125,9 @@ export function useSessionCoordinator({
 		[codeMonitor, interviewer, speech, dispatch],
 	);
 
-	const endSession = useCallback(async () => {
-		const { session, sessionConfig, messages } = stateRef.current;
-		if (!session || !sessionConfig) return;
+	const endInterview = useCallback(async () => {
+		const { interview, interviewConfig, messages } = stateRef.current;
+		if (!interview || !interviewConfig) return;
 
 		speech.stopListening();
 		speech.stopSpeaking();
@@ -141,7 +141,7 @@ export function useSessionCoordinator({
 		dispatch({ type: "SET_STATUS", status: "completed" });
 
 		const duration = Math.floor(
-			(Date.now() - new Date(session.startedAt).getTime()) / 1000,
+			(Date.now() - new Date(interview.startedAt).getTime()) / 1000,
 		);
 
 		try {
@@ -149,30 +149,30 @@ export function useSessionCoordinator({
 				messages,
 				codeMonitor.currentCode,
 				duration,
-				sessionConfig.problemInfo,
+				interviewConfig.problemInfo,
 			);
 
-			const completedSession = await completeSession(session.id, report);
-			if (completedSession) {
-				dispatch({ type: "SET_SESSION", session: completedSession });
+			const completedInterview = await completeInterview(interview.id, report);
+			if (completedInterview) {
+				dispatch({ type: "SET_INTERVIEW", interview: completedInterview });
 			}
 		} catch (error) {
 			console.error("[Recall] 리포트 생성 실패:", error);
 		}
 	}, [speech, codeMonitor, interviewer, dispatch]);
 
-	endSessionRef.current = endSession;
+	endInterviewRef.current = endInterview;
 
-	const resetSession = useCallback(() => {
-		dispatch({ type: "RESET_SESSION" });
+	const resetInterview = useCallback(() => {
+		dispatch({ type: "RESET_INTERVIEW" });
 	}, [dispatch]);
 
 	// Chat
 
 	const handleFinalTranscript = useCallback(
 		async (text: string) => {
-			const { status, sessionConfig, messages } = stateRef.current;
-			if (status !== "active" || !sessionConfig) return;
+			const { status, interviewConfig, messages } = stateRef.current;
+			if (status !== "active" || !interviewConfig) return;
 
 			speech.clearTranscript();
 
@@ -191,8 +191,8 @@ export function useSessionCoordinator({
 					content: text,
 					codeContext: codeMonitor.currentCode,
 					messages: [...messages, userMessage],
-					problemInfo: sessionConfig.problemInfo,
-					interviewerStyle: sessionConfig.interviewerStyle,
+					problemInfo: interviewConfig.problemInfo,
+					interviewerStyle: interviewConfig.interviewerStyle,
 				});
 				const { content, notes } = parseAIResponse(rawResponse);
 
@@ -220,11 +220,11 @@ export function useSessionCoordinator({
 		[handleFinalTranscript],
 	);
 
-	//Code Change Detection
+	// Code Change Detection
 
 	useEffect(() => {
-		const { status, sessionConfig, previousCode } = stateRef.current;
-		if (status !== "active" || !sessionConfig) return;
+		const { status, interviewConfig, previousCode } = stateRef.current;
+		if (status !== "active" || !interviewConfig) return;
 		if (codeMonitor.currentCode === previousCode) return;
 
 		const now = Date.now();
@@ -257,8 +257,8 @@ export function useSessionCoordinator({
 					currentCode: codeMonitor.currentCode,
 					pauseDuration,
 					messages: currentState.messages,
-					problemInfo: sessionConfig.problemInfo,
-					interviewerStyle: sessionConfig.interviewerStyle,
+					problemInfo: interviewConfig.problemInfo,
+					interviewerStyle: interviewConfig.interviewerStyle,
 				});
 
 				dispatch({
@@ -313,19 +313,19 @@ export function useSessionCoordinator({
 
 	useEffect(() => {
 		if (state.timeRemaining === 0) {
-			endSessionRef.current();
+			endInterviewRef.current();
 		}
 	}, [state.timeRemaining]);
 
 	// Auto Save
 
 	useEffect(() => {
-		if (!state.session || state.status !== "active") return;
+		if (!state.interview || state.status !== "active") return;
 
-		updateSession(state.session.id, {
+		updateInterview(state.interview.id, {
 			messages: state.messages,
 			codeSnapshots: [
-				...(state.session.codeSnapshots || []),
+				...(state.interview.codeSnapshots || []),
 				{
 					code: codeMonitor.currentCode,
 					language: codeMonitor.language,
@@ -335,16 +335,16 @@ export function useSessionCoordinator({
 		});
 	}, [
 		state.messages,
-		state.session,
+		state.interview,
 		state.status,
 		codeMonitor.currentCode,
 		codeMonitor.language,
 	]);
 
 	return {
-		startSession,
-		endSession,
-		resetSession,
+		startInterview,
+		endInterview,
+		resetInterview,
 		sendMessage,
 		handleFinalTranscript,
 	};

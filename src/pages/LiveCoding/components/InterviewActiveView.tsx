@@ -5,7 +5,7 @@ import { Button } from "../../../components/ui";
 import { cn } from "../../../lib/utils";
 import type { ChatMessage, SpeechState } from "../../../types";
 
-interface SessionActiveViewProps {
+interface InterviewActiveViewProps {
   messages: ChatMessage[];
   timeRemaining: number | null;
   isAILoading: boolean;
@@ -14,14 +14,14 @@ interface SessionActiveViewProps {
   onEnd: () => Promise<void>;
 }
 
-export function SessionActiveView({
+export function InterviewActiveView({
   messages,
   timeRemaining,
   isAILoading,
   speech,
   onSendMessage,
   onEnd,
-}: SessionActiveViewProps) {
+}: InterviewActiveViewProps) {
   const {
     isListening,
     isSpeaking,
@@ -46,7 +46,7 @@ export function SessionActiveView({
       className="flex flex-col h-full bg-white
   dark:bg-neutral-950"
     >
-      <SessionActiveViewHeader
+      <InterviewActiveViewHeader
         timeRemaining={timeRemaining}
         isAILoading={isAILoading}
         handleEnd={onEnd}
@@ -166,16 +166,16 @@ const formatTime = (seconds: number): string => {
   return `${mins.toString().padStart(2, "0")}:${secs.toString().padStart(2, "0")}`;
 };
 
-interface SessionActiveViewHeaderProps {
+interface InterviewActiveViewHeaderProps {
   timeRemaining: number | null;
   isAILoading: boolean;
   handleEnd: () => Promise<void>;
 }
 
-function SessionActiveViewHeader({
+function InterviewActiveViewHeader({
   timeRemaining,
   handleEnd,
-}: SessionActiveViewHeaderProps) {
+}: InterviewActiveViewHeaderProps) {
   return (
     <header className="border-b border-gray-200 dark:border-gray-800 px-4 py-2 flex items-center justify-between">
       <div className="flex items-center gap-2">

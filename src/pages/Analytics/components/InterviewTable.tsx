@@ -1,9 +1,9 @@
 import { format } from "date-fns";
 import { ko } from "date-fns/locale";
-import type { LiveSession } from "../../../types";
+import type { LiveInterview } from "../../../types";
 
-interface SessionTableProps {
-	sessions: LiveSession[];
+interface InterviewTableProps {
+	interviews: LiveInterview[];
 }
 
 const STYLE_LABELS: Record<string, string> = {
@@ -12,11 +12,11 @@ const STYLE_LABELS: Record<string, string> = {
 	pressure: "압박",
 };
 
-export function SessionTable({ sessions }: SessionTableProps) {
-	if (sessions.length === 0) {
+export function InterviewTable({ interviews }: InterviewTableProps) {
+	if (interviews.length === 0) {
 		return (
 			<p className="text-sm text-neutral-400 dark:text-neutral-500 text-center py-8">
-				완료된 세션이 없습니다.
+				완료된 면접이 없습니다.
 			</p>
 		);
 	}
@@ -35,7 +35,7 @@ export function SessionTable({ sessions }: SessionTableProps) {
 					</tr>
 				</thead>
 				<tbody>
-					{sessions.map((s) => {
+					{interviews.map((s) => {
 						const report = s.report!;
 						const scores = report.scores;
 						const avg = Math.round(

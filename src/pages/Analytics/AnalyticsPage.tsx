@@ -9,11 +9,11 @@ import {
 	groupByStyle,
 } from "../../lib/analytics/aggregate";
 import { cn } from "../../lib/utils";
-import { completedSessionsQueryOptions } from "../../queries/sessions";
+import { completedInterviewsQueryOptions } from "../../queries/interviews";
 import { BarChart } from "./components/charts/BarChart";
 import { ComparisonChart } from "./components/charts/ComparisonChart";
 import { LineChart } from "./components/charts/LineChart";
-import { SessionTable } from "./components/SessionTable";
+import { InterviewTable } from "./components/InterviewTable";
 import { StatCard } from "./components/StatCard";
 
 type FilterPeriod = "recent10" | "recent30d" | "all";
@@ -40,18 +40,18 @@ export function AnalyticsPage() {
 }
 
 function AnalyticsPageContent() {
-	const { data: sessions } = useSuspenseQuery(completedSessionsQueryOptions());
+	const { data: interviews } = useSuspenseQuery(completedInterviewsQueryOptions());
 	const stats = useMemo(
 		() => ({
-			totalSessions: sessions.length,
-			scoreAverages: calculateScoreAverages(sessions),
-			tokenStats: calculateTokenStats(sessions),
-			providerComparison: groupByProvider(sessions),
-			styleComparison: groupByStyle(sessions),
-			scoreTrend: calculateScoreTrend(sessions),
-			recentSessions: sessions.slice(0, 10),
+			totalInterviews: interviews.length,
+			scoreAverages: calculateScoreAverages(interviews),
+			tokenStats: calculateTokenStats(interviews),
+			providerComparison: groupByProvider(interviews),
+			styleComparison: groupByStyle(interviews),
+			scoreTrend: calculateScoreTrend(interviews),
+			recentInterviews: interviews.slice(0, 10),
 		}),
-		[sessions],
+		[interviews],
 	);
 	const [filter, setFilter] = useState<FilterPeriod>("all");
 
@@ -140,7 +140,7 @@ function AnalyticsPageContent() {
 			<div className="mx-auto max-w-5xl px-6 py-8">
 				<header className="flex items-center justify-between mb-8">
 					<h1 className="text-2xl font-bold text-neutral-900 dark:text-white tracking-tight">
-						세션 분석 대시보드
+						면접 분석 대시보드
 					</h1>
 					<div className="flex gap-1 rounded-lg bg-neutral-100 dark:bg-neutral-800 p-1">
 						{(
@@ -167,19 +167,19 @@ function AnalyticsPageContent() {
 					</div>
 				</header>
 
-				{stats.totalSessions === 0 ? (
+				{stats.totalInterviews === 0 ? (
 					<div className="text-center py-20">
 						<p className="text-neutral-400 dark:text-neutral-500 text-lg">
-							아직 완료된 세션이 없습니다.
+							아직 완료된 면접이 없습니다.
 						</p>
 						<p className="text-neutral-400 dark:text-neutral-500 text-sm mt-1">
-							면접 세션을 진행하면 분석 데이터가 여기에 표시됩니다.
+							면접을 진행하면 분석 데이터가 여기에 표시됩니다.
 						</p>
 					</div>
 				) : (
 					<>
 						<section className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
-							<StatCard label="총 세션" value={String(stats.totalSessions)} />
+							<StatCard label="총 면접" value={String(stats.totalInterviews)} />
 							<StatCard
 								label="평균 점수"
 								value={String(stats.scoreAverages.overall)}
@@ -188,10 +188,10 @@ function AnalyticsPageContent() {
 							<StatCard
 								label="총 비용"
 								value={`$${stats.tokenStats.totalCost.toFixed(4)}`}
-								sub={`세션당 $${stats.tokenStats.avgCostPerSession.toFixed(4)}`}
+								sub={`면접당 $${stats.tokenStats.avgCostPerSession.toFixed(4)}`}
 							/>
 							<StatCard
-								label="평균 토큰/세션"
+								label="평균 토큰/면접"
 								value={stats.tokenStats.avgTokensPerSession.toLocaleString()}
 							/>
 						</section>
@@ -234,7 +234,7 @@ function AnalyticsPageContent() {
 						{costBarData.length > 0 && (
 							<Card className="mb-8">
 								<CardHeader>
-									<CardTitle>세션당 토큰 비용</CardTitle>
+									<CardTitle>면접당 토큰 비용</CardTitle>
 								</CardHeader>
 								<CardContent>
 									<BarChart
@@ -247,10 +247,10 @@ function AnalyticsPageContent() {
 
 						<Card>
 							<CardHeader>
-								<CardTitle>세션 히스토리</CardTitle>
+								<CardTitle>면접 히스토리</CardTitle>
 							</CardHeader>
 							<CardContent>
-								<SessionTable sessions={stats.recentSessions} />
+								<InterviewTable interviews={stats.recentInterviews} />
 							</CardContent>
 						</Card>
 					</>

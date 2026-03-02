@@ -1,3 +1,3 @@
-export { SessionActiveView } from "./SessionActiveView";
-export { SessionReportView } from "./SessionReportView";
-export { SessionSetupView } from "./SessionSetupView";
+export { InterviewActiveView } from "./InterviewActiveView";
+export { InterviewReportView } from "./InterviewReportView";
+export { InterviewSetupView } from "./InterviewSetupView";

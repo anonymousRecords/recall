@@ -25,7 +25,7 @@ const INTERVIEWER_STYLE_OPTIONS = [
 	{ value: "pressure", label: "압박" },
 ];
 
-interface SessionSetupViewProps {
+interface InterviewSetupViewProps {
 	problemInfo: ProblemInfo | null;
 	onStart: (config: {
 		timeLimit: number | null;
@@ -33,10 +33,10 @@ interface SessionSetupViewProps {
 	}) => Promise<void>;
 }
 
-export function SessionSetupView({
+export function InterviewSetupView({
 	problemInfo,
 	onStart,
-}: SessionSetupViewProps) {
+}: InterviewSetupViewProps) {
 	const { data: settings } = useSuspenseQuery(liveCodingSettingsQueryOptions());
 	const hasApiKey = settings.apiKey.length > 0;
 
@@ -100,14 +100,14 @@ export function SessionSetupView({
 								});
 							} catch (err) {
 								setError(
-									err instanceof Error ? err.message : "세션 시작에 실패했어요",
+									err instanceof Error ? err.message : "면접 시작에 실패했어요",
 								);
 							} finally {
 								setIsStarting(false);
 							}
 						}}
 					>
-						{isStarting ? "시작 중" : "세션 시작"}
+						{isStarting ? "시작 중" : "면접 시작"}
 					</Button>
 				</div>
 			</div>

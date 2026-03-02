@@ -1,4 +1,4 @@
-import type { AIProvider, InterviewerStyle, LiveSession } from "../../types";
+import type { AIProvider, InterviewerStyle, LiveInterview } from "../../types";
 
 export interface ScoreAverages {
 	understanding: number;
@@ -18,19 +18,19 @@ export interface TokenStats {
 
 export interface ProviderComparison {
 	provider: AIProvider;
-	sessionCount: number;
+	interviewCount: number;
 	avgScore: number;
 	totalCost: number;
 }
 
 export interface StyleComparison {
 	style: InterviewerStyle;
-	sessionCount: number;
+	interviewCount: number;
 	scores: ScoreAverages;
 }
 
 export interface TrendData {
-	sessionId: string;
+	interviewId: string;
 	date: string;
 	label: string;
 	scores: {
@@ -45,7 +45,7 @@ export interface TrendData {
 	};
 }
 
-function avgScores(sessions: LiveSession[]): ScoreAverages {
+function avgScores(sessions: LiveInterview[]): ScoreAverages {
 	if (sessions.length === 0) {
 		return {
 			understanding: 0,
@@ -78,11 +78,11 @@ function avgScores(sessions: LiveSession[]): ScoreAverages {
 	return { understanding, communication, codeQuality, timeManagement, overall };
 }
 
-export function calculateScoreAverages(sessions: LiveSession[]): ScoreAverages {
+export function calculateScoreAverages(sessions: LiveInterview[]): ScoreAverages {
 	return avgScores(sessions);
 }
 
-export function calculateTokenStats(sessions: LiveSession[]): TokenStats {
+export function calculateTokenStats(sessions: LiveInterview[]): TokenStats {
 	let totalPromptTokens = 0;
 	let totalCompletionTokens = 0;
 	let totalCost = 0;
@@ -109,11 +109,11 @@ export function calculateTokenStats(sessions: LiveSession[]): TokenStats {
 }
 
 export function groupByProvider(
-	sessions: LiveSession[],
+	sessions: LiveInterview[],
 ): ProviderComparison[] {
 	const map = new Map<
 		AIProvider,
-		{ sessions: LiveSession[]; totalCost: number }
+		{ sessions: LiveInterview[]; totalCost: number }
 	>();
 
 	for (const s of sessions) {
@@ -133,15 +133,15 @@ export function groupByProvider(
 		const avg = avgScores(sessions);
 		return {
 			provider,
-			sessionCount: sessions.length,
+			interviewCount: sessions.length,
 			avgScore: avg.overall,
 			totalCost,
 		};
 	});
 }
 
-export function groupByStyle(sessions: LiveSession[]): StyleComparison[] {
-	const map = new Map<InterviewerStyle, LiveSession[]>();
+export function groupByStyle(sessions: LiveInterview[]): StyleComparison[] {
+	const map = new Map<InterviewerStyle, LiveInterview[]>();
 
 	for (const s of sessions) {
 		const style = s.config.interviewerStyle;
@@ -155,14 +155,14 @@ export function groupByStyle(sessions: LiveSession[]): StyleComparison[] {
 
 	return Array.from(map.entries()).map(([style, sessions]) => ({
 		style,
-		sessionCount: sessions.length,
+		interviewCount: sessions.length,
 		scores: avgScores(sessions),
 	}));
 }
 
-export function calculateScoreTrend(sessions: LiveSession[]): TrendData[] {
+export function calculateScoreTrend(sessions: LiveInterview[]): TrendData[] {
 	return [...sessions].reverse().map((s) => ({
-		sessionId: s.id,
+		interviewId: s.id,
 		date: s.startedAt,
 		label: s.config.problemInfo.title,
 		scores: s.report!.scores,

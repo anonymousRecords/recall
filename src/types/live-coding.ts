@@ -2,7 +2,7 @@ export type AIProvider = "openai" | "claude";
 
 export type InterviewerStyle = "friendly" | "normal" | "pressure";
 
-export type SessionStatus = "idle" | "active" | "completed";
+export type InterviewStatus = "idle" | "active" | "completed";
 
 export type MessageRole = "interviewer" | "user" | "system";
 
@@ -35,7 +35,7 @@ export interface ChatMessage {
 	notes?: string;
 }
 
-export interface SessionConfig {
+export interface InterviewConfig {
 	problemInfo: ProblemInfo;
 	timeLimit: number | null;
 	interviewerStyle: InterviewerStyle;
@@ -52,7 +52,7 @@ export interface AIResponse {
 	usage: AIUsage;
 }
 
-export interface SessionReport {
+export interface InterviewReport {
 	duration: number;
 	messageCount: number;
 	scores: {
@@ -75,15 +75,15 @@ export interface SessionReport {
 	};
 }
 
-export interface LiveSession {
+export interface LiveInterview {
 	id: string;
-	config: SessionConfig;
-	status: SessionStatus;
+	config: InterviewConfig;
+	status: InterviewStatus;
 	messages: ChatMessage[];
 	codeSnapshots: CodeSnapshot[];
 	startedAt: string;
 	endedAt?: string;
-	report?: SessionReport;
+	report?: InterviewReport;
 }
 
 export interface LiveCodingSettings {

@@ -15,7 +15,7 @@ import type {
 	AIUsage,
 	ChatMessage,
 	ProblemInfo,
-	SessionReport,
+	InterviewReport,
 } from "../../../types";
 
 interface UseInterviewerOptions {
@@ -173,7 +173,7 @@ export function useInterviewer({ provider, apiKey }: UseInterviewerOptions) {
 			finalCode: string,
 			duration: number,
 			problemInfo: ProblemInfo,
-		): Promise<SessionReport> => {
+		): Promise<InterviewReport> => {
 			const userMessages = messages.filter((m) => m.role === "user");
 			const hasMinimalInteraction =
 				userMessages.length >= 2 || duration >= 120;
@@ -211,7 +211,7 @@ export function useInterviewer({ provider, apiKey }: UseInterviewerOptions) {
 					throw new Error("JSON을 찾을 수 없습니다.");
 				}
 
-				const report = JSON.parse(jsonMatch[0]) as SessionReport;
+				const report = JSON.parse(jsonMatch[0]) as InterviewReport;
 				const { totalPromptTokens, totalCompletionTokens, callCount } =
 					usageRef.current;
 

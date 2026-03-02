@@ -1,21 +1,21 @@
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { createContext, type ReactNode, useReducer, useRef } from "react";
-import { liveCodingSettingsQueryOptions } from "../../../queries/live-coding-settings";
 import type {
 	ChatMessage,
-	LiveSession,
+	InterviewStatus,
+	LiveInterview,
 	ProblemInfo,
-	SessionStatus,
 } from "../../../types";
 import { useCodeMonitor } from "../hooks/useCodeMonitor";
 import { useInterviewer } from "../hooks/useInterviewer";
 import { useSpeech } from "../hooks/useSpeech";
-import { initialSessionState, sessionReducer } from "./sessionReducer";
-import { useSessionCoordinator } from "./useSessionCoordinator";
+import { liveCodingSettingsQueryOptions } from "../../../queries/live-coding-settings";
+import { initialInterviewState, interviewReducer } from "./interviewReducer";
+import { useInterviewCoordinator } from "./useInterviewCoordinator";
 
-export interface SessionStateContext {
-	status: SessionStatus;
-	session: LiveSession | null;
+export interface InterviewStateContext {
+	status: InterviewStatus;
+	interview: LiveInterview | null;
 	messages: ChatMessage[];
 	timeRemaining: number | null;
 	problemInfo: ProblemInfo | null;
@@ -30,23 +30,24 @@ export interface SessionStateContext {
 	};
 }
 
-export interface SessionActionsContext {
-	startSession: (config: {
+export interface InterviewActionsContext {
+	startInterview: (config: {
 		timeLimit: number | null;
 		interviewerStyle: "friendly" | "normal" | "pressure";
 	}) => Promise<void>;
-	endSession: () => Promise<void>;
-	resetSession: () => void;
+	endInterview: () => Promise<void>;
+	resetInterview: () => void;
 	sendMessage: (content: string) => Promise<void>;
 }
 
-export const SessionStateCtx = createContext<SessionStateContext | null>(null);
-export const SessionActionsCtx = createContext<SessionActionsContext | null>(
+export const InterviewStateCtx = createContext<InterviewStateContext | null>(
 	null,
 );
+export const InterviewActionsCtx =
+	createContext<InterviewActionsContext | null>(null);
 
-export function SessionProvider({ children }: { children: ReactNode }) {
-	const [state, dispatch] = useReducer(sessionReducer, initialSessionState);
+export function InterviewProvider({ children }: { children: ReactNode }) {
+	const [state, dispatch] = useReducer(interviewReducer, initialInterviewState);
 	const { data: settings } = useSuspenseQuery(liveCodingSettingsQueryOptions());
 	const codeMonitor = useCodeMonitor();
 	const interviewer = useInterviewer({
@@ -63,7 +64,7 @@ export function SessionProvider({ children }: { children: ReactNode }) {
 		onFinalTranscript: (text) => handleFinalTranscriptRef.current(text),
 	});
 
-	const coordinator = useSessionCoordinator({
+	const coordinator = useInterviewCoordinator({
 		state,
 		dispatch,
 		speech,
@@ -74,10 +75,10 @@ export function SessionProvider({ children }: { children: ReactNode }) {
 	handleFinalTranscriptRef.current = coordinator.handleFinalTranscript;
 
 	return (
-		<SessionStateCtx.Provider
+		<InterviewStateCtx.Provider
 			value={{
 				status: state.status,
-				session: state.session,
+				interview: state.interview,
 				messages: state.messages,
 				timeRemaining: state.timeRemaining,
 				problemInfo: codeMonitor.problemInfo,
@@ -92,9 +93,9 @@ export function SessionProvider({ children }: { children: ReactNode }) {
 				},
 			}}
 		>
-			<SessionActionsCtx.Provider value={coordinator}>
+			<InterviewActionsCtx.Provider value={coordinator}>
 				{children}
-			</SessionActionsCtx.Provider>
-		</SessionStateCtx.Provider>
+			</InterviewActionsCtx.Provider>
+		</InterviewStateCtx.Provider>
 	);
 }

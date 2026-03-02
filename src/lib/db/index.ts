@@ -1,7 +1,7 @@
 import Dexie, { type EntityTable } from "dexie";
 import type {
 	LiveCodingSettings,
-	LiveSession,
+	LiveInterview,
 	Problem,
 	Review,
 	Settings,
@@ -11,7 +11,7 @@ const db = new Dexie("OdapNoteDB") as Dexie & {
 	problems: EntityTable<Problem, "id">;
 	reviews: EntityTable<Review, "id">;
 	settings: EntityTable<Settings, "id">;
-	liveSessions: EntityTable<LiveSession, "id">;
+	liveInterviews: EntityTable<LiveInterview, "id">;
 	liveCodingSettings: EntityTable<LiveCodingSettings, "id">;
 };
 
@@ -21,6 +21,11 @@ db.version(1).stores({
 	settings: "id",
 	liveSessions: "id, status, startedAt",
 	liveCodingSettings: "id",
+});
+
+db.version(2).stores({
+	liveSessions: null,
+	liveInterviews: "id, status, startedAt",
 });
 
 export { db };

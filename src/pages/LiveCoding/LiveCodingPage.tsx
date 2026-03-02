@@ -1,15 +1,15 @@
 import { Suspense } from "react";
-import { SessionActiveView } from "./components/SessionActiveView";
-import { SessionReportView } from "./components/SessionReportView";
-import { SessionSetupView } from "./components/SessionSetupView";
-import { SessionProvider, useSessionActions, useSessionState } from "./context";
+import { InterviewActiveView } from "./components/InterviewActiveView";
+import { InterviewReportView } from "./components/InterviewReportView";
+import { InterviewSetupView } from "./components/InterviewSetupView";
+import { InterviewProvider, useInterviewActions, useInterviewState } from "./context";
 
 export function LiveCodingPage() {
 	return (
 		<Suspense fallback={null}>
-			<SessionProvider>
+			<InterviewProvider>
 				<LiveCodingContent />
-			</SessionProvider>
+			</InterviewProvider>
 		</Suspense>
 	);
 }
@@ -17,37 +17,37 @@ export function LiveCodingPage() {
 function LiveCodingContent() {
 	const {
 		status,
-		session,
+		interview,
 		messages,
 		timeRemaining,
 		problemInfo,
 		isAILoading,
 		speech,
-	} = useSessionState();
-	const { startSession, endSession, resetSession, sendMessage } =
-		useSessionActions();
+	} = useInterviewState();
+	const { startInterview, endInterview, resetInterview, sendMessage } =
+		useInterviewActions();
 
 	if (status === "idle") {
 		return (
-			<SessionSetupView problemInfo={problemInfo} onStart={startSession} />
+			<InterviewSetupView problemInfo={problemInfo} onStart={startInterview} />
 		);
 	}
 
 	if (status === "active") {
 		return (
-			<SessionActiveView
+			<InterviewActiveView
 				messages={messages}
 				timeRemaining={timeRemaining}
 				isAILoading={isAILoading}
 				speech={speech}
 				onSendMessage={sendMessage}
-				onEnd={endSession}
+				onEnd={endInterview}
 			/>
 		);
 	}
 
-	if (status === "completed" && session) {
-		return <SessionReportView session={session} onNewSession={resetSession} />;
+	if (status === "completed" && interview) {
+		return <InterviewReportView interview={interview} onNewInterview={resetInterview} />;
 	}
 
 	return null;

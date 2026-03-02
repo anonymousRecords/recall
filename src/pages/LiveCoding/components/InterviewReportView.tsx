@@ -6,18 +6,18 @@ import {
 	CardTitle,
 } from "../../../components/ui";
 import { cn } from "../../../lib/utils";
-import type { LiveSession, SessionReport } from "../../../types";
+import type { InterviewReport, LiveInterview } from "../../../types";
 
-interface SessionReportProps {
-	session: LiveSession;
-	onNewSession: () => void;
+interface InterviewReportProps {
+	interview: LiveInterview;
+	onNewInterview: () => void;
 }
 
-export function SessionReportView({
-	session,
-	onNewSession,
-}: SessionReportProps) {
-	const { report } = session;
+export function InterviewReportView({
+	interview,
+	onNewInterview,
+}: InterviewReportProps) {
+	const { report } = interview;
 
 	if (report === undefined) {
 		return <ReportSkeletonView />;
@@ -45,8 +45,8 @@ export function SessionReportView({
 				)}
 
 				<div className="flex flex-col gap-3">
-					<Button variant="secondary" className="w-full" onClick={onNewSession}>
-						새로운 세션 시작
+					<Button variant="secondary" className="w-full" onClick={onNewInterview}>
+						새로운 면접 시작
 					</Button>
 					<Button
 						variant="ghost"
@@ -56,7 +56,7 @@ export function SessionReportView({
 							browser.tabs.create({ url });
 						}}
 					>
-						전체 세션 분석 보기
+						전체 면접 분석 보기
 					</Button>
 				</div>
 			</div>
@@ -119,7 +119,7 @@ function ReportSkeletonView() {
 }
 
 interface BasicInfoReportCardProps {
-	report: SessionReport;
+	report: InterviewReport;
 }
 
 function BasicInfoReportCard({ report }: BasicInfoReportCardProps) {
@@ -149,7 +149,7 @@ function BasicInfoReportCard({ report }: BasicInfoReportCardProps) {
 }
 
 interface ScoreReportCardProps {
-	report: SessionReport;
+	report: InterviewReport;
 }
 
 function ScoreReportCard({ report }: ScoreReportCardProps) {
@@ -169,7 +169,7 @@ function ScoreReportCard({ report }: ScoreReportCardProps) {
 }
 
 interface FeddbackCardProps {
-	report: SessionReport;
+	report: InterviewReport;
 }
 
 function FeddbackCard({ report }: FeddbackCardProps) {
@@ -196,7 +196,7 @@ function FeddbackCard({ report }: FeddbackCardProps) {
 }
 
 interface StrengthCardProps {
-	report: SessionReport;
+	report: InterviewReport;
 }
 
 function StrengthCard({ report }: StrengthCardProps) {
@@ -225,7 +225,7 @@ function StrengthCard({ report }: StrengthCardProps) {
 }
 
 interface ImprovementCardProps {
-	report: SessionReport;
+	report: InterviewReport;
 }
 function ImprovementCard({ report }: ImprovementCardProps) {
 	return (
