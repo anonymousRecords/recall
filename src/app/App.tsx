@@ -3,7 +3,13 @@ import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 import { MemoryRouter } from "react-router";
 import { AppRouter } from "./Router";
 
-const queryClient = new QueryClient();
+const queryClient = new QueryClient({
+	defaultOptions: {
+		queries: {
+			staleTime: 1000 * 30, // 30초
+		},
+	},
+});
 
 export function App() {
 	return (
