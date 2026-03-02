@@ -1,7 +1,15 @@
+import { useSuspenseQuery } from "@tanstack/react-query";
 import { Suspense, useMemo, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "../../components/ui";
-import { useSessionAnalytics } from "../../hooks/useSessionAnalytics";
+import {
+	calculateScoreAverages,
+	calculateScoreTrend,
+	calculateTokenStats,
+	groupByProvider,
+	groupByStyle,
+} from "../../lib/analytics/aggregate";
 import { cn } from "../../lib/utils";
+import { completedSessionsQueryOptions } from "../../queries/sessions";
 import { BarChart } from "./components/charts/BarChart";
 import { ComparisonChart } from "./components/charts/ComparisonChart";
 import { LineChart } from "./components/charts/LineChart";
@@ -32,7 +40,19 @@ export function AnalyticsPage() {
 }
 
 function AnalyticsPageContent() {
-	const { stats } = useSessionAnalytics();
+	const { data: sessions } = useSuspenseQuery(completedSessionsQueryOptions());
+	const stats = useMemo(
+		() => ({
+			totalSessions: sessions.length,
+			scoreAverages: calculateScoreAverages(sessions),
+			tokenStats: calculateTokenStats(sessions),
+			providerComparison: groupByProvider(sessions),
+			styleComparison: groupByStyle(sessions),
+			scoreTrend: calculateScoreTrend(sessions),
+			recentSessions: sessions.slice(0, 10),
+		}),
+		[sessions],
+	);
 	const [filter, setFilter] = useState<FilterPeriod>("all");
 
 	const filtered = useMemo(() => {

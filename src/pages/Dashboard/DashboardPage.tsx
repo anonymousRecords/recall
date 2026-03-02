@@ -1,4 +1,5 @@
-import { Suspense } from "react";
+import { useMutation, useQueryClient, useSuspenseQuery } from "@tanstack/react-query";
+import { Suspense, useMemo } from "react";
 import { Link } from "react-router";
 import type { Problem } from "@/src/types";
 import {
@@ -16,8 +17,11 @@ import {
 	CardHeader,
 	CardTitle,
 } from "../../components/ui";
-import { useSettings, useTodayReviews } from "../../hooks";
+import { completeReview } from "../../lib/db/reviews";
 import { formatReviewDate, isOverdue } from "../../lib/scheduling";
+import { queryKeys } from "../../queries/keys";
+import { todayReviewsQueryOptions } from "../../queries/problems";
+import { settingsQueryOptions } from "../../queries/settings";
 
 export function DashboardPage() {
 	return (
@@ -28,9 +32,30 @@ export function DashboardPage() {
 }
 
 function DashboardPageContent() {
-	const { problems, markAsReviewed, overdueCount, todayCount, totalCount } =
-		useTodayReviews();
-	const { settings } = useSettings();
+	const { data: problems } = useSuspenseQuery(todayReviewsQueryOptions());
+	const { data: settings } = useSuspenseQuery(settingsQueryOptions());
+	const queryClient = useQueryClient();
+
+	const { mutateAsync: markAsReviewed } = useMutation({
+		mutationFn: (problemId: string) => completeReview(problemId),
+		onSuccess: () => {
+			queryClient.invalidateQueries({ queryKey: queryKeys.problems.all });
+		},
+	});
+
+	const overdueCount = useMemo(
+		() =>
+			problems.filter((p) => {
+				const reviewDate = new Date(p.nextReviewDate);
+				const today = new Date();
+				today.setHours(0, 0, 0, 0);
+				reviewDate.setHours(0, 0, 0, 0);
+				return reviewDate < today;
+			}).length,
+		[problems],
+	);
+	const todayCount = problems.length - overdueCount;
+	const totalCount = problems.length;
 
 	return (
 		<div className="flex h-full flex-col bg-white dark:bg-neutral-950">

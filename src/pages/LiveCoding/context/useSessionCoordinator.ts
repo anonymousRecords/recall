@@ -4,6 +4,7 @@ import {
 	createSession,
 	updateSession,
 } from "../../../lib/db/sessions";
+import { shouldTriggerAI } from "../../../lib/utils/code-gating";
 import type {
 	ChatMessage,
 	InterviewerStyle,
@@ -13,7 +14,6 @@ import type { useCodeMonitor } from "../hooks/useCodeMonitor";
 import type { useInterviewer } from "../hooks/useInterviewer";
 import type { useSpeech } from "../hooks/useSpeech";
 import type { SessionAction, SessionState } from "./sessionReducer";
-import { shouldTriggerAI } from "../../../lib/utils/code-gating";
 
 const CODE_CHANGE_DEBOUNCE_MS = 8000;
 const AI_QUESTION_COOLDOWN_MS = 45000;

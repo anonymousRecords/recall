@@ -1,8 +1,16 @@
-import { Suspense, useState } from "react";
+import {
+	useMutation,
+	useQueryClient,
+	useSuspenseQuery,
+} from "@tanstack/react-query";
+import { Suspense, useMemo, useState } from "react";
 import { Link } from "react-router";
 import { DocumentIcon, EmptyState } from "../../components/shared";
 import { Button } from "../../components/ui";
-import { useProblems, useSettings } from "../../hooks";
+import { deleteProblem } from "../../lib/db/problems";
+import { queryKeys } from "../../queries/keys";
+import { problemsQueryOptions } from "../../queries/problems";
+import { settingsQueryOptions } from "../../queries/settings";
 import type { Problem, ProblemStatus, Settings } from "../../types";
 import { ProblemRow } from "./components/ProblemRow";
 import { ProblemsHeader } from "./components/ProblemsHeader";
@@ -18,8 +26,16 @@ export function ProblemsPage() {
 }
 
 function ProblemsPageContent() {
-	const { problems, removeProblem } = useProblems();
-	const { settings } = useSettings();
+	const { data: problems } = useSuspenseQuery(problemsQueryOptions());
+	const { data: settings } = useSuspenseQuery(settingsQueryOptions());
+	const queryClient = useQueryClient();
+
+	const { mutateAsync: removeProblem } = useMutation({
+		mutationFn: (id: string) => deleteProblem(id),
+		onSuccess: () => {
+			queryClient.invalidateQueries({ queryKey: queryKeys.problems.all });
+		},
+	});
 
 	const [search, setSearch] = useState("");
 	const [filterStatus, setFilterStatus] = useState<FilterStatus>("all");

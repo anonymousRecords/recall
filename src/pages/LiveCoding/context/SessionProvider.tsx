@@ -1,4 +1,6 @@
+import { useSuspenseQuery } from "@tanstack/react-query";
 import { createContext, type ReactNode, useReducer, useRef } from "react";
+import { liveCodingSettingsQueryOptions } from "../../../queries/live-coding-settings";
 import type {
 	ChatMessage,
 	LiveSession,
@@ -7,7 +9,6 @@ import type {
 } from "../../../types";
 import { useCodeMonitor } from "../hooks/useCodeMonitor";
 import { useInterviewer } from "../hooks/useInterviewer";
-import { useLiveCodingSettings } from "../hooks/useLiveCodingSettings";
 import { useSpeech } from "../hooks/useSpeech";
 import { initialSessionState, sessionReducer } from "./sessionReducer";
 import { useSessionCoordinator } from "./useSessionCoordinator";
@@ -46,7 +47,7 @@ export const SessionActionsCtx = createContext<SessionActionsContext | null>(
 
 export function SessionProvider({ children }: { children: ReactNode }) {
 	const [state, dispatch] = useReducer(sessionReducer, initialSessionState);
-	const { settings } = useLiveCodingSettings();
+	const { data: settings } = useSuspenseQuery(liveCodingSettingsQueryOptions());
 	const codeMonitor = useCodeMonitor();
 	const interviewer = useInterviewer({
 		provider: settings.aiProvider,

@@ -1,8 +1,13 @@
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useCallback, useEffect, useState } from "react";
 import { useNavigate } from "react-router";
-import { useProblems } from "../../../hooks";
-import { getProblem } from "../../../lib/db/problems";
+import {
+	createProblem,
+	getProblem,
+	updateProblem,
+} from "../../../lib/db/problems";
 import { extractSiteFromUrl } from "../../../lib/utils";
+import { queryKeys } from "../../../queries/keys";
 import type { ProblemStatus } from "../../../types";
 
 export type ProblemForm = {
@@ -27,9 +32,22 @@ const INITIAL_FORM: ProblemForm = {
 
 export function useProblemForm(id?: string) {
 	const navigate = useNavigate();
-	const { addProblem, editProblem } = useProblems();
-
+	const queryClient = useQueryClient();
 	const isNew = !id || id === "new";
+
+	const invalidate = () =>
+		queryClient.invalidateQueries({ queryKey: queryKeys.problems.all });
+
+	const { mutateAsync: addProblem } = useMutation({
+		mutationFn: createProblem,
+		onSuccess: invalidate,
+	});
+
+	const { mutateAsync: editProblem } = useMutation({
+		mutationFn: ({ id, input }: { id: string; input: Parameters<typeof updateProblem>[1] }) =>
+			updateProblem(id, input),
+		onSuccess: invalidate,
+	});
 
 	const [loading, setLoading] = useState(!isNew);
 	const [saving, setSaving] = useState(false);

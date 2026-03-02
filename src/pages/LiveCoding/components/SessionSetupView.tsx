@@ -1,3 +1,4 @@
+import { useSuspenseQuery } from "@tanstack/react-query";
 import { useState } from "react";
 import { useNavigate } from "react-router";
 import {
@@ -8,8 +9,8 @@ import {
 	CardTitle,
 	Select,
 } from "../../../components/ui";
+import { liveCodingSettingsQueryOptions } from "../../../queries/live-coding-settings";
 import type { InterviewerStyle, ProblemInfo } from "../../../types";
-import { useLiveCodingSettings } from "../hooks/useLiveCodingSettings";
 
 const TIME_OPTIONS = [
 	{ value: "30", label: "30분" },
@@ -36,7 +37,8 @@ export function SessionSetupView({
 	problemInfo,
 	onStart,
 }: SessionSetupViewProps) {
-	const { settings, hasApiKey } = useLiveCodingSettings();
+	const { data: settings } = useSuspenseQuery(liveCodingSettingsQueryOptions());
+	const hasApiKey = settings.apiKey.length > 0;
 
 	const [timeLimit, setTimeLimit] = useState(
 		settings.defaultTimeLimit.toString(),

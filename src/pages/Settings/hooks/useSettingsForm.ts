@@ -1,6 +1,9 @@
+import { useMutation, useQueryClient, useSuspenseQuery } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
-import { useSettings } from "../../../hooks";
+import { updateSettings } from "../../../lib/db/settings";
 import { DEFAULT_INTERVALS } from "../../../lib/scheduling";
+import { queryKeys } from "../../../queries/keys";
+import { settingsQueryOptions } from "../../../queries/settings";
 import type { Theme } from "../../../types";
 
 function applyTheme(selectedTheme: Theme) {
@@ -27,7 +30,14 @@ function parseIntervals(input: string): number[] | null {
 }
 
 export function useSettingsForm() {
-	const { settings, saveSettings } = useSettings();
+	const { data: settings } = useSuspenseQuery(settingsQueryOptions());
+	const queryClient = useQueryClient();
+	const { mutateAsync: saveSettings } = useMutation({
+		mutationFn: updateSettings,
+		onSuccess: () => {
+			queryClient.invalidateQueries({ queryKey: queryKeys.settings.all });
+		},
+	});
 	const [intervals, setIntervals] = useState(
 		settings.reviewIntervals.join(", "),
 	);
