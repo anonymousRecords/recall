@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { Suspense, useState } from "react";
 import { Link } from "react-router";
 import { DocumentIcon, EmptyState } from "../../components/shared";
 import { Button } from "../../components/ui";
@@ -10,7 +10,15 @@ import { ProblemsHeader } from "./components/ProblemsHeader";
 export type FilterStatus = "all" | ProblemStatus;
 
 export function ProblemsPage() {
-	const { problems, loading, removeProblem } = useProblems();
+	return (
+		<Suspense fallback={null}>
+			<ProblemsPageContent />
+		</Suspense>
+	);
+}
+
+function ProblemsPageContent() {
+	const { problems, removeProblem } = useProblems();
 	const { settings } = useSettings();
 
 	const [search, setSearch] = useState("");
@@ -20,10 +28,6 @@ export function ProblemsPage() {
 		() => getFilteredProblems(problems, search, filterStatus),
 		[problems, search, filterStatus],
 	);
-
-	if (loading) {
-		return null;
-	}
 
 	return (
 		<div className="flex h-full flex-col bg-white dark:bg-neutral-950">

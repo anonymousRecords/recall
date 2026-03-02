@@ -101,7 +101,7 @@ export function useProblemForm(id?: string) {
 				if (isNew) {
 					await addProblem({ ...base, status: "active" });
 				} else {
-					await editProblem(id, { ...base, status: form.status });
+					await editProblem({ id, input: { ...base, status: form.status } });
 				}
 				navigate("/problems");
 			} finally {

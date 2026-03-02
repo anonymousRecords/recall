@@ -1,3 +1,4 @@
+import { useSuspenseQuery } from "@tanstack/react-query";
 import { useMemo } from "react";
 import {
 	calculateScoreAverages,
@@ -6,11 +7,10 @@ import {
 	groupByProvider,
 	groupByStyle,
 } from "../lib/analytics/aggregate";
-import { getCompletedSessions } from "../lib/db/sessions";
-import { useAsyncData } from "./useAsyncData";
+import { completedSessionsQueryOptions } from "../queries/sessions";
 
 export function useSessionAnalytics() {
-	const { data: sessions, loading } = useAsyncData(getCompletedSessions, []);
+	const { data: sessions } = useSuspenseQuery(completedSessionsQueryOptions());
 
 	const stats = useMemo(
 		() => ({
@@ -25,5 +25,5 @@ export function useSessionAnalytics() {
 		[sessions],
 	);
 
-	return { stats, loading };
+	return { stats };
 }

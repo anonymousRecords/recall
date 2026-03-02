@@ -1,3 +1,4 @@
+import { Suspense } from "react";
 import { Link } from "react-router";
 import type { Problem } from "@/src/types";
 import {
@@ -19,19 +20,17 @@ import { useSettings, useTodayReviews } from "../../hooks";
 import { formatReviewDate, isOverdue } from "../../lib/scheduling";
 
 export function DashboardPage() {
-	const {
-		problems,
-		loading,
-		markAsReviewed,
-		overdueCount,
-		todayCount,
-		totalCount,
-	} = useTodayReviews();
-	const { settings } = useSettings();
+	return (
+		<Suspense fallback={null}>
+			<DashboardPageContent />
+		</Suspense>
+	);
+}
 
-	if (loading) {
-		return null;
-	}
+function DashboardPageContent() {
+	const { problems, markAsReviewed, overdueCount, todayCount, totalCount } =
+		useTodayReviews();
+	const { settings } = useSettings();
 
 	return (
 		<div className="flex h-full flex-col bg-white dark:bg-neutral-950">

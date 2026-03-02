@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { Suspense, useEffect, useRef, useState } from "react";
 import {
 	Button,
 	Card,
@@ -30,6 +30,14 @@ type SettingsMessage = {
 };
 
 export function SettingsPage() {
+	return (
+		<Suspense fallback={null}>
+			<SettingsPageContent />
+		</Suspense>
+	);
+}
+
+function SettingsPageContent() {
 	const generalSettings = useSettingsForm();
 	const liveCoding = useLiveCodingForm();
 
@@ -47,10 +55,6 @@ export function SettingsPage() {
 
 		return () => clearTimeout(timerRef.current);
 	}, [message]);
-
-	if (generalSettings.loading) {
-		return null;
-	}
 
 	return (
 		<div className="flex h-full flex-col bg-white dark:bg-neutral-950">

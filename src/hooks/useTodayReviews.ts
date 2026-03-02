@@ -1,28 +1,19 @@
-import { useCallback, useMemo } from "react";
-import { getTodayReviewProblems } from "../lib/db/problems";
+import { useMutation, useQueryClient, useSuspenseQuery } from "@tanstack/react-query";
+import { useMemo } from "react";
 import { completeReview } from "../lib/db/reviews";
-import type { Problem } from "../types";
-import { useAsyncData } from "./useAsyncData";
+import { queryKeys } from "../queries/keys";
+import { todayReviewsQueryOptions } from "../queries/problems";
 
 export function useTodayReviews() {
-	const {
-		data: problems,
-		loading,
-		error,
-		refetch,
-		setData,
-	} = useAsyncData<Problem[]>(getTodayReviewProblems, []);
+	const { data: problems } = useSuspenseQuery(todayReviewsQueryOptions());
+	const queryClient = useQueryClient();
 
-	const markAsReviewed = useCallback(
-		async (problemId: string) => {
-			const updated = await completeReview(problemId);
-			if (updated) {
-				setData((prev) => prev.filter((p) => p.id !== problemId));
-			}
-			return updated;
+	const { mutateAsync: markAsReviewed } = useMutation({
+		mutationFn: (problemId: string) => completeReview(problemId),
+		onSuccess: () => {
+			queryClient.invalidateQueries({ queryKey: queryKeys.problems.all });
 		},
-		[setData],
-	);
+	});
 
 	const overdueCount = useMemo(() => {
 		return problems.filter((p) => {
@@ -36,25 +27,11 @@ export function useTodayReviews() {
 
 	const todayCount = problems.length - overdueCount;
 
-	return useMemo(
-		() => ({
-			problems,
-			loading,
-			error,
-			markAsReviewed,
-			refetch,
-			overdueCount,
-			todayCount,
-			totalCount: problems.length,
-		}),
-		[
-			problems,
-			loading,
-			error,
-			markAsReviewed,
-			refetch,
-			overdueCount,
-			todayCount,
-		],
-	);
+	return {
+		problems,
+		markAsReviewed,
+		overdueCount,
+		todayCount,
+		totalCount: problems.length,
+	};
 }

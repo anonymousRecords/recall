@@ -36,11 +36,7 @@ export function SessionSetupView({
 	problemInfo,
 	onStart,
 }: SessionSetupViewProps) {
-	const {
-		settings,
-		hasApiKey,
-		loading: settingsLoading,
-	} = useLiveCodingSettings();
+	const { settings, hasApiKey } = useLiveCodingSettings();
 
 	const [timeLimit, setTimeLimit] = useState(
 		settings.defaultTimeLimit.toString(),
@@ -51,10 +47,6 @@ export function SessionSetupView({
 
 	const [isStarting, setIsStarting] = useState(false);
 	const [error, setError] = useState<string | null>(null);
-
-	if (settingsLoading) {
-		return null;
-	}
 
 	return (
 		<div

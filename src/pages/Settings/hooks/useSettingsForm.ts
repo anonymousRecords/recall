@@ -27,7 +27,7 @@ function parseIntervals(input: string): number[] | null {
 }
 
 export function useSettingsForm() {
-	const { settings, saveSettings, loading } = useSettings();
+	const { settings, saveSettings } = useSettings();
 	const [intervals, setIntervals] = useState(
 		settings.reviewIntervals.join(", "),
 	);
@@ -66,7 +66,6 @@ export function useSettingsForm() {
 		setIntervals,
 		theme,
 		setTheme,
-		loading,
 		validate,
 		save,
 		reset,

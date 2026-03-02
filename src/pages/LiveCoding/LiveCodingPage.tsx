@@ -1,3 +1,4 @@
+import { Suspense } from "react";
 import { SessionActiveView } from "./components/SessionActiveView";
 import { SessionReportView } from "./components/SessionReportView";
 import { SessionSetupView } from "./components/SessionSetupView";
@@ -5,9 +6,11 @@ import { SessionProvider, useSessionActions, useSessionState } from "./context";
 
 export function LiveCodingPage() {
 	return (
-		<SessionProvider>
-			<LiveCodingContent />
-		</SessionProvider>
+		<Suspense fallback={null}>
+			<SessionProvider>
+				<LiveCodingContent />
+			</SessionProvider>
+		</Suspense>
 	);
 }
 

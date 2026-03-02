@@ -1,38 +1,18 @@
-import { useCallback, useMemo } from "react";
-import {
-	DEFAULT_SETTINGS,
-	getSettings,
-	updateSettings,
-} from "../lib/db/settings";
-import type { Settings } from "../types";
-import { useAsyncData } from "./useAsyncData";
+import { useMutation, useQueryClient, useSuspenseQuery } from "@tanstack/react-query";
+import { updateSettings } from "../lib/db/settings";
+import { queryKeys } from "../queries/keys";
+import { settingsQueryOptions } from "../queries/settings";
 
 export function useSettings() {
-	const {
-		data: settings,
-		loading,
-		error,
-		refetch,
-		setData,
-	} = useAsyncData(getSettings, DEFAULT_SETTINGS);
+	const { data: settings } = useSuspenseQuery(settingsQueryOptions());
+	const queryClient = useQueryClient();
 
-	const saveSettings = useCallback(
-		async (updates: Partial<Omit<Settings, "id">>) => {
-			const updated = await updateSettings(updates);
-			setData(updated);
-			return updated;
+	const { mutateAsync: saveSettings } = useMutation({
+		mutationFn: updateSettings,
+		onSuccess: () => {
+			queryClient.invalidateQueries({ queryKey: queryKeys.settings.all });
 		},
-		[setData],
-	);
+	});
 
-	return useMemo(
-		() => ({
-			settings,
-			loading,
-			error,
-			saveSettings,
-			refetch,
-		}),
-		[settings, loading, error, saveSettings, refetch],
-	);
+	return { settings, saveSettings };
 }
