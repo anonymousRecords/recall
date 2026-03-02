@@ -64,7 +64,7 @@ export default defineContentScript({
 					url: window.location.href,
 				};
 			} catch (error) {
-				console.error("[오답노트] 문제 정보 추출 실패:", error);
+				console.error("[Recall] 문제 정보 추출 실패:", error);
 				return null;
 			}
 		}
@@ -75,25 +75,25 @@ export default defineContentScript({
 				// CodeMirror 6 (최신 프로그래머스)
 				const cmEditor = document.querySelector(
 					".cm-editor",
-				) as HTMLElement | null;
+				) as CodeMirror6EditorElement | null;
 				if (cmEditor) {
-					const cmView = (cmEditor as any)?.cmView?.view;
-					if (cmView?.state?.doc) {
-						return cmView.state.doc.toString();
+					const doc = cmEditor.cmView?.view?.state?.doc;
+					if (doc) {
+						return doc.toString();
 					}
 				}
 
 				// CodeMirror 5 (레거시)
 				const cm5Elements = document.querySelectorAll(".CodeMirror");
 				for (const el of cm5Elements) {
-					const cm = (el as any).CodeMirror;
+					const cm = (el as CodeMirror5Element).CodeMirror;
 					if (cm) {
 						return cm.getValue();
 					}
 				}
 
 				// Monaco Editor (일부 문제)
-				const monacoWindow = window as any;
+				const monacoWindow = window as WindowWithMonaco;
 				if (monacoWindow.monaco?.editor) {
 					const editors = monacoWindow.monaco.editor.getEditors();
 					if (editors.length > 0) {
@@ -111,7 +111,7 @@ export default defineContentScript({
 
 				return null;
 			} catch (error) {
-				console.error("[오답노트] 코드 추출 실패:", error);
+				console.error("[Recall] 코드 추출 실패:", error);
 				return null;
 			}
 		}
@@ -161,7 +161,7 @@ export default defineContentScript({
 			// 500ms마다 코드 변화 체크
 			monitorInterval = window.setInterval(checkCodeChange, 500);
 
-			console.log("[오답노트] 코드 모니터링 시작");
+			console.log("[Recall] 코드 모니터링 시작");
 		}
 
 		// 모니터링 중지
@@ -174,7 +174,7 @@ export default defineContentScript({
 				monitorInterval = null;
 			}
 
-			console.log("[오답노트] 코드 모니터링 중지");
+			console.log("[Recall] 코드 모니터링 중지");
 		}
 
 		// 실행/제출 버튼 이벤트 감지
@@ -236,6 +236,36 @@ export default defineContentScript({
 
 		// 초기화
 		setupButtonListeners();
-		console.log("[오답노트] 프로그래머스 Content Script 로드됨");
+		console.log("[Recall] 프로그래머스 Content Script 로드됨");
 	},
 });
+
+interface CodeMirror6EditorElement extends HTMLElement {
+	cmView?: {
+		view?: {
+			state?: {
+				doc?: {
+					toString(): string;
+				};
+			};
+		};
+	};
+}
+
+interface CodeMirror5Element extends Element {
+	CodeMirror?: {
+		getValue(): string;
+	};
+}
+
+interface MonacoEditorInstance {
+	getValue(): string;
+}
+
+interface WindowWithMonaco extends Window {
+	monaco?: {
+		editor: {
+			getEditors(): MonacoEditorInstance[];
+		};
+	};
+}
