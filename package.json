@@ -15,6 +15,7 @@
 		"postinstall": "wxt prepare"
 	},
 	"dependencies": {
+		"@tanstack/react-query": "^5.90.21",
 		"clsx": "^2.1.1",
 		"date-fns": "^4.1.0",
 		"dexie": "^4.2.1",
