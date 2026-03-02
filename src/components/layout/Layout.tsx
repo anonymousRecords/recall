@@ -9,14 +9,6 @@ interface LayoutProps {
 export function Layout({ children }: LayoutProps) {
 	return (
 		<div className="flex h-screen w-full flex-col overflow-hidden bg-[#1e1e1e]">
-			<header className="flex h-8 shrink-0 items-center border-b border-[#3e3e42] bg-[#252526] px-3">
-				<span
-					style={{ fontFamily: "'DotGothic16', monospace" }}
-					className="text-[13px] text-[#d4d4d4]"
-				>
-					recall_
-				</span>
-			</header>
 			<main className="min-h-0 flex-1 overflow-auto">{children}</main>
 			<nav className="flex h-9 shrink-0 items-stretch border-t border-[#3e3e42] bg-[#252526]">
 				<NavItem to="/" label="~/" end />
