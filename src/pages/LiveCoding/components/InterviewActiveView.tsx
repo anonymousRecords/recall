@@ -1,8 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { MicIcon } from "@/src/components/shared";
-import { ClockIcon } from "@/src/components/shared/icons/ClockIcon";
 import { PageLayout } from "../../../components/layout";
-import { Button } from "../../../components/ui";
 import { cn } from "../../../lib/utils";
 import type { ChatMessage, SpeechState } from "../../../types";
 
@@ -60,19 +57,15 @@ export function InterviewActiveView({
 				messagesEndRef={messagesEndRef}
 			/>
 
-			<div className="border-t border-gray-200 dark:border-gray-800 px-4 py-3">
+			<div className="shrink-0 border-t border-[#3e3e42] bg-[#252526] px-4 py-3 space-y-2">
 				<VoiceInteractionField
 					isAILoading={isAILoading}
 					isListening={isListening}
 					isSpeaking={isSpeaking}
 					volume={volume}
 					toggleListening={toggleListening}
-					transcripts={{
-						finalTranscript,
-						interimTranscript,
-					}}
+					transcripts={{ finalTranscript, interimTranscript }}
 				/>
-
 				<MessageInput
 					isAILoading={isAILoading}
 					isListening={isListening}
@@ -80,83 +73,6 @@ export function InterviewActiveView({
 				/>
 			</div>
 		</PageLayout>
-	);
-}
-
-interface MessageBubbleProps {
-	message: ChatMessage;
-}
-
-function MessageBubble({ message }: MessageBubbleProps) {
-	const isInterviewer = message.role === "interviewer";
-
-	return (
-		<div className={cn("flex items-start", !isInterviewer && "justify-end")}>
-			<div
-				className={cn(
-					"rounded-lg px-3 py-2 max-w-[85%]",
-					isInterviewer
-						? "bg-gray-100 dark:bg-gray-800"
-						: "bg-neutral-800 dark:bg-neutral-100",
-				)}
-			>
-				<p
-					className={cn(
-						"text-sm",
-						isInterviewer
-							? "text-gray-900 dark:text-white"
-							: "text-white dark:text-neutral-900",
-					)}
-				>
-					{message.content}
-				</p>
-			</div>
-		</div>
-	);
-}
-
-function LoadingDots() {
-	return (
-		<output className="flex gap-1" aria-label="로딩 중">
-			<span className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" />
-			<span
-				className="w-2 h-2 bg-gray-400 rounded-full animate-bounce [animation-delay:0.1s]"
-				aria-hidden="true"
-			/>
-			<span
-				className="w-2 h-2 bg-gray-400 rounded-full animate-bounce [animation-delay:0.2s]"
-				aria-hidden="true"
-			/>
-		</output>
-	);
-}
-
-const BAR_VARIATIONS = [
-	{ id: "left", variation: 0.7 },
-	{ id: "center", variation: 1 },
-	{ id: "right", variation: 0.8 },
-] as const;
-
-function VoiceVisualizer({ volume }: { volume: number }) {
-	const getBarHeight = (variation: number) => {
-		if (volume < 0.01) return 4;
-		const baseHeight = volume * 24;
-		return Math.max(4, Math.min(24, baseHeight * variation));
-	};
-
-	return (
-		<div
-			className="flex items-center justify-center gap-1 h-6"
-			aria-hidden="true"
-		>
-			{BAR_VARIATIONS.map((bar) => (
-				<div
-					key={bar.id}
-					className="w-1 rounded-full transition-all duration-75 bg-white"
-					style={{ height: `${getBarHeight(bar.variation)}px` }}
-				/>
-			))}
-		</div>
 	);
 }
 
@@ -177,25 +93,23 @@ function InterviewActiveViewHeader({
 	handleEnd,
 }: InterviewActiveViewHeaderProps) {
 	return (
-		<div className="px-4 py-2 flex items-center justify-between">
-			<div className="flex items-center gap-2">
-				<div className="flex gap-2 items-center">
-					<ClockIcon className="w-4 h-4" />
-					{timeRemaining !== null && (
-						<span
-							className={cn(
-								"text-lg font-mono font-semibold",
-								timeRemaining < 60
-									? "text-red-600 dark:text-red-400"
-									: timeRemaining < 300
-										? "text-amber-600 dark:text-amber-400"
-										: "text-gray-900 dark:text-white",
-							)}
-						>
-							{formatTime(timeRemaining)}
-						</span>
-					)}
-				</div>
+		<div className="flex items-center justify-between px-4 py-3">
+			<div className="flex items-center gap-3">
+				<p className="font-mono text-[11px] text-[#858585]">// live coding</p>
+				{timeRemaining !== null && (
+					<span
+						className={cn(
+							"font-mono text-[13px] font-medium",
+							timeRemaining < 60
+								? "text-[#f44747]"
+								: timeRemaining < 300
+									? "text-[#dcdcaa]"
+									: "text-[#4ec9b0]",
+						)}
+					>
+						{formatTime(timeRemaining)}
+					</span>
+				)}
 			</div>
 			<EndSessionButton onEnd={handleEnd} />
 		</div>
@@ -219,33 +133,36 @@ function EndSessionButton({ onEnd }: { onEnd: () => void }) {
 
 	return (
 		<div ref={ref} className="relative">
-			<Button variant="secondary" size="sm" onClick={() => setOpen(!open)}>
-				종료
-			</Button>
+			<button
+				type="button"
+				onClick={() => setOpen(!open)}
+				className="font-mono text-[12px] text-[#858585] transition-colors hover:text-[#f44747] border border-[#3e3e42] px-2.5 py-1 hover:border-[#f44747]"
+			>
+				[ end ]
+			</button>
 			{open && (
-				<div className="absolute right-0 top-full mt-1 z-10 bg-white dark:bg-neutral-900 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg p-3 w-48">
-					<p className="text-sm text-gray-700 dark:text-gray-300 mb-2">
-						세션을 종료할까요?
+				<div className="absolute right-0 top-full mt-1 z-10 border border-[#569cd6] bg-[#252526] p-3 w-44">
+					<p className="font-mono text-[11px] text-[#858585] mb-3">
+						&gt; 세션을 종료할까요?
 					</p>
 					<div className="flex gap-2">
-						<Button
-							variant="secondary"
-							size="sm"
-							className="flex-1"
+						<button
+							type="button"
+							className="flex-1 border border-[#3e3e42] px-2 py-1 font-mono text-[11px] text-[#858585] hover:border-[#525252] hover:text-[#d4d4d4]"
 							onClick={() => setOpen(false)}
 						>
-							취소
-						</Button>
-						<Button
-							size="sm"
-							className="flex-1"
+							[ 취소 ]
+						</button>
+						<button
+							type="button"
+							className="flex-1 border border-[#f44747] px-2 py-1 font-mono text-[11px] text-[#f44747] hover:bg-[#f44747]/10"
 							onClick={() => {
 								setOpen(false);
 								onEnd();
 							}}
 						>
-							종료
-						</Button>
+							[ 종료 ]
+						</button>
 					</div>
 				</div>
 			)}
@@ -253,12 +170,35 @@ function EndSessionButton({ onEnd }: { onEnd: () => void }) {
 	);
 }
 
+interface MessageBubbleProps {
+	message: ChatMessage;
+}
+
+function MessageBubble({ message }: MessageBubbleProps) {
+	const isInterviewer = message.role === "interviewer";
+
+	return (
+		<div className="flex items-start gap-2">
+			<span
+				className={cn(
+					"shrink-0 font-mono text-[11px] mt-0.5",
+					isInterviewer ? "text-[#569cd6]" : "text-[#4ec9b0]",
+				)}
+			>
+				{isInterviewer ? "[AI]" : "[YOU]"}
+			</span>
+			<p className="font-sans text-[13px] text-[#d4d4d4] leading-relaxed">
+				{message.content}
+			</p>
+		</div>
+	);
+}
+
 function AiThinkingBubble() {
 	return (
-		<div className="flex items-start">
-			<div className="bg-gray-100 dark:bg-gray-800 rounded-lg px-3 py-2">
-				<LoadingDots />
-			</div>
+		<div className="flex items-start gap-2">
+			<span className="shrink-0 font-mono text-[11px] text-[#569cd6]">[AI]</span>
+			<span className="font-mono text-[13px] text-[#858585]">···</span>
 		</div>
 	);
 }
@@ -279,7 +219,7 @@ function MessageList({
 	messagesEndRef,
 }: MessageListProps) {
 	return (
-		<div className="flex-1 overflow-auto p-4 space-y-3">
+		<div className="flex-1 overflow-auto px-4 py-3 space-y-3">
 			{messages.map((message) => (
 				<MessageBubble key={message.id} message={message} />
 			))}
@@ -303,29 +243,19 @@ interface TranscriptBubbleProps {
 	interimTranscript: string | null;
 }
 
-function TranscriptBubble({
-	finalTranscript,
-	interimTranscript,
-}: TranscriptBubbleProps) {
+function TranscriptBubble({ finalTranscript, interimTranscript }: TranscriptBubbleProps) {
 	return (
-		<div className="flex items-start justify-end">
-			<div className="bg-neutral-200 dark:bg-neutral-800 rounded-lg px-3 py-2 max-w-[85%]">
-				<p className="text-sm text-neutral-700 dark:text-neutral-300">
-					{(finalTranscript || interimTranscript) && (
-						<p className="text-sm mt-1 truncate max-w-[200px]">
-							<span className="text-gray-700 dark:text-gray-300">
-								{finalTranscript}
-							</span>
-							{interimTranscript && (
-								<span className="text-gray-500 dark:text-gray-500 italic">
-									{finalTranscript ? " " : ""}
-									{interimTranscript}
-								</span>
-							)}
-						</p>
-					)}
-				</p>
-			</div>
+		<div className="flex items-start gap-2">
+			<span className="shrink-0 font-mono text-[11px] text-[#4ec9b0] mt-0.5">[YOU]</span>
+			<p className="font-sans text-[13px] leading-relaxed">
+				<span className="text-[#858585]">{finalTranscript}</span>
+				{interimTranscript && (
+					<span className="text-[#525252] italic">
+						{finalTranscript ? " " : ""}
+						{interimTranscript}
+					</span>
+				)}
+			</p>
 		</div>
 	);
 }
@@ -336,11 +266,7 @@ interface MessageInputProps {
 	onSendMessage: (message: string) => void;
 }
 
-function MessageInput({
-	isAILoading,
-	isListening,
-	onSendMessage,
-}: MessageInputProps) {
+function MessageInput({ isAILoading, isListening, onSendMessage }: MessageInputProps) {
 	const [input, setInput] = useState("");
 	const textareaRef = useRef<HTMLTextAreaElement>(null);
 
@@ -355,46 +281,65 @@ function MessageInput({
 		if (!input.trim() || isAILoading) return;
 		const message = input.trim();
 		setInput("");
-		if (textareaRef.current) {
-			textareaRef.current.style.height = "auto";
-		}
+		if (textareaRef.current) textareaRef.current.style.height = "auto";
 		onSendMessage(message);
 	};
 
 	return (
 		<form
-			onSubmit={(e) => {
-				e.preventDefault();
-				handleSubmit();
-			}}
-			className="flex items-end gap-2"
+			onSubmit={(e) => { e.preventDefault(); handleSubmit(); }}
+			className="flex items-end gap-2 border border-[#3e3e42] bg-[#1e1e1e] focus-within:border-[#569cd6] transition-colors"
 		>
+			<span className="pl-3 pt-2 font-mono text-[12px] text-[#569cd6] self-start">&gt;</span>
 			<textarea
 				ref={textareaRef}
 				value={input}
-				onChange={(e) => {
-					setInput(e.target.value);
-					adjustHeight();
-				}}
+				onChange={(e) => { setInput(e.target.value); adjustHeight(); }}
 				onKeyDown={(e) => {
 					if (e.key === "Enter" && !e.shiftKey) {
 						e.preventDefault();
 						handleSubmit();
 					}
 				}}
-				placeholder="텍스트를 입력해주세요"
+				placeholder="텍스트를 입력하세요"
 				disabled={isAILoading || isListening}
 				rows={1}
-				className="flex-1 resize-none rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-neutral-900 px-3 py-2 text-sm text-gray-900 dark:text-white placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-neutral-100 disabled:opacity-50"
+				className="flex-1 resize-none bg-transparent px-2 py-2 font-mono text-[13px] text-[#d4d4d4] placeholder:text-[#858585] focus:outline-none disabled:opacity-40"
 				aria-label="메시지 입력"
 			/>
-			<Button
+			<button
 				type="submit"
 				disabled={!input.trim() || isAILoading || isListening}
+				className="self-end px-3 py-2 font-mono text-[12px] text-[#569cd6] disabled:opacity-30 hover:text-[#d4d4d4] transition-colors"
 			>
-				전송
-			</Button>
+				[ → ]
+			</button>
 		</form>
+	);
+}
+
+const BAR_VARIATIONS = [
+	{ id: "left", variation: 0.7 },
+	{ id: "center", variation: 1 },
+	{ id: "right", variation: 0.8 },
+] as const;
+
+function VoiceVisualizer({ volume }: { volume: number }) {
+	const getBarHeight = (variation: number) => {
+		if (volume < 0.01) return 2;
+		return Math.max(2, Math.min(12, volume * 12 * variation));
+	};
+
+	return (
+		<span className="inline-flex items-center gap-0.5" aria-hidden="true">
+			{BAR_VARIATIONS.map((bar) => (
+				<span
+					key={bar.id}
+					className="inline-block w-0.5 bg-[#f44747] transition-all duration-75"
+					style={{ height: `${getBarHeight(bar.variation)}px` }}
+				/>
+			))}
+		</span>
 	);
 }
 
@@ -416,106 +361,43 @@ function VoiceInteractionField({
 	isAILoading,
 	volume,
 	toggleListening,
-	transcripts,
 }: VoiceInteractionFieldProps) {
 	return (
-		<div className="flex items-center justify-center gap-3 mb-3">
-			<VoiceToggleButton
-				isListening={isListening}
-				disabled={isSpeaking || isAILoading}
-				volume={volume}
+		<div className="flex items-center gap-3">
+			<button
+				type="button"
 				onClick={toggleListening}
-			/>
+				disabled={isSpeaking || isAILoading}
+				aria-label={isListening ? "음성 인식 중지" : "음성 인식 시작"}
+				aria-pressed={isListening}
+				className={cn(
+					"font-mono text-[12px] border px-2.5 py-1 transition-all disabled:opacity-40",
+					isListening
+						? "border-[#f44747] text-[#f44747]"
+						: "border-[#3e3e42] text-[#858585] hover:border-[#525252] hover:text-[#d4d4d4]",
+				)}
+			>
+				{isListening ? (
+					<span className="flex items-center gap-1.5">
+						<VoiceVisualizer volume={volume} />
+						<span>[ ■ stop ]</span>
+					</span>
+				) : (
+					"[ mic ]"
+				)}
+			</button>
 
-			<div className="flex-1">
-				<StatusMessageDisplay
-					isListening={isListening}
-					isSpeaking={isSpeaking}
-					isAILoading={isAILoading}
-					transcripts={transcripts}
-				/>
-			</div>
-		</div>
-	);
-}
-
-interface VoiceToggleButtonProps {
-	onClick: () => void;
-	isListening: boolean;
-	volume: number;
-	disabled: boolean;
-}
-
-function VoiceToggleButton({
-	onClick,
-	isListening,
-	volume,
-	disabled,
-}: VoiceToggleButtonProps) {
-	return (
-		<button
-			type="button"
-			onClick={onClick}
-			disabled={disabled}
-			aria-label={isListening ? "음성 인식 중지" : "음성 인식 시작"}
-			aria-pressed={isListening}
-			className={cn(
-				"relative w-14 h-14 rounded-full flex items-center justify-center transition-all",
-				isListening
-					? "bg-red-500 text-white"
-					: "bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400",
-				disabled && "opacity-50 cursor-not-allowed",
-			)}
-		>
-			{isListening ? (
-				<VoiceVisualizer volume={volume} />
-			) : (
-				<MicIcon className="w-6 h-6" />
-			)}
-		</button>
-	);
-}
-
-interface StatusMessageDisplayProps {
-	isSpeaking: boolean;
-	isAILoading: boolean;
-	isListening: boolean;
-	transcripts: {
-		finalTranscript: string | null;
-		interimTranscript: string | null;
-	};
-}
-
-function StatusMessageDisplay({
-	isListening,
-	isSpeaking,
-	isAILoading,
-}: StatusMessageDisplayProps) {
-	return (
-		<div className="flex-1">
-			{isListening ? (
-				<div>
-					<p className="text-sm font-medium text-red-600 dark:text-red-400 flex items-center gap-2">
-						<span
-							className="w-2 h-2 bg-red-500 rounded-full animate-pulse"
-							aria-hidden="true"
-						/>
-						듣는 중...
-					</p>
-				</div>
-			) : isSpeaking ? (
-				<p className="text-sm text-blue-600 dark:text-blue-400">
-					AI가 말하는 중...
-				</p>
-			) : isAILoading ? (
-				<p className="text-sm text-gray-500 dark:text-gray-400">
-					AI 생각 중...
-				</p>
-			) : (
-				<p className="text-sm text-gray-500 dark:text-gray-400">
-					마이크 버튼을 눌러 말하세요
-				</p>
-			)}
+			<span className="font-mono text-[12px]">
+				{isListening ? (
+					<span className="text-[#f44747]">● 듣는 중...</span>
+				) : isSpeaking ? (
+					<span className="text-[#569cd6]">AI 말하는 중...</span>
+				) : isAILoading ? (
+					<span className="text-[#858585]">AI 생각 중...</span>
+				) : (
+					<span className="text-[#525252]">// mic 버튼으로 말하기</span>
+				)}
+			</span>
 		</div>
 	);
 }

@@ -6,7 +6,7 @@ import {
 import { Suspense, useMemo, useState } from "react";
 import { Link } from "react-router";
 import { PageLayout } from "../../components/layout";
-import { DocumentIcon, EmptyState } from "../../components/shared";
+import { EmptyState } from "../../components/shared";
 import { Button } from "../../components/ui";
 import { deleteProblem } from "../../lib/db/problems";
 import { queryKeys } from "../../queries/keys";
@@ -90,10 +90,10 @@ function ProblemList({
 		return (
 			<EmptyState
 				className="flex-1"
-				icon={<DocumentIcon className="h-10 w-10" />}
-				title="문제가 없습니다"
+				command={search ? `grep "${search}"` : "ls problems/"}
+				title="no problems found."
 				description={
-					search ? "검색 결과가 없습니다" : "새로운 문제를 등록해보세요"
+					search ? "no search results." : "run 'add' to register a problem."
 				}
 				action={
 					!search && (

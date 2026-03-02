@@ -1,8 +1,6 @@
 import { Link } from "react-router";
 import {
-	OpenIcon,
 	ProgressIndicator,
-	TrashIcon,
 } from "../../../components/shared";
 import { Badge } from "../../../components/ui";
 import {
@@ -23,30 +21,35 @@ export function ProblemRow({ problem, intervals, onDelete }: ProblemRowProps) {
 	const future = isDueFuture(problem.nextReviewDate);
 
 	return (
-		<div className="group px-4 py-3 transition-colors duration-150 hover:bg-neutral-50 dark:hover:bg-neutral-900/50">
+		<div className="group border-b border-[#2d2d2d] px-4 py-3 transition-colors duration-150 hover:bg-[#2a2d2e]">
 			<div className="flex items-start justify-between gap-3">
 				<div className="min-w-0 flex-1">
-					<Link
-						to={`/problems/${problem.id}`}
-						className="block truncate text-sm font-medium text-neutral-900 transition-colors hover:text-blue-600 dark:text-white dark:hover:text-blue-400"
-					>
-						{problem.title}
-					</Link>
+					<div className="flex items-center gap-1.5">
+						<span className="font-mono text-[12px] text-[#569cd6] opacity-0 transition-opacity group-hover:opacity-100">
+							▸
+						</span>
+						<Link
+							to={`/problems/${problem.id}`}
+							className="block truncate text-[13px] font-medium text-[#d4d4d4] transition-colors hover:text-[#569cd6]"
+						>
+							{problem.title}
+						</Link>
+					</div>
 
-					<div className="mt-4 flex flex-wrap items-center gap-1.5">
+					<div className="mt-2 flex flex-wrap items-center gap-2 pl-4">
 						<Badge>{problem.site}</Badge>
 						{getStatusBadge({ problem, overdue, future })}
 						{problem.difficulty && (
-							<Badge variant="default">{problem.difficulty}</Badge>
+							<Badge>{problem.difficulty}</Badge>
 						)}
 					</div>
 
 					{problem.tags.length > 0 && (
-						<div className="mt-2 flex flex-wrap gap-1.5">
+						<div className="mt-1.5 flex flex-wrap gap-2 pl-4">
 							{problem.tags.map((tag) => (
 								<span
 									key={tag}
-									className="text-xs text-neutral-400 dark:text-neutral-500"
+									className="font-mono text-[11px] text-[#858585]"
 								>
 									#{tag}
 								</span>
@@ -60,23 +63,21 @@ export function ProblemRow({ problem, intervals, onDelete }: ProblemRowProps) {
 						currentStage={problem.currentStage}
 						totalStages={intervals.length}
 					/>
-					<div className="flex items-center gap-0.5 opacity-0 transition-opacity duration-150 group-hover:opacity-100">
+					<div className="flex items-center gap-2 opacity-0 transition-opacity duration-150 group-hover:opacity-100">
 						<a
 							href={problem.link}
 							target="_blank"
 							rel="noopener noreferrer"
-							className="rounded-md p-1.5 text-neutral-400 transition-colors hover:bg-neutral-100 hover:text-neutral-600 dark:hover:bg-neutral-800 dark:hover:text-neutral-200"
-							title="문제 열기"
+							className="font-mono text-[11px] text-[#858585] transition-colors hover:text-[#569cd6]"
 						>
-							<OpenIcon className="h-4 w-4" />
+							[ ↗ ]
 						</a>
 						<button
 							type="button"
 							onClick={() => onDelete(problem.id)}
-							className="rounded-md p-1.5 text-neutral-400 transition-colors hover:bg-red-50 hover:text-red-600 dark:hover:bg-red-900/20 dark:hover:text-red-400"
-							title="삭제"
+							className="font-mono text-[11px] text-[#858585] transition-colors hover:text-[#f44747]"
 						>
-							<TrashIcon className="h-4 w-4" />
+							[ × ]
 						</button>
 					</div>
 				</div>
@@ -95,14 +96,16 @@ const getStatusBadge = ({
 	future: boolean;
 }) => {
 	if (problem.status === "completed") {
-		return <Badge variant="success">완료</Badge>;
+		return <Badge variant="success">DONE</Badge>;
 	}
 	if (problem.status === "archived") {
-		return <Badge>보관</Badge>;
+		return <Badge>ARCHIVED</Badge>;
 	}
 	if (overdue) {
 		return (
-			<Badge variant="danger">{formatReviewDate(problem.nextReviewDate)}</Badge>
+			<Badge variant="danger">
+				OVERDUE · {formatReviewDate(problem.nextReviewDate)}
+			</Badge>
 		);
 	}
 	if (future) {
@@ -110,5 +113,5 @@ const getStatusBadge = ({
 			<Badge variant="info">{formatReviewDate(problem.nextReviewDate)}</Badge>
 		);
 	}
-	return <Badge variant="warning">오늘</Badge>;
+	return <Badge variant="warning">TODAY</Badge>;
 };

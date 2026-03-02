@@ -1,6 +1,6 @@
 import { Link } from "react-router";
-import { SearchIcon } from "../../../components/shared";
-import { Button, Input } from "../../../components/ui";
+import { PageHeader } from "../../../components/layout";
+import { Button } from "../../../components/ui";
 import { cn } from "../../../lib/utils";
 import type { FilterStatus } from "../ProblemsPage";
 
@@ -19,14 +19,14 @@ export function ProblemsHeader({
 }: ProblemsHeaderProps) {
 	return (
 		<>
-			<div className="flex items-center justify-between border-b border-neutral-100 px-4 py-3 dark:border-neutral-800/50">
-				<h1 className="text-lg font-semibold tracking-tight text-neutral-900 dark:text-white">
-					문제 목록
-				</h1>
-				<Link to="/problems/new">
-					<Button size="sm">추가</Button>
-				</Link>
-			</div>
+			<PageHeader
+				title="problems"
+				action={
+					<Link to="/problems/new">
+						<Button size="sm">[ + add ]</Button>
+					</Link>
+				}
+			/>
 
 			<div className="space-y-3 px-4 py-3">
 				<SearchBar search={search} setSearch={setSearch} />
@@ -46,13 +46,13 @@ interface SearchBarProps {
 
 function SearchBar({ search, setSearch }: SearchBarProps) {
 	return (
-		<div className="relative">
-			<SearchIcon className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-neutral-400" />
-			<Input
-				placeholder="검색..."
+		<div className="flex items-center border border-[#3e3e42] bg-[#1e1e1e] transition-colors focus-within:border-[#569cd6]">
+			<span className="pl-3 font-mono text-[12px] text-[#569cd6]">&gt;</span>
+			<input
 				value={search}
 				onChange={(e) => setSearch(e.target.value)}
-				className="pl-9"
+				placeholder="search..."
+				className="h-8 w-full bg-transparent px-2 font-mono text-[13px] text-[#d4d4d4] placeholder:text-[#858585] focus:outline-none"
 			/>
 		</div>
 	);
@@ -111,10 +111,10 @@ function FilterButton({ active, onClick, children }: FilterButtonProps) {
 			type="button"
 			onClick={onClick}
 			className={cn(
-				"rounded-full px-4 py-1.5 text-xs font-medium transition-all duration-150",
+				"rounded-none border px-3 py-1 font-mono text-[11px] transition-all duration-150",
 				active
-					? "bg-neutral-900 text-white dark:bg-white dark:text-neutral-900"
-					: "bg-neutral-100 text-neutral-500 hover:bg-neutral-200 hover:text-neutral-700 dark:bg-neutral-800 dark:text-neutral-400 dark:hover:bg-neutral-700 dark:hover:text-neutral-300",
+					? "border-[#569cd6] bg-[#094771] text-[#d4d4d4]"
+					: "border-[#3e3e42] bg-transparent text-[#858585] hover:border-[#525252] hover:text-[#d4d4d4]",
 			)}
 		>
 			{children}

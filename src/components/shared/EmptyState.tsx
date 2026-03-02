@@ -2,7 +2,7 @@ import type { ReactNode } from "react";
 import { cn } from "../../lib/utils";
 
 interface EmptyStateProps {
-	icon?: ReactNode;
+	command?: string;
 	title: string;
 	description?: string;
 	action?: ReactNode;
@@ -10,7 +10,7 @@ interface EmptyStateProps {
 }
 
 export function EmptyState({
-	icon,
+	command = "ls",
 	title,
 	description,
 	action,
@@ -19,24 +19,24 @@ export function EmptyState({
 	return (
 		<div
 			className={cn(
-				"flex flex-col items-center justify-center py-16 text-center",
+				"flex flex-col justify-center px-6 py-16 font-mono",
 				className,
 			)}
 		>
-			{icon && (
-				<div className="mb-4 text-neutral-300 dark:text-neutral-600">
-					{icon}
-				</div>
-			)}
-			<h3 className="text-base font-medium text-neutral-900 dark:text-neutral-100">
-				{title}
-			</h3>
+			<p className="text-[13px] text-[#858585]">
+				<span className="text-[#569cd6]">$</span> {command}
+			</p>
+			<p className="mt-3 text-[13px] text-[#858585]">(no items)</p>
+			<p className="mt-4 text-[13px] text-[#858585]">
+				<span className="text-[#569cd6]">&gt;</span> {title}
+			</p>
 			{description && (
-				<p className="mt-1.5 text-sm text-neutral-500 dark:text-neutral-400">
-					{description}
+				<p className="mt-1 text-[13px] text-[#858585]">
+					<span className="text-[#569cd6]">&gt;</span> {description}
 				</p>
 			)}
 			{action && <div className="mt-5">{action}</div>}
+			<span className="mt-4 inline-block h-4 w-2 bg-[#d4d4d4] cursor-blink" />
 		</div>
 	);
 }

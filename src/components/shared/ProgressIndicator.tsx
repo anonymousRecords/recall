@@ -11,26 +11,13 @@ export function ProgressIndicator({
 	totalStages,
 	className,
 }: ProgressIndicatorProps) {
-	const stageIds = Array.from({ length: totalStages }, (_, i) => `stage-${i}`);
+	const filled = Math.min(currentStage, totalStages);
+	const empty = totalStages - filled;
+	const bar = "█".repeat(filled) + "░".repeat(empty);
 
 	return (
-		<div className={cn("flex items-center gap-1", className)}>
-			{stageIds.map((_, index) => (
-				<div
-					key={stageIds[index]}
-					className={cn(
-						"h-1.5 rounded-full transition-all duration-500 ease-out",
-						index < currentStage
-							? "w-3 bg-neutral-900 dark:bg-neutral-100"
-							: index === currentStage
-								? "w-3 bg-neutral-900 dark:bg-neutral-100"
-								: "w-1.5 bg-neutral-200 dark:bg-neutral-700",
-					)}
-					style={{
-						transitionDelay: `${index * 40}ms`,
-					}}
-				/>
-			))}
-		</div>
+		<span className={cn("font-mono text-[12px] text-[#569cd6]", className)}>
+			[{bar}] {currentStage}/{totalStages}
+		</span>
 	);
 }

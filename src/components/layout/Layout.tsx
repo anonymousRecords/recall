@@ -1,13 +1,6 @@
 import { type ReactNode, useCallback } from "react";
 import { NavLink } from "react-router";
 import { cn } from "../../lib/utils";
-import {
-	ChartIcon,
-	HomeIcon,
-	ListIcon,
-	MicIcon,
-	SettingsIcon,
-} from "../shared";
 
 interface LayoutProps {
 	children: ReactNode;
@@ -15,28 +8,22 @@ interface LayoutProps {
 
 export function Layout({ children }: LayoutProps) {
 	return (
-		<div className="flex h-screen w-full flex-col overflow-hidden bg-neutral-50 dark:bg-neutral-950">
+		<div className="flex h-screen w-full flex-col overflow-hidden bg-[#1e1e1e]">
+			<header className="flex h-8 shrink-0 items-center border-b border-[#3e3e42] bg-[#252526] px-3">
+				<span
+					style={{ fontFamily: "'DotGothic16', monospace" }}
+					className="text-[13px] text-[#d4d4d4]"
+				>
+					recall_
+				</span>
+			</header>
 			<main className="min-h-0 flex-1 overflow-auto">{children}</main>
-
-			<nav className="flex h-16 items-center justify-around border-t border-neutral-200/60 bg-white/80 backdrop-blur-xl dark:border-neutral-800 dark:bg-neutral-900/80">
-				<NavItem to="/" icon={<HomeIcon className="h-6 w-6" />} label="홈" />
-				<NavItem
-					to="/problems"
-					icon={<ListIcon className="h-6 w-6" />}
-					label="문제"
-					end
-				/>
-				<NavItem
-					to="/live"
-					icon={<MicIcon className="h-6 w-6" />}
-					label="라이브"
-				/>
+			<nav className="flex h-9 shrink-0 items-stretch border-t border-[#3e3e42] bg-[#252526]">
+				<NavItem to="/" label="~/" end />
+				<NavItem to="/problems" label="problems" end />
+				<NavItem to="/live" label="live" />
 				<AnalyticsNavItem />
-				<NavItem
-					to="/settings"
-					icon={<SettingsIcon className="h-6 w-6" />}
-					label="설정"
-				/>
+				<NavItem to="/settings" label="config" />
 			</nav>
 		</div>
 	);
@@ -44,29 +31,26 @@ export function Layout({ children }: LayoutProps) {
 
 interface NavItemProps {
 	to: string;
-	icon: ReactNode;
 	label: string;
 	end?: boolean;
 }
 
-function NavItem({ to, icon, label, end }: NavItemProps) {
+function NavItem({ to, label, end }: NavItemProps) {
 	return (
 		<NavLink
 			to={to}
 			end={end}
 			className={({ isActive }) =>
 				cn(
-					"group flex flex-col items-center gap-1 px-4 py-2 transition-all duration-150",
+					"flex flex-1 items-center justify-center border-r border-[#3e3e42]",
+					"font-mono text-[11px] transition-colors duration-150",
 					isActive
-						? "text-neutral-900 dark:text-white"
-						: "text-neutral-400 hover:text-neutral-600 dark:text-neutral-500 dark:hover:text-neutral-300",
+						? "bg-[#1e1e1e] text-[#d4d4d4] border-t-2 border-t-[#569cd6]"
+						: "bg-[#252526] text-[#858585] hover:text-[#d4d4d4]",
 				)
 			}
 		>
-			<span className="transition-transform duration-150 group-hover:scale-105 group-active:scale-95">
-				{icon}
-			</span>
-			<span className="text-[10px] font-medium tracking-wide">{label}</span>
+			{label}
 		</NavLink>
 	);
 }
@@ -74,7 +58,6 @@ function NavItem({ to, icon, label, end }: NavItemProps) {
 function AnalyticsNavItem() {
 	const openAnalytics = useCallback(() => {
 		const analyticsUrl = browser.runtime.getURL("/analytics.html");
-
 		browser.tabs.create({ url: analyticsUrl });
 	}, []);
 
@@ -82,12 +65,9 @@ function AnalyticsNavItem() {
 		<button
 			type="button"
 			onClick={openAnalytics}
-			className="group flex flex-col items-center gap-1 px-4 py-2 transition-all duration-150 text-neutral-400 hover:text-neutral-600 dark:text-neutral-500 dark:hover:text-neutral-300"
+			className="flex flex-1 items-center justify-center border-r border-[#3e3e42] bg-[#252526] font-mono text-[11px] text-[#858585] transition-colors duration-150 hover:text-[#d4d4d4]"
 		>
-			<span className="transition-transform duration-150 group-hover:scale-105 group-active:scale-95">
-				<ChartIcon className="h-6 w-6" />
-			</span>
-			<span className="text-[10px] font-medium tracking-wide">분석</span>
+			stats
 		</button>
 	);
 }

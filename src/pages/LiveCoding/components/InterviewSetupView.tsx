@@ -75,7 +75,7 @@ export function InterviewSetupView({
 					)}
 
 					{error && (
-						<p className="text-sm text-red-600 dark:text-red-400">{error}</p>
+						<p className="font-mono text-[12px] text-[#f44747]">{error}</p>
 					)}
 
 					<Button
@@ -111,7 +111,7 @@ function InterviewGuideCard() {
 	return (
 		<Card>
 			<CardContent className="py-4">
-				<p className="text-sm text-gray-600 dark:text-gray-400">
+				<p className="font-mono text-[12px] text-[#858585]">
 					프로그래머스에서 실제 면접처럼 연습하세요
 					<br />
 					AI 면접관이 질문하고 피드백을 제공해줘요
@@ -129,13 +129,13 @@ function ProblemInfoCard({ problemInfo }: ProblemInfoProps) {
 	return (
 		<Card>
 			<CardHeader>
-				<CardTitle className="text-base">감지된 문제</CardTitle>
+				<CardTitle>감지된 문제</CardTitle>
 			</CardHeader>
 			<CardContent>
-				<p className="font-medium text-gray-900 dark:text-white">
+				<p className="text-[13px] text-[#d4d4d4]">
 					{problemInfo.title}
 				</p>
-				<p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
+				<p className="font-mono text-[11px] text-[#858585] mt-1">
 					난이도: Level {problemInfo.level}
 				</p>
 			</CardContent>
@@ -147,7 +147,7 @@ function StepInstructionCard() {
 	return (
 		<Card>
 			<CardContent className="py-4 flex flex-col gap-4">
-				<p className="text-sm text-gray-900 dark:text-white">
+				<p className="text-[13px] text-[#d4d4d4]">
 					프로그래머스 문제 페이지에서 확장을 열어주세요
 				</p>
 				<Button
@@ -167,7 +167,7 @@ function ApiKeyAlertCard() {
 	return (
 		<Card>
 			<CardContent className="py-4 flex flex-col gap-4">
-				<p className="text-sm text-red-600 dark:text-red-400 mb-2">
+				<p className="font-mono text-[12px] text-[#f44747] mb-2">
 					API 키가 설정되지 않았어요 <br />
 					설정에서 API 키를 입력해주세요
 				</p>
@@ -200,7 +200,7 @@ function InterviewSessionSettings({
 		<>
 			<Card>
 				<CardHeader>
-					<CardTitle className="text-base">제한 시간</CardTitle>
+					<CardTitle>제한 시간</CardTitle>
 				</CardHeader>
 				<CardContent>
 					<Select
@@ -213,7 +213,7 @@ function InterviewSessionSettings({
 
 			<Card>
 				<CardHeader>
-					<CardTitle className="text-base">면접관 스타일</CardTitle>
+					<CardTitle>면접관 스타일</CardTitle>
 				</CardHeader>
 				<CardContent>
 					<Select
@@ -223,7 +223,7 @@ function InterviewSessionSettings({
 							setInterviewerStyle(e.target.value as InterviewerStyle)
 						}
 					/>
-					<p className="text-xs text-gray-500 dark:text-gray-400 mt-2">
+					<p className="font-mono text-[11px] text-[#858585] mt-2">
 						{style === "friendly" && "친절하게 힌트를 많이 제공해요"}
 						{style === "normal" && "적절한 질문과 피드백을 제공해요"}
 						{style === "pressure" && "날카로운 질문과 시간 압박을 줘요"}

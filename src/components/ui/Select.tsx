@@ -7,7 +7,6 @@ import {
 	useState,
 } from "react";
 import { cn } from "../../lib/utils";
-import { ChevronDownIcon } from "../shared";
 
 type SelectOption = { value: string; label: string };
 
@@ -107,7 +106,7 @@ export const Select = ({
 			{label && (
 				<label
 					htmlFor={id}
-					className="text-sm font-medium text-neutral-700 dark:text-neutral-300"
+					className="font-mono text-[12px] text-[#858585]"
 				>
 					{label}
 				</label>
@@ -124,44 +123,39 @@ export const Select = ({
 					onClick={() => setIsOpen((prev) => !prev)}
 					onKeyDown={handleKeyDown}
 					className={cn(
-						"h-9 w-full rounded-sm border bg-white pl-3 pr-8 text-left text-sm",
-						"border-neutral-200",
+						"h-8 w-full rounded-none border bg-[#1e1e1e] pl-3 pr-8 text-left font-mono text-[13px]",
+						"border-[#3e3e42] text-[#d4d4d4]",
 						"transition-all duration-150 ease-out",
-						"hover:border-neutral-300",
-						"focus:border-neutral-400 focus:outline-none focus:ring-2 focus:ring-neutral-100",
-						"dark:border-neutral-700 dark:bg-neutral-900 dark:text-neutral-100",
-						"dark:hover:border-neutral-600",
-						"dark:focus:border-neutral-500 dark:focus:ring-neutral-800",
+						"hover:border-[#525252]",
+						"focus:border-[#569cd6] focus:outline-none focus:ring-1 focus:ring-[#569cd6]/30",
 						"disabled:pointer-events-none disabled:opacity-40",
-						error &&
-							"border-red-500 focus:border-red-500 focus:ring-red-100 dark:focus:ring-red-900/30",
-						isOpen &&
-							"border-neutral-400 ring-2 ring-neutral-100 dark:border-neutral-500 dark:ring-neutral-800",
+						error && "border-[#f44747]",
+						isOpen && "border-[#569cd6] ring-1 ring-[#569cd6]/30",
 						className,
 					)}
 				>
 					<span
-						className={cn(
-							!selectedOption && "text-neutral-400 dark:text-neutral-500",
-						)}
+						className={cn(!selectedOption && "text-[#858585]")}
 					>
 						{selectedOption?.label ?? "선택"}
 					</span>
 				</button>
 
 				<div className="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-2">
-					<ChevronDownIcon
+					<span
 						className={cn(
-							"h-4 w-4 text-neutral-400 transition-transform duration-150",
+							"font-mono text-[12px] text-[#858585] transition-transform duration-150 inline-block",
 							isOpen && "rotate-180",
 						)}
-					/>
+					>
+						▾
+					</span>
 				</div>
 
 				{isOpen && (
 					<div
 						role="listbox"
-						className="absolute z-50 mt-1 w-full overflow-hidden rounded-sm border border-neutral-100 bg-white shadow-md dark:border-neutral-700 dark:bg-neutral-900"
+						className="absolute z-50 mt-0 w-full overflow-hidden rounded-none border border-[#569cd6] bg-[#252526]"
 					>
 						{options.map((option, index) => (
 							<div
@@ -179,28 +173,15 @@ export const Select = ({
 									}
 								}}
 								className={cn(
-									"flex cursor-pointer items-center justify-between px-3 py-2 text-sm",
-									"text-neutral-700 dark:text-neutral-200",
-									index === focusedIndex && "bg-neutral-50 dark:bg-neutral-800",
+									"flex cursor-pointer items-center justify-between px-3 py-1.5 font-mono text-[12px]",
+									"text-[#d4d4d4]",
+									index === focusedIndex ? "bg-[#094771]" : "hover:bg-[#2a2d2e]",
+									option.value === value && "text-[#569cd6]",
 								)}
 							>
 								<span>{option.label}</span>
 								{option.value === value && (
-									<svg
-										aria-label="checked"
-										role="img"
-										className="h-4 w-4 text-neutral-500 dark:text-neutral-400"
-										viewBox="0 0 16 16"
-										fill="none"
-									>
-										<path
-											d="M3 8l3.5 3.5L13 4"
-											stroke="currentColor"
-											strokeWidth="1.5"
-											strokeLinecap="round"
-											strokeLinejoin="round"
-										/>
-									</svg>
+									<span className="font-mono text-[12px] text-[#569cd6]">✓</span>
 								)}
 							</div>
 						))}
@@ -209,12 +190,12 @@ export const Select = ({
 			</div>
 
 			{hint && !error && (
-				<span className="text-xs text-neutral-500 dark:text-neutral-400">
+				<span className="font-mono text-[11px] text-[#858585]">
 					{hint}
 				</span>
 			)}
 			{error && (
-				<span className="text-xs text-red-600 dark:text-red-400">{error}</span>
+				<span className="font-mono text-[11px] text-[#f44747]">{error}</span>
 			)}
 		</div>
 	);

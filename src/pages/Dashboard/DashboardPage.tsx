@@ -6,21 +6,14 @@ import {
 import { Suspense, useMemo } from "react";
 import { Link } from "react-router";
 import type { Problem } from "@/src/types";
-import { PageLayout } from "../../components/layout";
+import { PageLayout, PageHeader } from "../../components/layout";
 import {
-	CheckBadgeIcon,
-	CheckIcon,
 	EmptyState,
-	OpenIcon,
 	ProgressIndicator,
 } from "../../components/shared";
 import {
 	Badge,
 	Button,
-	Card,
-	CardContent,
-	CardHeader,
-	CardTitle,
 } from "../../components/ui";
 import { completeReview } from "../../lib/db/reviews";
 import { formatReviewDate, isOverdue } from "../../lib/scheduling";
@@ -96,29 +89,15 @@ function DashboardHeader({
 	todayCount,
 	totalCount,
 }: DashboardHeaderProps) {
+	const parts: string[] = [];
+	if (overdueCount > 0) parts.push(`overdue: ${overdueCount}`);
+	if (todayCount > 0) parts.push(`scheduled: ${todayCount}`);
+
 	return (
-		<div className="px-4 py-3">
-			<h1 className="text-lg font-semibold tracking-tight text-neutral-900 dark:text-white">
-				오늘의 복습
-			</h1>
-			<div className="mt-1.5 flex items-center gap-3 text-sm">
-				{overdueCount > 0 && (
-					<span className="font-medium text-red-600 dark:text-red-400">
-						밀린 복습 {overdueCount}개
-					</span>
-				)}
-				{todayCount > 0 && (
-					<span className="text-neutral-500 dark:text-neutral-400">
-						오늘 복습 {todayCount}개
-					</span>
-				)}
-				{totalCount === 0 && (
-					<span className="text-neutral-400 dark:text-neutral-500">
-						복습할 문제가 없어요
-					</span>
-				)}
-			</div>
-		</div>
+		<PageHeader
+			title="today's review"
+			subtitle={totalCount === 0 ? "no pending reviews" : parts.join("  ·  ")}
+		/>
 	);
 }
 
@@ -137,9 +116,9 @@ function ReviewProblemList({
 		return (
 			<div className="flex h-full items-center justify-center px-4">
 				<EmptyState
-					icon={<CheckBadgeIcon className="h-10 w-10" />}
-					title="모든 복습 완료"
-					description="오늘 복습할 문제가 없어요"
+					command="ls reviews/"
+					title="all reviews complete."
+					description="no pending reviews found."
 					action={
 						<Link to="/problems/new">
 							<Button variant="secondary" size="sm">
@@ -153,60 +132,51 @@ function ReviewProblemList({
 	}
 
 	return (
-		<div className="space-y-3 p-4">
+		<div className="divide-y divide-[#2d2d2d]">
 			{problems.map((problem) => {
 				const overdue = isOverdue(problem.nextReviewDate);
-
 				return (
-					<Card key={problem.id} className="group">
-						<CardHeader className="mb-3 pb-0">
-							<div className="flex items-start justify-between gap-3">
-								<div className="min-w-0 flex-1">
-									<div className="flex items-center justify-between">
-										<CardTitle className="truncate">{problem.title}</CardTitle>
-
-										<a
-											href={problem.link}
-											target="_blank"
-											rel="noopener noreferrer"
-											className="rounded-md p-1.5 text-neutral-400 transition-colors hover:bg-neutral-100 hover:text-neutral-600 dark:hover:bg-neutral-800 dark:hover:text-neutral-200"
-											title="문제 열기"
-										>
-											<OpenIcon className="h-4 w-4" />
-										</a>
-									</div>
-									<div className="mt-2 flex flex-wrap items-center gap-1.5">
-										<Badge variant={overdue ? "danger" : "info"}>
-											{formatReviewDate(problem.nextReviewDate)}
-										</Badge>
-										<Badge>{problem.site}</Badge>
-									</div>
-								</div>
-							</div>
-						</CardHeader>
-
-						<CardContent>
-							<div className="flex items-center justify-between pt-3">
-								<div className="flex items-center gap-2.5">
-									<span className="text-xs tabular-nums text-neutral-400">
-										{problem.currentStage + 1}/{intervals.length}
+					<div
+						key={problem.id}
+						className="group border-b border-[#2d2d2d] px-4 py-3 transition-colors hover:bg-[#2a2d2e]"
+					>
+						<div className="flex items-start justify-between gap-3">
+							<div className="min-w-0 flex-1">
+								<div className="flex items-center gap-1.5">
+									<span className="font-mono text-[12px] text-[#569cd6] opacity-0 transition-opacity group-hover:opacity-100">
+										▸
 									</span>
+									<a
+										href={problem.link}
+										target="_blank"
+										rel="noopener noreferrer"
+										className="block truncate text-[13px] font-medium text-[#d4d4d4] transition-colors hover:text-[#569cd6]"
+									>
+										{problem.title}
+									</a>
+								</div>
+								<div className="mt-2 flex flex-wrap items-center gap-2 pl-4">
+									<Badge>{problem.site}</Badge>
+									<Badge variant={overdue ? "danger" : "info"}>
+										{overdue ? `OVERDUE · ${formatReviewDate(problem.nextReviewDate)}` : formatReviewDate(problem.nextReviewDate)}
+									</Badge>
+								</div>
+								<div className="mt-2 pl-4">
 									<ProgressIndicator
 										currentStage={problem.currentStage}
 										totalStages={intervals.length}
 									/>
 								</div>
-
-								<Button
-									size="sm"
-									onClick={() => handleReviewComplete(problem.id)}
-								>
-									<CheckIcon className="h-4 w-4" />
-									복습 완료
-								</Button>
 							</div>
-						</CardContent>
-					</Card>
+							<button
+								type="button"
+								onClick={() => handleReviewComplete(problem.id)}
+								className="mt-1 shrink-0 font-mono text-[12px] text-[#858585] transition-colors hover:text-[#4ec9b0]"
+							>
+								[ ✓ done ]
+							</button>
+						</div>
+					</div>
 				);
 			})}
 		</div>

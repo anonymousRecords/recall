@@ -1,6 +1,5 @@
 import { type KeyboardEvent, useState } from "react";
 import { cn } from "../../lib/utils";
-import { CloseIcon } from "./icons";
 
 interface TagInputProps {
 	value: string[];
@@ -41,36 +40,33 @@ export function TagInput({
 			{label && (
 				<label
 					htmlFor="label"
-					className="text-sm font-medium text-neutral-700 dark:text-neutral-300"
+					className="font-mono text-[12px] text-[#858585]"
 				>
 					{label}
 				</label>
 			)}
 			<div
 				className={cn(
-					"flex min-h-[36px] w-full flex-wrap items-center gap-1.5 rounded-sm border bg-white px-2.5 py-1.5",
-					"border-neutral-200",
+					"flex min-h-[32px] w-full flex-wrap items-center gap-1.5 rounded-none border bg-[#1e1e1e] px-2.5 py-1.5",
+					"border-[#3e3e42]",
 					"transition-all duration-150 ease-out",
-					"hover:border-neutral-300",
-					"focus-within:border-neutral-400 focus-within:ring-2 focus-within:ring-neutral-100",
-					"dark:border-neutral-700 dark:bg-neutral-900",
-					"dark:hover:border-neutral-600",
-					"dark:focus-within:border-neutral-500 dark:focus-within:ring-neutral-800",
+					"hover:border-[#525252]",
+					"focus-within:border-[#569cd6] focus-within:ring-1 focus-within:ring-[#569cd6]/30",
 					className,
 				)}
 			>
 				{value.map((tag) => (
 					<span
 						key={tag}
-						className="group inline-flex items-center gap-1 rounded-md bg-neutral-100 px-2 py-0.5 text-sm text-neutral-700 transition-colors dark:bg-neutral-800 dark:text-neutral-300"
+						className="group inline-flex items-center gap-1 border border-[#3e3e42] bg-transparent px-1.5 py-0.5 font-mono text-[11px] text-[#ce9178]"
 					>
 						{tag}
 						<button
 							type="button"
 							onClick={() => removeTag(tag)}
-							className="text-neutral-400 transition-colors hover:text-neutral-600 dark:hover:text-neutral-200"
+							className="font-mono text-[11px] text-[#858585] transition-colors hover:text-[#f44747]"
 						>
-							<CloseIcon className="h-3.5 w-3.5" />
+							×
 						</button>
 					</span>
 				))}
@@ -80,7 +76,7 @@ export function TagInput({
 					onChange={(e) => setInputValue(e.target.value)}
 					onKeyDown={handleKeyDown}
 					placeholder={value.length === 0 ? placeholder : ""}
-					className="min-w-[100px] flex-1 bg-transparent text-sm outline-none placeholder:text-neutral-400 dark:text-neutral-100 dark:placeholder:text-neutral-500"
+					className="min-w-[80px] flex-1 bg-transparent font-mono text-[13px] text-[#d4d4d4] outline-none placeholder:text-[#858585]"
 				/>
 			</div>
 		</div>

@@ -10,15 +10,9 @@ import {
 	Input,
 	Select,
 } from "../../components/ui";
-import type { AIProvider, Theme } from "../../types";
+import type { AIProvider } from "../../types";
 import { useLiveCodingForm } from "./hooks/useLiveCodingForm";
 import { useSettingsForm } from "./hooks/useSettingsForm";
-
-const THEME_OPTIONS = [
-	{ value: "system", label: "시스템 설정" },
-	{ value: "light", label: "라이트 모드" },
-	{ value: "dark", label: "다크 모드" },
-];
 
 const AI_PROVIDER_OPTIONS = [
 	{ value: "openai", label: "OpenAI (GPT-4o-mini)" },
@@ -65,10 +59,6 @@ function SettingsPageContent() {
 						intervals={generalSettings.intervals}
 						setIntervals={generalSettings.setIntervals}
 					/>
-					<ThemeCard
-						theme={generalSettings.theme}
-						setTheme={generalSettings.setTheme}
-					/>
 					<LiveCodingCard
 						aiProvider={liveCoding.aiProvider}
 						setAiProvider={liveCoding.setAiProvider}
@@ -81,10 +71,10 @@ function SettingsPageContent() {
 
 					{message && (
 						<div
-							className={`rounded-lg px-4 py-3 text-sm font-medium ${
+							className={`border px-4 py-2 font-mono text-[12px] ${
 								message.type === "success"
-									? "bg-emerald-50 text-emerald-700 dark:bg-emerald-950/30 dark:text-emerald-400"
-									: "bg-red-50 text-red-700 dark:bg-red-950/30 dark:text-red-400"
+									? "border-[#4ec9b0] text-[#4ec9b0]"
+									: "border-[#f44747] text-[#f44747]"
 							}`}
 						>
 							{message.text}
@@ -118,7 +108,7 @@ function SettingsPageContent() {
 					/>
 				</div>
 
-				<div className="mt-8 border-t border-neutral-100 pt-6 dark:border-neutral-800">
+				<div className="mt-8 border-t border-[#3e3e42] pt-6">
 					<AppInfoFooter />
 				</div>
 			</div>
@@ -146,29 +136,6 @@ function IntervalCard({ intervals, setIntervals }: IntervalCardProps) {
 					onChange={(e) => setIntervals(e.target.value)}
 					placeholder="1, 3, 7, 14, 30"
 					hint="쉼표로 구분하여 입력 (기본값: 1, 3, 7, 14, 30일)"
-				/>
-			</CardContent>
-		</Card>
-	);
-}
-
-interface ThemeCardProps {
-	theme: Theme;
-	setTheme: (theme: Theme) => void;
-}
-
-function ThemeCard({ theme, setTheme }: ThemeCardProps) {
-	return (
-		<Card>
-			<CardHeader>
-				<CardTitle>테마</CardTitle>
-				<CardDescription>Recall의 색상 모드를 선택해요</CardDescription>
-			</CardHeader>
-			<CardContent>
-				<Select
-					options={THEME_OPTIONS}
-					value={theme}
-					onChange={(e) => setTheme(e.target.value as Theme)}
 				/>
 			</CardContent>
 		</Card>
@@ -278,11 +245,9 @@ function SettingsActions({ onReset, onSave, saving }: SettingsActionsProps) {
 
 function AppInfoFooter() {
 	return (
-		<div className="text-center">
-			<p className="text-xs font-medium text-neutral-400 dark:text-neutral-500">
-				Recall v0.1.0
-			</p>
-			<p className="mt-0.5 text-xs text-neutral-300 dark:text-neutral-600">
+		<div className="text-center font-mono">
+			<p className="text-[11px] text-[#858585]">Recall v0.1.0</p>
+			<p className="mt-0.5 text-[11px] text-[#525252]">
 				Where memory becomes skill
 			</p>
 		</div>

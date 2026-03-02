@@ -1,12 +1,4 @@
 import { PageHeader, PageLayout } from "../../../components/layout";
-import {
-	Button,
-	Card,
-	CardContent,
-	CardHeader,
-	CardTitle,
-} from "../../../components/ui";
-import { cn } from "../../../lib/utils";
 import type { InterviewReport, LiveInterview } from "../../../types";
 
 interface InterviewReportProps {
@@ -25,11 +17,11 @@ export function InterviewReportView({
 	}
 
 	return (
-		<PageLayout header={<PageHeader title="면접 리포트" />}>
-			<div className="flex-1 overflow-auto p-4 space-y-4">
+		<PageLayout header={<PageHeader title="interview report" />}>
+			<div className="flex-1 overflow-auto p-4 space-y-3">
 				<BasicInfoReportCard report={report} />
 				<ScoreReportCard report={report} />
-				{report.feedback.length > 0 && <FeddbackCard report={report} />}
+				{report.feedback.length > 0 && <FeedbackCard report={report} />}
 				{report.strengths.length > 0 && <StrengthCard report={report} />}
 				{report.improvements.length > 0 && <ImprovementCard report={report} />}
 				{report.supportingQuotes && report.supportingQuotes.length > 0 && (
@@ -39,27 +31,67 @@ export function InterviewReportView({
 					<SampleAnswerCard sampleAnswer={report.sampleAnswer} />
 				)}
 
-				<div className="flex flex-col gap-3">
-					<Button
-						variant="secondary"
-						className="w-full"
+				<div className="flex flex-col gap-2 pt-1">
+					<button
+						type="button"
+						className="w-full border border-[#3e3e42] py-2 font-mono text-[12px] text-[#858585] transition-colors hover:border-[#525252] hover:text-[#d4d4d4]"
 						onClick={onNewInterview}
 					>
-						새로운 면접 시작
-					</Button>
-					<Button
-						variant="ghost"
-						className="w-full"
+						[ + new interview ]
+					</button>
+					<button
+						type="button"
+						className="w-full py-2 font-mono text-[12px] text-[#525252] transition-colors hover:text-[#858585]"
 						onClick={() => {
 							const url = browser.runtime.getURL("/analytics.html");
 							browser.tabs.create({ url });
 						}}
 					>
-						전체 면접 분석 보기
-					</Button>
+						[ → stats ]
+					</button>
 				</div>
 			</div>
 		</PageLayout>
+	);
+}
+
+function ReportSkeletonView() {
+	return (
+		<div className="flex h-full items-center justify-center">
+			<p className="font-mono text-[12px] text-[#858585]">
+				<span className="text-[#569cd6]">&gt;</span> generating report...
+				<span className="cursor-blink">█</span>
+			</p>
+		</div>
+	);
+}
+
+const formatDuration = (seconds: number): string => {
+	const mins = Math.floor(seconds / 60);
+	const secs = seconds % 60;
+	return `${mins}m ${secs}s`;
+};
+
+interface BasicInfoReportCardProps {
+	report: InterviewReport;
+}
+
+function BasicInfoReportCard({ report }: BasicInfoReportCardProps) {
+	const tu = report.tokenUsage;
+	return (
+		<div className="border border-[#3e3e42] bg-[#252526] p-3">
+			<p className="font-mono text-[11px] text-[#858585] mb-2">// session log</p>
+			<div className="space-y-1 font-mono text-[12px] text-[#858585]">
+				<p><span className="text-[#569cd6]">duration</span>  {formatDuration(report.duration)}</p>
+				<p><span className="text-[#569cd6]">messages</span>  {report.messageCount}</p>
+				{tu && (
+					<>
+						<p><span className="text-[#569cd6]">tokens</span>    {(tu.totalPromptTokens + tu.totalCompletionTokens).toLocaleString()} ({tu.callCount} calls)</p>
+						<p><span className="text-[#569cd6]">cost</span>      ${tu.estimatedCost.toFixed(4)}</p>
+					</>
+				)}
+			</div>
+		</div>
 	);
 }
 
@@ -69,84 +101,21 @@ interface ScoreBarProps {
 }
 
 function ScoreBar({ label, score }: ScoreBarProps) {
-	const getBarColor = (score: number): string => {
-		if (score >= 80) return "bg-green-500";
-		if (score >= 60) return "bg-amber-500";
-		return "bg-red-500";
-	};
+	const color =
+		score >= 80 ? "#4ec9b0" : score >= 60 ? "#dcdcaa" : "#f44747";
 
-	const getScoreColor = (score: number): string => {
-		if (score >= 80) return "text-green-600 dark:text-green-400";
-		if (score >= 60) return "text-amber-600 dark:text-amber-400";
-		return "text-red-600 dark:text-red-400";
-	};
+	const filled = Math.round(score / 5);
+	const empty = 20 - filled;
+	const bar = "█".repeat(filled) + "░".repeat(empty);
 
 	return (
-		<div>
-			<div className="flex justify-between mb-1">
-				<span className="text-sm text-gray-700 dark:text-gray-300">
-					{label}
-				</span>
-				<span className={cn("text-sm font-medium", getScoreColor(score))}>
-					{score}점
-				</span>
-			</div>
-			<div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
-				<div
-					className={cn("h-2 rounded-full transition-all", getBarColor(score))}
-					style={{ width: `${score}%` }}
-				/>
-			</div>
+		<div className="flex items-center gap-3 font-mono text-[12px]">
+			<span className="w-16 shrink-0 text-[#858585]">{label}</span>
+			<span style={{ color }}>{bar}</span>
+			<span className="shrink-0 w-8 text-right tabular-nums" style={{ color }}>
+				{score}
+			</span>
 		</div>
-	);
-}
-
-const formatDuration = (seconds: number): string => {
-	const mins = Math.floor(seconds / 60);
-	const secs = seconds % 60;
-	return `${mins}분 ${secs}초`;
-};
-
-function ReportSkeletonView() {
-	return (
-		<div
-			className={
-				"w-full h-full animate-pulse rounded bg-gray-200 dark:bg-gray-700"
-			}
-		/>
-	);
-}
-
-interface BasicInfoReportCardProps {
-	report: InterviewReport;
-}
-
-function BasicInfoReportCard({ report }: BasicInfoReportCardProps) {
-	const tu = report.tokenUsage;
-	return (
-		<Card>
-			<CardHeader>
-				<CardTitle className="text-base">로그 데이터</CardTitle>
-			</CardHeader>
-			<CardContent>
-				<div className="flex flex-col gap-2 text-sm text-gray-500 dark:text-gray-400">
-					<span>소요 시간: {formatDuration(report.duration)}</span>
-					<span>대화 횟수: {report.messageCount}회</span>
-					{tu && (
-						<>
-							<span>
-								토큰 사용:{" "}
-								{(
-									tu.totalPromptTokens + tu.totalCompletionTokens
-								).toLocaleString()}{" "}
-								({tu.callCount}회 호출)
-							</span>
-							<span>예상 비용: ${tu.estimatedCost.toFixed(4)}</span>
-						</>
-					)}
-				</div>
-			</CardContent>
-		</Card>
 	);
 }
 
@@ -156,44 +125,35 @@ interface ScoreReportCardProps {
 
 function ScoreReportCard({ report }: ScoreReportCardProps) {
 	return (
-		<Card>
-			<CardHeader>
-				<CardTitle className="text-base">종합 평가</CardTitle>
-			</CardHeader>
-			<CardContent className="space-y-3">
-				<ScoreBar label="문제 이해" score={report.scores.understanding} />
-				<ScoreBar label="소통 능력" score={report.scores.communication} />
-				<ScoreBar label="코드 품질" score={report.scores.codeQuality} />
-				<ScoreBar label="시간 관리" score={report.scores.timeManagement} />
-			</CardContent>
-		</Card>
+		<div className="border border-[#3e3e42] bg-[#252526] p-3">
+			<p className="font-mono text-[11px] text-[#858585] mb-3">// scores</p>
+			<div className="space-y-2">
+				<ScoreBar label="이해" score={report.scores.understanding} />
+				<ScoreBar label="소통" score={report.scores.communication} />
+				<ScoreBar label="코드" score={report.scores.codeQuality} />
+				<ScoreBar label="시간" score={report.scores.timeManagement} />
+			</div>
+		</div>
 	);
 }
 
-interface FeddbackCardProps {
+interface FeedbackCardProps {
 	report: InterviewReport;
 }
 
-function FeddbackCard({ report }: FeddbackCardProps) {
+function FeedbackCard({ report }: FeedbackCardProps) {
 	return (
-		<Card>
-			<CardHeader>
-				<CardTitle className="text-base">피드백</CardTitle>
-			</CardHeader>
-			<CardContent>
-				<ul className="space-y-2">
-					{report.feedback.map((item) => (
-						<li
-							key={item}
-							className="text-sm text-gray-700 dark:text-gray-300 flex items-start gap-2"
-						>
-							<span className="text-gray-400">•</span>
-							<span>{item}</span>
-						</li>
-					))}
-				</ul>
-			</CardContent>
-		</Card>
+		<div className="border border-[#3e3e42] bg-[#252526] p-3">
+			<p className="font-mono text-[11px] text-[#858585] mb-2">// feedback</p>
+			<ul className="space-y-1.5">
+				{report.feedback.map((item) => (
+					<li key={item} className="flex items-start gap-2">
+						<span className="font-mono text-[12px] text-[#569cd6] shrink-0 mt-0.5">&gt;</span>
+						<span className="text-[13px] text-[#d4d4d4]">{item}</span>
+					</li>
+				))}
+			</ul>
+		</div>
 	);
 }
 
@@ -203,54 +163,37 @@ interface StrengthCardProps {
 
 function StrengthCard({ report }: StrengthCardProps) {
 	return (
-		<Card>
-			<CardHeader>
-				<CardTitle className="text-base text-green-600 dark:text-green-400">
-					잘한 점
-				</CardTitle>
-			</CardHeader>
-			<CardContent>
-				<ul className="space-y-2">
-					{report.strengths.map((item) => (
-						<li
-							key={item}
-							className="text-sm text-gray-700 dark:text-gray-300 flex items-start gap-2"
-						>
-							<span className="text-gray-400">•</span>
-							<span>{item}</span>
-						</li>
-					))}
-				</ul>
-			</CardContent>
-		</Card>
+		<div className="border border-[#3e3e42] bg-[#252526] p-3">
+			<p className="font-mono text-[11px] mb-2 text-[#4ec9b0]">// strengths</p>
+			<ul className="space-y-1.5">
+				{report.strengths.map((item) => (
+					<li key={item} className="flex items-start gap-2">
+						<span className="font-mono text-[12px] text-[#4ec9b0] shrink-0 mt-0.5">&gt;</span>
+						<span className="text-[13px] text-[#d4d4d4]">{item}</span>
+					</li>
+				))}
+			</ul>
+		</div>
 	);
 }
 
 interface ImprovementCardProps {
 	report: InterviewReport;
 }
+
 function ImprovementCard({ report }: ImprovementCardProps) {
 	return (
-		<Card>
-			<CardHeader>
-				<CardTitle className="text-base text-amber-600 dark:text-amber-400">
-					개선점
-				</CardTitle>
-			</CardHeader>
-			<CardContent>
-				<ul className="space-y-2">
-					{report.improvements.map((item) => (
-						<li
-							key={item}
-							className="text-sm text-gray-700 dark:text-gray-300 flex items-start gap-2"
-						>
-							<span className="text-gray-400">•</span>
-							<span>{item}</span>
-						</li>
-					))}
-				</ul>
-			</CardContent>
-		</Card>
+		<div className="border border-[#3e3e42] bg-[#252526] p-3">
+			<p className="font-mono text-[11px] mb-2 text-[#dcdcaa]">// improvements</p>
+			<ul className="space-y-1.5">
+				{report.improvements.map((item) => (
+					<li key={item} className="flex items-start gap-2">
+						<span className="font-mono text-[12px] text-[#dcdcaa] shrink-0 mt-0.5">&gt;</span>
+						<span className="text-[13px] text-[#d4d4d4]">{item}</span>
+					</li>
+				))}
+			</ul>
+		</div>
 	);
 }
 
@@ -260,27 +203,19 @@ interface SupportingQuotesCardProps {
 
 function SupportingQuotesCard({ quotes }: SupportingQuotesCardProps) {
 	return (
-		<Card>
-			<CardHeader>
-				<CardTitle className="text-base text-blue-600 dark:text-blue-400">
-					근거 인용
-				</CardTitle>
-			</CardHeader>
-			<CardContent>
-				<ul className="space-y-3">
-					{quotes.map((item) => (
-						<li key={item.quote} className="text-sm">
-							<p className="text-gray-500 dark:text-gray-400 italic border-l-2 border-blue-300 dark:border-blue-600 pl-3 mb-1">
-								"{item.quote}"
-							</p>
-							<p className="text-gray-700 dark:text-gray-300 pl-3">
-								{item.analysis}
-							</p>
-						</li>
-					))}
-				</ul>
-			</CardContent>
-		</Card>
+		<div className="border border-[#3e3e42] bg-[#252526] p-3">
+			<p className="font-mono text-[11px] mb-3 text-[#569cd6]">// evidence</p>
+			<ul className="space-y-3">
+				{quotes.map((item) => (
+					<li key={item.quote} className="text-[13px]">
+						<p className="font-mono text-[12px] text-[#858585] italic border-l-2 border-[#569cd6] pl-3 mb-1">
+							"{item.quote}"
+						</p>
+						<p className="text-[#d4d4d4] pl-3">{item.analysis}</p>
+					</li>
+				))}
+			</ul>
+		</div>
 	);
 }
 
@@ -290,17 +225,9 @@ interface SampleAnswerCardProps {
 
 function SampleAnswerCard({ sampleAnswer }: SampleAnswerCardProps) {
 	return (
-		<Card>
-			<CardHeader>
-				<CardTitle className="text-base text-purple-600 dark:text-purple-400">
-					모범 답안
-				</CardTitle>
-			</CardHeader>
-			<CardContent>
-				<p className="text-sm text-gray-700 dark:text-gray-300">
-					{sampleAnswer}
-				</p>
-			</CardContent>
-		</Card>
+		<div className="border border-[#3e3e42] bg-[#252526] p-3">
+			<p className="font-mono text-[11px] mb-2 text-[#ce9178]">// sample answer</p>
+			<p className="text-[13px] text-[#d4d4d4] leading-relaxed">{sampleAnswer}</p>
+		</div>
 	);
 }

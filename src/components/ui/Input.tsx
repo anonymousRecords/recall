@@ -14,7 +14,7 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
 				{label && (
 					<label
 						htmlFor={id}
-						className="text-sm font-medium text-neutral-700 dark:text-neutral-300"
+						className="font-mono text-[12px] text-[#858585]"
 					>
 						{label}
 					</label>
@@ -23,27 +23,23 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
 					ref={ref}
 					id={id}
 					className={cn(
-						"h-9 w-full rounded-sm border bg-white px-3 text-sm",
-						"border-neutral-200 placeholder:text-neutral-400",
+						"h-8 w-full rounded-none border bg-[#1e1e1e] px-3 font-mono text-[13px] text-[#d4d4d4]",
+						"border-[#3e3e42] placeholder:text-[#858585]",
 						"transition-all duration-150 ease-out",
-						"hover:border-neutral-300",
-						"focus:border-neutral-400 focus:outline-none focus:ring-2 focus:ring-neutral-100",
-						"dark:border-neutral-700 dark:bg-neutral-900 dark:text-neutral-100",
-						"dark:placeholder:text-neutral-500 dark:hover:border-neutral-600",
-						"dark:focus:border-neutral-500 dark:focus:ring-neutral-800",
-						error &&
-							"border-red-500 focus:border-red-500 focus:ring-red-100 dark:focus:ring-red-900/30",
+						"hover:border-[#525252]",
+						"focus:border-[#569cd6] focus:outline-none focus:ring-1 focus:ring-[#569cd6]/30",
+						error && "border-[#f44747] focus:border-[#f44747] focus:ring-[#f44747]/30",
 						className,
 					)}
 					{...props}
 				/>
 				{hint && !error && (
-					<span className="text-xs text-neutral-500 dark:text-neutral-400">
+					<span className="font-mono text-[11px] text-[#858585]">
 						{hint}
 					</span>
 				)}
 				{error && (
-					<span className="text-xs text-red-600 dark:text-red-400">
+					<span className="font-mono text-[11px] text-[#f44747]">
 						{error}
 					</span>
 				)}

@@ -1,7 +1,7 @@
 import { format } from "date-fns";
 import { useParams } from "react-router";
 import { PageLayout } from "../../components/layout";
-import { ArrowLeftIcon, TagInput } from "../../components/shared";
+import { TagInput } from "../../components/shared";
 import { Button, Input, Select, Textarea } from "../../components/ui";
 import type { ProblemStatus } from "../../types";
 import { type ProblemForm, useProblemForm } from "./hooks/useProblemForm";
@@ -152,8 +152,8 @@ interface RegistrationDateProps {
 function RegistrationDate({ createdAt }: RegistrationDateProps) {
 	return (
 		<div className="mb-4 flex justify-end">
-			<span className="text-xs text-neutral-400 dark:text-neutral-500">
-				{format(new Date(createdAt), "yyyy년 M월 d일")} 등록
+			<span className="font-mono text-[11px] text-[#858585]">
+				{format(new Date(createdAt), "yyyy.MM.dd")} 등록
 			</span>
 		</div>
 	);
@@ -169,20 +169,17 @@ function ProblemDetailPageHeader({
 	onBack,
 }: ProblemDetailPageHeaderProps) {
 	return (
-		<div className="px-4 py-3">
-			<div className="flex items-center gap-3">
-				<button
-					type="button"
-					onClick={onBack}
-					className="rounded-md p-1.5 text-neutral-400 transition-colors hover:bg-neutral-100 hover:text-neutral-600 dark:hover:bg-neutral-800 dark:hover:text-neutral-200"
-				>
-					<ArrowLeftIcon className="h-5 w-5" />
-				</button>
-
-				<h1 className="text-lg font-semibold tracking-tight text-neutral-900 dark:text-white">
-					{isNew ? "새 문제 등록" : "문제 수정"}
-				</h1>
-			</div>
+		<div className="flex items-center gap-3 px-4 py-3">
+			<button
+				type="button"
+				onClick={onBack}
+				className="font-mono text-[12px] text-[#858585] transition-colors hover:text-[#d4d4d4]"
+			>
+				[ ← ]
+			</button>
+			<p className="font-mono text-[11px] text-[#858585]">
+				// {isNew ? "new problem" : "edit problem"}
+			</p>
 		</div>
 	);
 }

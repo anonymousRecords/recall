@@ -15,25 +15,25 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
 			<button
 				ref={ref}
 				className={cn(
-					"inline-flex items-center justify-center gap-2 font-medium",
-					"rounded-lg transition-all duration-150 ease-out",
-					"focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2",
+					"inline-flex items-center justify-center gap-1.5 font-mono",
+					"rounded-none transition-all duration-150 ease-out",
+					"focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-offset-0",
 					"disabled:pointer-events-none disabled:opacity-40",
 					"active:scale-[0.98]",
 					{
-						"bg-neutral-900 text-white shadow-sm hover:bg-neutral-800 focus-visible:ring-neutral-900 dark:bg-white dark:text-neutral-900 dark:hover:bg-neutral-100 dark:focus-visible:ring-white":
+						"bg-[#0e639c] text-[#d4d4d4] border border-[#0e639c] hover:bg-[#1177bb] focus-visible:ring-[#569cd6]":
 							variant === "primary",
-						"bg-neutral-100 text-neutral-700 hover:bg-neutral-200 focus-visible:ring-neutral-400 dark:bg-neutral-800 dark:text-neutral-200 dark:hover:bg-neutral-700":
+						"bg-transparent text-[#d4d4d4] border border-[#3e3e42] hover:border-[#858585] focus-visible:ring-[#3e3e42]":
 							variant === "secondary",
-						"text-neutral-600 hover:bg-neutral-100 hover:text-neutral-900 focus-visible:ring-neutral-400 dark:text-neutral-400 dark:hover:bg-neutral-800 dark:hover:text-neutral-100":
+						"bg-transparent text-[#858585] border border-transparent hover:text-[#d4d4d4] focus-visible:ring-[#3e3e42]":
 							variant === "ghost",
-						"bg-red-600 text-white shadow-sm hover:bg-red-700 focus-visible:ring-red-600":
+						"bg-transparent text-[#f44747] border border-[#f44747] hover:bg-[#f44747]/10 focus-visible:ring-[#f44747]":
 							variant === "danger",
 					},
 					{
-						"h-8 px-3 text-[13px]": size === "sm",
-						"h-9 px-4 text-sm": size === "md",
-						"h-11 px-5 text-[15px]": size === "lg",
+						"h-7 px-2.5 text-[12px]": size === "sm",
+						"h-8 px-3 text-[13px]": size === "md",
+						"h-10 px-4 text-sm": size === "lg",
 					},
 					className,
 				)}
