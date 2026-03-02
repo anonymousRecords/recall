@@ -5,7 +5,6 @@ import { db } from "./index";
 export const DEFAULT_SETTINGS: Settings = {
 	id: "user-settings",
 	reviewIntervals: DEFAULT_INTERVALS,
-	theme: "system",
 };
 
 export async function getSettings(): Promise<Settings> {
