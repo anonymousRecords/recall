@@ -2,7 +2,7 @@
 	"name": "recall",
 	"description": "An AI-powered system for algorithm recall and live coding interviews.",
 	"private": true,
-	"version": "0.0.0",
+	"version": "0.0.1",
 	"type": "module",
 	"scripts": {
 		"dev": "wxt",
