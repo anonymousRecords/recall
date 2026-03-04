@@ -11,11 +11,7 @@ export default defineConfig({
 		description:
 			"An AI-powered system for algorithm recall and live coding interviews.",
 		permissions: ["storage", "alarms", "activeTab", "tabs", "sidePanel"],
-		host_permissions: [
-			"https://school.programmers.co.kr/*",
-			"https://app.posthog.com/*",
-			"https://us.i.posthog.com/*",
-		],
+		host_permissions: ["https://school.programmers.co.kr/*"],
 		side_panel: {
 			default_path: "sidepanel.html",
 		},
