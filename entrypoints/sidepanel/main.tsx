@@ -1,7 +1,10 @@
 import React from "react";
 import ReactDOM from "react-dom/client";
 import { App } from "../../src/app/App";
+import { initPostHog } from "../../src/lib/posthog";
 import "./style.css";
+
+initPostHog();
 
 ReactDOM.createRoot(document.getElementById("root")!).render(
 	<React.StrictMode>

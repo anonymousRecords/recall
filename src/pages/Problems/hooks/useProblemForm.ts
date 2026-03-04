@@ -6,6 +6,7 @@ import {
 	getProblem,
 	updateProblem,
 } from "../../../lib/db/problems";
+import { posthog } from "../../../lib/posthog";
 import { extractSiteFromUrl } from "../../../lib/utils";
 import { queryKeys } from "../../../queries/keys";
 import type { ProblemStatus } from "../../../types";
@@ -40,13 +41,33 @@ export function useProblemForm(id?: string) {
 
 	const { mutateAsync: addProblem } = useMutation({
 		mutationFn: createProblem,
-		onSuccess: invalidate,
+		onSuccess: (_, input) => {
+			posthog.capture("problem_created", {
+				site: input.site,
+				difficulty: input.difficulty ?? null,
+				has_tags: input.tags.length > 0,
+				has_memo: input.memo.trim().length > 0,
+			});
+			invalidate();
+		},
 	});
 
 	const { mutateAsync: editProblem } = useMutation({
-		mutationFn: ({ id, input }: { id: string; input: Parameters<typeof updateProblem>[1] }) =>
-			updateProblem(id, input),
-		onSuccess: invalidate,
+		mutationFn: ({
+			id,
+			input,
+		}: {
+			id: string;
+			input: Parameters<typeof updateProblem>[1];
+		}) => updateProblem(id, input),
+		onSuccess: (_, { input }) => {
+			posthog.capture("problem_updated", {
+				site: input.site ?? null,
+				difficulty: input.difficulty ?? null,
+				status: input.status ?? null,
+			});
+			invalidate();
+		},
 	});
 
 	const [loading, setLoading] = useState(!isNew);

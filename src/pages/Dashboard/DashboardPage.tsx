@@ -6,16 +6,11 @@ import {
 import { Suspense, useMemo } from "react";
 import { Link } from "react-router";
 import type { Problem } from "@/src/types";
-import { PageLayout, PageHeader } from "../../components/layout";
-import {
-	EmptyState,
-	ProgressIndicator,
-} from "../../components/shared";
-import {
-	Badge,
-	Button,
-} from "../../components/ui";
+import { PageHeader, PageLayout } from "../../components/layout";
+import { EmptyState, ProgressIndicator } from "../../components/shared";
+import { Badge, Button } from "../../components/ui";
 import { completeReview } from "../../lib/db/reviews";
+import { posthog } from "../../lib/posthog";
 import { formatReviewDate, isOverdue } from "../../lib/scheduling";
 import { queryKeys } from "../../queries/keys";
 import { todayReviewsQueryOptions } from "../../queries/problems";
@@ -36,7 +31,15 @@ function DashboardPageContent() {
 
 	const { mutateAsync: markAsReviewed } = useMutation({
 		mutationFn: (problemId: string) => completeReview(problemId),
-		onSuccess: () => {
+		onSuccess: (updatedProblem) => {
+			if (updatedProblem) {
+				posthog.capture("review_completed", {
+					site: updatedProblem.site,
+					difficulty: updatedProblem.difficulty ?? null,
+					from_stage: updatedProblem.currentStage - 1,
+					is_fully_completed: updatedProblem.status === "completed",
+				});
+			}
 			queryClient.invalidateQueries({ queryKey: queryKeys.problems.all });
 		},
 	});
@@ -158,7 +161,9 @@ function ReviewProblemList({
 								<div className="mt-2 flex flex-wrap items-center gap-2 pl-4">
 									<Badge>{problem.site}</Badge>
 									<Badge variant={overdue ? "danger" : "info"}>
-										{overdue ? `OVERDUE · ${formatReviewDate(problem.nextReviewDate)}` : formatReviewDate(problem.nextReviewDate)}
+										{overdue
+											? `OVERDUE · ${formatReviewDate(problem.nextReviewDate)}`
+											: formatReviewDate(problem.nextReviewDate)}
 									</Badge>
 								</div>
 								<div className="mt-2 pl-4">

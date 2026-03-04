@@ -4,6 +4,7 @@ import {
 	createInterview,
 	updateInterview,
 } from "../../../lib/db/interviews";
+import { posthog } from "../../../lib/posthog";
 import { shouldTriggerAI } from "../../../lib/utils/code-gating";
 import type {
 	ChatMessage,
@@ -94,6 +95,13 @@ export function useInterviewCoordinator({
 				initialCode: codeMonitor.currentCode,
 			});
 
+			posthog.capture("interview_started", {
+				style: config.interviewerStyle,
+				time_limit_min: config.timeLimit,
+				language: codeMonitor.language,
+				problem_level: codeMonitor.problemInfo?.level ?? null,
+			});
+
 			if (config.timeLimit) {
 				dispatch({ type: "START_TIMER", seconds: config.timeLimit * 60 });
 			}
@@ -155,6 +163,17 @@ export function useInterviewCoordinator({
 			const completedInterview = await completeInterview(interview.id, report);
 			if (completedInterview) {
 				dispatch({ type: "SET_INTERVIEW", interview: completedInterview });
+				posthog.capture("interview_completed", {
+					duration_sec: duration,
+					message_count: messages.length,
+					style: interviewConfig.interviewerStyle,
+					provider: report.tokenUsage?.provider ?? null,
+					score_understanding: report.scores.understanding,
+					score_communication: report.scores.communication,
+					score_code_quality: report.scores.codeQuality,
+					score_time_management: report.scores.timeManagement,
+					estimated_cost_usd: report.tokenUsage?.estimatedCost ?? null,
+				});
 			}
 		} catch (error) {
 			console.error("[Recall] 리포트 생성 실패:", error);
@@ -164,6 +183,16 @@ export function useInterviewCoordinator({
 	endInterviewRef.current = endInterview;
 
 	const resetInterview = useCallback(() => {
+		const { status, interview, messages } = stateRef.current;
+		if (status === "active" && interview) {
+			const duration = Math.floor(
+				(Date.now() - new Date(interview.startedAt).getTime()) / 1000,
+			);
+			posthog.capture("interview_abandoned", {
+				duration_sec: duration,
+				message_count: messages.length,
+			});
+		}
 		dispatch({ type: "RESET_INTERVIEW" });
 	}, [dispatch]);
 
@@ -175,6 +204,7 @@ export function useInterviewCoordinator({
 			if (status !== "active" || !interviewConfig) return;
 
 			speech.clearTranscript();
+			posthog.capture("voice_message_sent");
 
 			const userMessage: ChatMessage = {
 				id: crypto.randomUUID(),
