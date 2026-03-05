@@ -1,39 +1,15 @@
 {
-	"name": "recall",
-	"description": "An AI-powered system for algorithm recall and live coding interviews.",
+	"name": "interview-teolrim",
 	"private": true,
-	"version": "0.0.1",
-	"type": "module",
 	"scripts": {
-		"dev": "wxt",
-		"dev:firefox": "wxt -b firefox",
-		"build": "wxt build",
-		"build:firefox": "wxt build -b firefox",
-		"zip": "wxt zip",
-		"zip:firefox": "wxt zip -b firefox",
-		"compile": "tsc --noEmit",
-		"postinstall": "wxt prepare"
-	},
-	"dependencies": {
-		"@tanstack/react-query": "^5.90.21",
-		"@tanstack/react-query-devtools": "^5.91.3",
-		"clsx": "^2.1.1",
-		"date-fns": "^4.1.0",
-		"dexie": "^4.2.1",
-		"posthog-js": "^1.358.0",
-		"react": "^19.2.3",
-		"react-dom": "^19.2.3",
-		"react-router": "^7.13.0"
+		"dev": "turbo dev",
+		"build": "turbo build",
+		"lint": "turbo lint",
+		"format": "biome format --write ."
 	},
 	"devDependencies": {
 		"@biomejs/biome": "2.3.13",
-		"@tailwindcss/vite": "^4.1.18",
-		"@types/react": "^19.2.7",
-		"@types/react-dom": "^19.2.3",
-		"@wxt-dev/module-react": "^1.1.5",
-		"esbuild": "^0.27.2",
-		"tailwindcss": "^4.1.18",
-		"typescript": "^5.9.3",
-		"wxt": "^0.20.6"
-	}
+		"turbo": "^2.5.4"
+	},
+	"packageManager": "pnpm@9.15.4"
 }
