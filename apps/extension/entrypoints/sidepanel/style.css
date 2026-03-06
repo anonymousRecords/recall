@@ -1,6 +1,5 @@
 @import url("https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&family=DotGothic16&display=swap");
 @import "tailwindcss";
-@custom-variant dark (&:where(.dark, .dark *));
 
 @font-face {
 	font-family: "Pretendard";
@@ -27,43 +26,44 @@
 }
 
 :root {
-  font-family: "Pretendard", -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  font-feature-settings: "cv02", "cv03", "cv04", "cv11";
-  text-rendering: optimizeLegibility;
+	font-family:
+		"Pretendard", -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+	-webkit-font-smoothing: antialiased;
+	-moz-osx-font-smoothing: grayscale;
+	font-feature-settings: "cv02", "cv03", "cv04", "cv11";
+	text-rendering: optimizeLegibility;
 
-  /* VS Code Dark+ color tokens */
-  --color-bg-editor:     #1e1e1e;
-  --color-bg-sidebar:    #252526;
-  --color-bg-hover:      #2a2d2e;
-  --color-bg-selection:  #094771;
-  --color-border:        #3e3e42;
-  --color-border-subtle: #2d2d2d;
+	/* VS Code Dark+ color tokens */
+	--color-bg-editor: #1e1e1e;
+	--color-bg-sidebar: #252526;
+	--color-bg-hover: #2a2d2e;
+	--color-bg-selection: #094771;
+	--color-border: #3e3e42;
+	--color-border-subtle: #2d2d2d;
 
-  --color-text-primary:  #d4d4d4;
-  --color-text-comment:  #858585;
+	--color-text-primary: #d4d4d4;
+	--color-text-comment: #858585;
 
-  /* Syntax highlight colors */
-  --color-syntax-blue:   #569cd6;
-  --color-syntax-yellow: #dcdcaa;
-  --color-syntax-green:  #4ec9b0;
-  --color-syntax-red:    #f44747;
-  --color-syntax-orange: #ce9178;
+	/* Syntax highlight colors */
+	--color-syntax-blue: #569cd6;
+	--color-syntax-yellow: #dcdcaa;
+	--color-syntax-green: #4ec9b0;
+	--color-syntax-red: #f44747;
+	--color-syntax-orange: #ce9178;
 
-  /* Font families */
-  --font-mono: "JetBrains Mono", "Fira Code", monospace;
-  --font-pixel: "DotGothic16", monospace;
-  --font-sans: "Pretendard", -apple-system, sans-serif;
+	/* Font families */
+	--font-mono: "JetBrains Mono", "Fira Code", monospace;
+	--font-pixel: "DotGothic16", monospace;
+	--font-sans: "Pretendard", -apple-system, sans-serif;
 
-  /* Radius — very small, terminal-like */
-  --radius-sm: 2px;
-  --radius-md: 2px;
-  --radius-lg: 2px;
-  --radius-full: 2px;
+	/* Radius — very small, terminal-like */
+	--radius-sm: 2px;
+	--radius-md: 2px;
+	--radius-lg: 2px;
+	--radius-full: 2px;
 
-  --transition-fast: 120ms ease;
-  --transition-normal: 200ms ease;
+	--transition-fast: 120ms ease;
+	--transition-normal: 200ms ease;
 }
 
 * {
@@ -72,13 +72,13 @@
 
 html,
 body {
-  width: 100%;
-  height: 100%;
-  margin: 0;
-  padding: 0;
-  overflow: hidden;
-  background-color: var(--color-bg-editor);
-  color: var(--color-text-primary);
+	width: 100%;
+	height: 100%;
+	margin: 0;
+	padding: 0;
+	overflow: hidden;
+	background-color: var(--color-bg-editor);
+	color: var(--color-text-primary);
 }
 
 #root {
@@ -87,31 +87,36 @@ body {
 }
 
 @keyframes blink {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0; }
+	0%,
+	100% {
+		opacity: 1;
+	}
+	50% {
+		opacity: 0;
+	}
 }
 
 .cursor-blink {
-  animation: blink 1s step-end infinite;
+	animation: blink 1s step-end infinite;
 }
 
 /* Scrollbar styling */
 ::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
+	width: 6px;
+	height: 6px;
 }
 
 ::-webkit-scrollbar-track {
-  background: transparent;
+	background: transparent;
 }
 
 ::-webkit-scrollbar-thumb {
-  background: var(--color-border);
-  border-radius: 0;
+	background: var(--color-border);
+	border-radius: 0;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #525252;
+	background: #525252;
 }
 
 /* Link styling */
