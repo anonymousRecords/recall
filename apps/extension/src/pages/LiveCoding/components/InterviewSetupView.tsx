@@ -1,6 +1,5 @@
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { useState } from "react";
-import { useNavigate } from "react-router";
 import { PageHeader, PageLayout } from "../../../components/layout";
 import {
 	Button,
@@ -12,19 +11,7 @@ import {
 } from "../../../components/ui";
 import { liveCodingSettingsQueryOptions } from "../../../queries/live-coding-settings";
 import type { InterviewerStyle, ProblemInfo } from "../../../types";
-
-const TIME_OPTIONS = [
-	{ value: "30", label: "30분" },
-	{ value: "45", label: "45분" },
-	{ value: "60", label: "60분" },
-	{ value: "null", label: "무제한" },
-];
-
-const INTERVIEWER_STYLE_OPTIONS = [
-	{ value: "friendly", label: "친절" },
-	{ value: "normal", label: "보통" },
-	{ value: "pressure", label: "압박" },
-];
+import { useMicPermission } from "../hooks/useMicPermission";
 
 interface InterviewSetupViewProps {
 	problemInfo: ProblemInfo | null;
@@ -38,8 +25,96 @@ export function InterviewSetupView({
 	problemInfo,
 	onStart,
 }: InterviewSetupViewProps) {
+	return (
+		<PageLayout header={<PageHeader title="live coding" />}>
+			<div className="flex-1 overflow-auto p-4">
+				<div className="space-y-4">
+					<InterviewChecklist problemInfo={problemInfo} />
+
+					{problemInfo && (
+						<InterviewConfig problemInfo={problemInfo} onStart={onStart} />
+					)}
+				</div>
+			</div>
+		</PageLayout>
+	);
+}
+
+interface InterviewChecklistProps {
+	problemInfo: ProblemInfo | null;
+}
+
+function InterviewChecklist({ problemInfo }: InterviewChecklistProps) {
+	const { micPermission, openPermissionPage } = useMicPermission();
+
+	return (
+		<Card>
+			<CardHeader>
+				<CardTitle>면접 시작 전 확인</CardTitle>
+			</CardHeader>
+
+			<CardContent className="flex flex-col gap-4">
+				{micPermission === "granted" ? (
+					<p className="font-mono text-[12px] text-[#4ec9b0]">
+						✓ 마이크 권한 허용됨
+					</p>
+				) : (
+					<div className="flex flex-col gap-2">
+						<p className="font-mono text-[12px] text-[#f44747]">
+							✗ 마이크 권한 필요
+						</p>
+						{micPermission !== "loading" && (
+							<>
+								<p className="font-mono text-[11px] text-[#858585]">
+									{micPermissionMessages[micPermission]}
+								</p>
+								<Button size="sm" onClick={openPermissionPage}>
+									마이크 권한 허용하기
+								</Button>
+							</>
+						)}
+					</div>
+				)}
+
+				{problemInfo ? (
+					<p className="font-mono text-[12px] text-[#4ec9b0]">✓ 문제 감지됨</p>
+				) : (
+					<div className="flex flex-col gap-2">
+						<p className="font-mono text-[12px] text-[#f44747]">
+							✗ 프로그래머스 문제 미감지
+						</p>
+						<p className="font-mono text-[11px] text-[#858585]">
+							프로그래머스 문제 페이지에서 확장을 열어주세요
+						</p>
+						<Button
+							size="sm"
+							variant="secondary"
+							onClick={() => window.open("https://programmers.co.kr", "_blank")}
+						>
+							프로그래머스 바로가기
+						</Button>
+					</div>
+				)}
+			</CardContent>
+		</Card>
+	);
+}
+
+const micPermissionMessages: Record<string, string> = {
+	denied: "마이크 권한이 거부되어 있어요. 아래 버튼을 눌러 다시 허용해주세요.",
+	prompt: "AI 면접관과 대화하려면 마이크 접근을 허용해주세요.",
+};
+
+interface InterviewConfigProps {
+	problemInfo: ProblemInfo;
+	onStart: (config: {
+		timeLimit: number | null;
+		interviewerStyle: InterviewerStyle;
+	}) => Promise<void>;
+}
+
+function InterviewConfig({ problemInfo, onStart }: InterviewConfigProps) {
 	const { data: settings } = useSuspenseQuery(liveCodingSettingsQueryOptions());
-	const hasApiKey = settings.apiKey.length > 0;
 
 	const [timeLimit, setTimeLimit] = useState(
 		settings.defaultTimeLimit.toString(),
@@ -47,157 +122,22 @@ export function InterviewSetupView({
 	const [interviewerStyle, setInterviewerStyle] = useState<InterviewerStyle>(
 		settings.defaultStyle,
 	);
-
 	const [isStarting, setIsStarting] = useState(false);
 	const [error, setError] = useState<string | null>(null);
-
-	return (
-		<PageLayout header={<PageHeader title="라이브 코딩" />}>
-			<div className="flex-1 overflow-auto p-4">
-				<div className="space-y-4">
-					<InterviewGuideCard />
-
-					{problemInfo ? (
-						<ProblemInfoCard problemInfo={problemInfo} />
-					) : (
-						<StepInstructionCard />
-					)}
-
-					{!hasApiKey && <ApiKeyAlertCard />}
-
-					{problemInfo && hasApiKey && (
-						<InterviewSessionSettings
-							timeLimit={timeLimit}
-							setTimeLimit={setTimeLimit}
-							interviewerStyle={interviewerStyle}
-							setInterviewerStyle={setInterviewerStyle}
-						/>
-					)}
-
-					{error && (
-						<p className="font-mono text-[12px] text-[#f44747]">{error}</p>
-					)}
-
-					<Button
-						className="w-full"
-						disabled={!problemInfo || !hasApiKey || isStarting}
-						onClick={async () => {
-							setIsStarting(true);
-							setError(null);
-
-							try {
-								await onStart({
-									timeLimit: parseInt(timeLimit, 10),
-									interviewerStyle: interviewerStyle,
-								});
-							} catch (err) {
-								setError(
-									err instanceof Error ? err.message : "면접 시작에 실패했어요",
-								);
-							} finally {
-								setIsStarting(false);
-							}
-						}}
-					>
-						{isStarting ? "시작 중" : "면접 시작"}
-					</Button>
-				</div>
-			</div>
-		</PageLayout>
-	);
-}
-
-function InterviewGuideCard() {
-	return (
-		<Card>
-			<CardContent className="py-4">
-				<p className="font-mono text-[12px] text-[#858585]">
-					프로그래머스에서 실제 면접처럼 연습하세요
-					<br />
-					AI 면접관이 질문하고 피드백을 제공해줘요
-				</p>
-			</CardContent>
-		</Card>
-	);
-}
-
-interface ProblemInfoProps {
-	problemInfo: ProblemInfo;
-}
-
-function ProblemInfoCard({ problemInfo }: ProblemInfoProps) {
-	return (
-		<Card>
-			<CardHeader>
-				<CardTitle>감지된 문제</CardTitle>
-			</CardHeader>
-			<CardContent>
-				<p className="text-[13px] text-[#d4d4d4]">
-					{problemInfo.title}
-				</p>
-				<p className="font-mono text-[11px] text-[#858585] mt-1">
-					난이도: Level {problemInfo.level}
-				</p>
-			</CardContent>
-		</Card>
-	);
-}
-
-function StepInstructionCard() {
-	return (
-		<Card>
-			<CardContent className="py-4 flex flex-col gap-4">
-				<p className="text-[13px] text-[#d4d4d4]">
-					프로그래머스 문제 페이지에서 확장을 열어주세요
-				</p>
-				<Button
-					variant="secondary"
-					size="sm"
-					onClick={() => window.open("https://programmers.co.kr", "_blank")}
-				>
-					프로그래머스 바로가기
-				</Button>
-			</CardContent>
-		</Card>
-	);
-}
-
-function ApiKeyAlertCard() {
-	const navigate = useNavigate();
-	return (
-		<Card>
-			<CardContent className="py-4 flex flex-col gap-4">
-				<p className="font-mono text-[12px] text-[#f44747] mb-2">
-					API 키가 설정되지 않았어요 <br />
-					설정에서 API 키를 입력해주세요
-				</p>
-				<Button
-					variant="primary"
-					size="sm"
-					onClick={() => navigate("/settings")}
-				>
-					설정으로 이동
-				</Button>
-			</CardContent>
-		</Card>
-	);
-}
-
-interface InterviewSessionSettingsProps {
-	timeLimit: string;
-	setTimeLimit: (value: string) => void;
-	interviewerStyle: InterviewerStyle;
-	setInterviewerStyle: (value: InterviewerStyle) => void;
-}
-
-function InterviewSessionSettings({
-	timeLimit,
-	setTimeLimit,
-	interviewerStyle: style,
-	setInterviewerStyle,
-}: InterviewSessionSettingsProps) {
 	return (
 		<>
+			<Card>
+				<CardHeader>
+					<CardTitle>감지된 문제</CardTitle>
+				</CardHeader>
+				<CardContent>
+					<p className="text-[13px] text-[#d4d4d4]">{problemInfo.title}</p>
+					<p className="font-mono text-[11px] text-[#858585] mt-1">
+						난이도: Level {problemInfo.level}
+					</p>
+				</CardContent>
+			</Card>
+
 			<Card>
 				<CardHeader>
 					<CardTitle>제한 시간</CardTitle>
@@ -218,18 +158,55 @@ function InterviewSessionSettings({
 				<CardContent>
 					<Select
 						options={INTERVIEWER_STYLE_OPTIONS}
-						value={style}
+						value={interviewerStyle}
 						onChange={(e) =>
 							setInterviewerStyle(e.target.value as InterviewerStyle)
 						}
 					/>
 					<p className="font-mono text-[11px] text-[#858585] mt-2">
-						{style === "friendly" && "친절하게 힌트를 많이 제공해요"}
-						{style === "normal" && "적절한 질문과 피드백을 제공해요"}
-						{style === "pressure" && "날카로운 질문과 시간 압박을 줘요"}
+						{interviewerStyle === "friendly" && "친절하게 힌트를 많이 제공해요"}
+						{interviewerStyle === "normal" && "적절한 질문과 피드백을 제공해요"}
+						{interviewerStyle === "pressure" &&
+							"날카로운 질문과 시간 압박을 줘요"}
 					</p>
 				</CardContent>
 			</Card>
+			<Button
+				className="w-full"
+				disabled={isStarting}
+				onClick={async () => {
+					setIsStarting(true);
+					setError(null);
+					try {
+						await onStart({
+							timeLimit: parseInt(timeLimit, 10),
+							interviewerStyle,
+						});
+					} catch (err) {
+						setError(
+							err instanceof Error ? err.message : "면접 시작에 실패했어요",
+						);
+					} finally {
+						setIsStarting(false);
+					}
+				}}
+			>
+				{isStarting ? "시작 중" : "면접 시작"}
+			</Button>
+			{error && <p className="font-mono text-[12px] text-[#f44747]">{error}</p>}
 		</>
 	);
 }
+
+const TIME_OPTIONS = [
+	{ value: "30", label: "30분" },
+	{ value: "45", label: "45분" },
+	{ value: "60", label: "60분" },
+	{ value: "null", label: "무제한" },
+];
+
+const INTERVIEWER_STYLE_OPTIONS = [
+	{ value: "friendly", label: "친절" },
+	{ value: "normal", label: "보통" },
+	{ value: "pressure", label: "압박" },
+];
