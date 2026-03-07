@@ -1,5 +1,6 @@
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { useState } from "react";
+import { Link } from "react-router";
 import { PageHeader, PageLayout } from "../../../components/layout";
 import {
 	Button,
@@ -46,6 +47,8 @@ interface InterviewChecklistProps {
 
 function InterviewChecklist({ problemInfo }: InterviewChecklistProps) {
 	const { micPermission, openPermissionPage } = useMicPermission();
+	const { data: settings } = useSuspenseQuery(liveCodingSettingsQueryOptions());
+	const hasApiKey = settings.apiKey.trim().length > 0;
 
 	return (
 		<Card>
@@ -54,6 +57,26 @@ function InterviewChecklist({ problemInfo }: InterviewChecklistProps) {
 			</CardHeader>
 
 			<CardContent className="flex flex-col gap-4">
+				{hasApiKey ? (
+					<p className="font-mono text-[12px] text-[#4ec9b0]">
+						✓ API 키 등록됨
+					</p>
+				) : (
+					<div className="flex flex-col gap-2">
+						<p className="font-mono text-[12px] text-[#f44747]">
+							✗ API 키 필요
+						</p>
+						<p className="font-mono text-[11px] text-[#858585]">
+							AI 면접관을 사용하려면 API 키를 등록해주세요
+						</p>
+						<Link to="/settings">
+							<Button size="sm" variant="secondary" className="w-full">
+								설정에서 API 키 등록하기
+							</Button>
+						</Link>
+					</div>
+				)}
+
 				{micPermission === "granted" ? (
 					<p className="font-mono text-[12px] text-[#4ec9b0]">
 						✓ 마이크 권한 허용됨
@@ -173,7 +196,7 @@ function InterviewConfig({ problemInfo, onStart }: InterviewConfigProps) {
 			</Card>
 			<Button
 				className="w-full"
-				disabled={isStarting}
+				disabled={isStarting || !settings.apiKey}
 				onClick={async () => {
 					setIsStarting(true);
 					setError(null);
