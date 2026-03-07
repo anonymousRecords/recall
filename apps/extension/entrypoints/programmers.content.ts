@@ -1,5 +1,5 @@
 import { onMessage, sendMessage } from "../src/lib/messaging";
-import type { ProblemInfo } from "../src/types";
+import type { ProblemInfo, ProgrammingLanguage } from "../src/types";
 
 export default defineContentScript({
 	matches: ["https://school.programmers.co.kr/learn/courses/*/lessons/*"],
@@ -130,7 +130,7 @@ export default defineContentScript({
 			}
 		}
 
-		function detectLanguage(): string {
+		function detectLanguage(): ProgrammingLanguage {
 			const languageSelectorText =
 				document
 					.querySelector(

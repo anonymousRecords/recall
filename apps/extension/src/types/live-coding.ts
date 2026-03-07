@@ -1,12 +1,22 @@
-export type AIProvider = "openai" | "claude";
+export type AIProvider = "openai" | "claude" | "free";
+
+export type ProgrammingLanguage =
+	| "python"
+	| "java"
+	| "javascript"
+	| "cpp"
+	| "csharp"
+	| "kotlin"
+	| "swift"
+	| "go"
+	| "rust"
+	| "unknown";
 
 export type InterviewerStyle = "friendly" | "normal" | "pressure";
 
 export type InterviewStatus = "idle" | "active" | "completed";
 
 export type MessageRole = "interviewer" | "user" | "system";
-
-export type VoiceInputMode = "push-to-talk" | "auto";
 
 export interface ProblemInfo {
 	title: string;
@@ -22,7 +32,7 @@ export interface ProblemInfo {
 
 export interface CodeSnapshot {
 	code: string;
-	language: string;
+	language: ProgrammingLanguage;
 	timestamp: number;
 }
 
@@ -39,7 +49,7 @@ export interface InterviewConfig {
 	problemInfo: ProblemInfo;
 	timeLimit: number | null;
 	interviewerStyle: InterviewerStyle;
-	language: string;
+	language: ProgrammingLanguage;
 }
 
 export interface AIUsage {
@@ -93,19 +103,8 @@ export interface LiveCodingSettings {
 	defaultTimeLimit: number;
 	defaultStyle: InterviewerStyle;
 	autoRegisterProblem: boolean;
-	voiceInputMode: VoiceInputMode;
 	voiceEnabled: boolean;
-	voiceRate: number;
 }
-
-export type LiveCodingMessageType =
-	| { type: "GET_PROBLEM_INFO" }
-	| { type: "PROBLEM_INFO"; payload: ProblemInfo | null }
-	| { type: "START_CODE_MONITOR" }
-	| { type: "STOP_CODE_MONITOR" }
-	| { type: "CODE_CHANGED"; payload: { code: string; language: string } }
-	| { type: "CODE_RUN" }
-	| { type: "CODE_SUBMIT" };
 
 export type AIRequest =
 	| {
@@ -139,12 +138,10 @@ export type AIRequest =
 	  };
 
 export interface SpeechState {
-	isListening: boolean;
-	isSpeaking: boolean;
+	isMicOn: boolean;
+	isInterviewerSpeaking: boolean;
 	finalTranscript: string;
-	interimTranscript: string;
-	volume: number;
-	toggleListening: () => void;
+	liveTranscript: string;
 }
 
 export interface AIClient {
