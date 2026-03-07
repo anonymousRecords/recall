@@ -1,22 +1,13 @@
-import { useCallback, useRef, useState } from "react";
-import { createAIClient } from "../../../lib/ai";
+import { useCallback } from "react";
 import { calculateCost } from "../../../lib/ai/cost";
-import {
-	formatMessagesForAI,
-	getCodeAnalysisPrompt,
-	getGreetingPrompt,
-	getReportPrompt,
-	getSystemPrompt,
-	getUserMessagePrompt,
-} from "../../../lib/ai/prompts";
 import type {
 	AIProvider,
-	AIRequest,
-	AIUsage,
 	ChatMessage,
-	ProblemInfo,
+	InterviewerStyle,
 	InterviewReport,
+	ProblemInfo,
 } from "../../../types";
+import { useAIClient } from "./useAIClient";
 
 interface UseInterviewerOptions {
 	provider: AIProvider;
@@ -24,147 +15,54 @@ interface UseInterviewerOptions {
 }
 
 export function useInterviewer({ provider, apiKey }: UseInterviewerOptions) {
-	const [isLoading, setIsLoading] = useState(false);
-	const [error, setError] = useState<string | null>(null);
+	const { sendToAI, resetTokenUsage, getTokenUsage } = useAIClient({ provider, apiKey });
 
-	const usageRef = useRef<{
-		totalPromptTokens: number;
-		totalCompletionTokens: number;
-		callCount: number;
-	}>({ totalPromptTokens: 0, totalCompletionTokens: 0, callCount: 0 });
+	const greet = useCallback(
+		async (
+			problemInfo: ProblemInfo,
+			interviewerStyle: InterviewerStyle,
+		): Promise<AIMessage> => {
+			resetTokenUsage();
+			const raw = await sendToAI({
+				type: "greeting",
+				problemInfo,
+				interviewerStyle,
+			});
 
-	const accumulateUsage = useCallback((usage: AIUsage) => {
-		usageRef.current.totalPromptTokens += usage.promptTokens;
-		usageRef.current.totalCompletionTokens += usage.completionTokens;
-		usageRef.current.callCount += 1;
-	}, []);
-
-	const resetUsage = useCallback(() => {
-		usageRef.current = {
-			totalPromptTokens: 0,
-			totalCompletionTokens: 0,
-			callCount: 0,
-		};
-	}, []);
-
-	const sendToAI = useCallback(
-		async (request: AIRequest): Promise<string> => {
-			if (!apiKey) {
-				throw new Error("API 키가 설정되지 않았습니다.");
-			}
-
-			setIsLoading(true);
-			setError(null);
-
-			try {
-				const client = createAIClient(provider, apiKey);
-				let content: string;
-
-				switch (request.type) {
-					case "greeting": {
-						const systemPrompt = getSystemPrompt(
-							request.interviewerStyle,
-							request.problemInfo,
-						);
-						const aiResponse = await client.chat([
-							{ role: "system", content: systemPrompt },
-							{ role: "user", content: getGreetingPrompt() },
-						]);
-						accumulateUsage(aiResponse.usage);
-						content = aiResponse.content;
-						break;
-					}
-
-					case "user_message": {
-						const systemPrompt = getSystemPrompt(
-							request.interviewerStyle,
-							request.problemInfo,
-						);
-						const formattedMessages = formatMessagesForAI(request.messages);
-						const aiResponse = await client.chat([
-							{ role: "system", content: systemPrompt },
-							...formattedMessages,
-							{
-								role: "user",
-								content: getUserMessagePrompt(
-									request.content,
-									request.codeContext,
-								),
-							},
-						]);
-						accumulateUsage(aiResponse.usage);
-						content = aiResponse.content;
-						break;
-					}
-
-					case "code_changed": {
-						const systemPrompt = getSystemPrompt(
-							request.interviewerStyle,
-							request.problemInfo,
-						);
-						const formattedMessages = formatMessagesForAI(request.messages);
-						const analysisPrompt = getCodeAnalysisPrompt(
-							request.previousCode,
-							request.currentCode,
-							request.pauseDuration,
-						);
-
-						const aiResponse = await client.chat([
-							{ role: "system", content: systemPrompt },
-							...formattedMessages,
-							{ role: "user", content: analysisPrompt },
-						]);
-						accumulateUsage(aiResponse.usage);
-						content = aiResponse.content;
-
-						const visiblePart = content.split("#NOTES#")[0].trim();
-						if (visiblePart.toUpperCase() === "SKIP") {
-							return "";
-						}
-						break;
-					}
-
-					case "generate_report": {
-						const reportPrompt = getReportPrompt(
-							request.problemInfo,
-							request.messages,
-							request.finalCode,
-							request.duration,
-						);
-
-						const aiResponse = await client.chat(
-							[
-								{
-									role: "system",
-									content:
-										"당신은 코딩 면접 평가자입니다. 반드시 유효한 JSON 형식으로만 응답하세요.",
-								},
-								{ role: "user", content: reportPrompt },
-							],
-							{ maxTokens: 1024 },
-						);
-						accumulateUsage(aiResponse.usage);
-						content = aiResponse.content;
-						break;
-					}
-
-					default:
-						throw new Error("알 수 없는 요청 타입입니다.");
-				}
-
-				return content;
-			} catch (err) {
-				const errorMessage =
-					err instanceof Error
-						? err.message
-						: "AI 요청 중 오류가 발생했습니다.";
-				setError(errorMessage);
-				throw err;
-			} finally {
-				setIsLoading(false);
-			}
+			return parseAIResponse(raw);
 		},
-		[provider, apiKey, accumulateUsage],
+		[sendToAI, resetTokenUsage],
+	);
+
+	const respondToUser = useCallback(
+		async (params: {
+			content: string;
+			codeContext: string;
+			messages: ChatMessage[];
+			problemInfo: ProblemInfo;
+			interviewerStyle: InterviewerStyle;
+		}): Promise<AIMessage> => {
+			const raw = await sendToAI({ type: "user_message", ...params });
+
+			return parseAIResponse(raw);
+		},
+		[sendToAI],
+	);
+
+	const respondToCodeChange = useCallback(
+		async (params: {
+			previousCode: string;
+			currentCode: string;
+			pauseDuration: number;
+			messages: ChatMessage[];
+			problemInfo: ProblemInfo;
+			interviewerStyle: InterviewerStyle;
+		}): Promise<AIMessage | null> => {
+			const raw = await sendToAI({ type: "code_changed", ...params });
+
+			return parseAIResponse(raw);
+		},
+		[sendToAI],
 	);
 
 	const generateReport = useCallback(
@@ -174,29 +72,18 @@ export function useInterviewer({ provider, apiKey }: UseInterviewerOptions) {
 			duration: number,
 			problemInfo: ProblemInfo,
 		): Promise<InterviewReport> => {
+			// 리포트 생성 최소 기준 미달
 			const userMessages = messages.filter((m) => m.role === "user");
-			const hasMinimalInteraction =
-				userMessages.length >= 2 || duration >= 120;
+			const hasMinimalInteraction = userMessages.length >= 2 || duration >= 120;
 
 			if (!hasMinimalInteraction) {
-				return {
-					duration,
-					messageCount: messages.length,
-					scores: {
-						understanding: 0,
-						communication: 0,
-						codeQuality: 0,
-						timeManagement: 0,
-					},
-					feedback: [
-						"세션 데이터가 충분하지 않아 평가를 생성할 수 없습니다.",
-						"더 의미 있는 리포트를 위해 면접관과 대화하며 문제를 풀어보세요.",
-					],
-					strengths: [],
-					improvements: [],
-				};
+				return makeEmptyReport(duration, messages.length, [
+					"세션 데이터가 충분하지 않아 평가를 생성할 수 없어요.",
+					"더 의미 있는 리포트를 위해 면접관과 대화하며 문제를 풀어보세요.",
+				]);
 			}
 
+			// 리포트 생성
 			const response = await sendToAI({
 				type: "generate_report",
 				messages,
@@ -207,16 +94,22 @@ export function useInterviewer({ provider, apiKey }: UseInterviewerOptions) {
 
 			try {
 				const jsonMatch = response.match(/\{[\s\S]*\}/);
+
 				if (!jsonMatch) {
 					throw new Error("JSON을 찾을 수 없습니다.");
 				}
 
-				const report = JSON.parse(jsonMatch[0]) as InterviewReport;
+				const parsed: unknown = JSON.parse(jsonMatch[0]);
+
+				if (!isInterviewReport(parsed)) {
+					throw new Error("리포트 형식이 올바르지 않습니다.");
+				}
+
 				const { totalPromptTokens, totalCompletionTokens, callCount } =
-					usageRef.current;
+					getTokenUsage();
 
 				return {
-					...report,
+					...parsed,
 					duration,
 					messageCount: messages.length,
 					tokenUsage: {
@@ -232,41 +125,67 @@ export function useInterviewer({ provider, apiKey }: UseInterviewerOptions) {
 					},
 				};
 			} catch {
-				return {
-					duration,
-					messageCount: messages.length,
-					scores: {
-						understanding: 0,
-						communication: 0,
-						codeQuality: 0,
-						timeManagement: 0,
-					},
-					feedback: ["리포트 생성 중 오류가 발생했습니다."],
-					strengths: [],
-					improvements: [],
-				};
+				return makeEmptyReport(duration, messages.length, [
+					"리포트 생성 중 오류가 발생했어요.",
+				]);
 			}
 		},
-		[sendToAI, provider],
+		[sendToAI, getTokenUsage, provider],
 	);
 
-	const testConnection = useCallback(async (): Promise<boolean> => {
-		if (!apiKey) return false;
-
-		try {
-			const client = createAIClient(provider, apiKey);
-			return await client.testConnection();
-		} catch {
-			return false;
-		}
-	}, [provider, apiKey]);
-
 	return {
-		sendToAI,
+		greet,
+		respondToUser,
+		respondToCodeChange,
 		generateReport,
-		testConnection,
-		resetUsage,
-		isLoading,
-		error,
+	};
+}
+
+interface AIMessage {
+	content: string;
+	notes?: string;
+}
+
+function parseAIResponse(response: string): AIMessage {
+	const parts = response.split("#NOTES#");
+	return {
+		content: parts[0].trim(),
+		notes: parts.length > 1 ? parts[1].trim() : undefined,
+	};
+}
+
+function isInterviewReport(obj: unknown): obj is InterviewReport {
+	if (typeof obj !== "object" || obj === null) {
+		return false;
+	}
+
+	const r = obj as Record<string, unknown>;
+
+	return (
+		typeof r.scores === "object" &&
+		r.scores !== null &&
+		Array.isArray(r.feedback) &&
+		Array.isArray(r.strengths) &&
+		Array.isArray(r.improvements)
+	);
+}
+
+function makeEmptyReport(
+	duration: number,
+	messageCount: number,
+	feedback: string[],
+): InterviewReport {
+	return {
+		duration,
+		messageCount,
+		scores: {
+			understanding: 0,
+			communication: 0,
+			codeQuality: 0,
+			timeManagement: 0,
+		},
+		feedback,
+		strengths: [],
+		improvements: [],
 	};
 }
