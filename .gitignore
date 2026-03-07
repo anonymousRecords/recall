@@ -8,6 +8,7 @@ pnpm-debug.log*
 lerna-debug.log*
 
 node_modules
+.env
 .env.local
 .env*.local
 .output
@@ -26,3 +27,9 @@ web-ext.config.ts
 *.njsproj
 *.sln
 *.sw?
+
+# Turbo
+.turbo
+
+# Claude
+.claude
