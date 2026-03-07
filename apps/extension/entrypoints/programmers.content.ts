@@ -7,36 +7,62 @@ export default defineContentScript({
 		let lastCode = "";
 		let monitorInterval: number | null = null;
 
-		// 문제 정보 추출
+		setupButtonListeners();
+		console.log("프로그래머스 Content Script 로드됨");
+
+		browser.runtime.onMessage.addListener((message, _sender, sendResponse) => {
+			switch (message.type) {
+				case "GET_PROBLEM_INFO": {
+					const problemInfo = extractProblemInfo();
+					sendResponse({ type: "PROBLEM_INFO", payload: problemInfo });
+					break;
+				}
+				case "START_CODE_MONITOR":
+					startMonitoring();
+					sendResponse({ success: true });
+					break;
+				case "STOP_CODE_MONITOR":
+					stopMonitoring();
+					sendResponse({ success: true });
+					break;
+				case "GET_CURRENT_CODE": {
+					const code = getEditorCode();
+					sendResponse({ code, language: detectLanguage() });
+					break;
+				}
+			}
+			return true;
+		});
+
 		function extractProblemInfo(): ProblemInfo | null {
 			try {
-				// 문제 제목
-				const titleEl = document.querySelector(".challenge-title");
-				const title = titleEl?.textContent?.trim();
+				// TITLE
+				const title = document
+					.querySelector(".challenge-title")
+					?.textContent?.trim();
 
-				if (!title) return null;
+				if (!title) {
+					return null;
+				}
 
-				// 난이도 (Level 1~5)
+				// LEVEL
 				const levelEl = document.querySelector(".nav-item.active");
 				const levelText = levelEl?.textContent || "";
 				const levelMatch = levelText.match(/Lv\.\s*(\d+)/);
 				const level = levelMatch ? parseInt(levelMatch[1], 10) : 0;
 
-				// 문제 설명
-				const descriptionEl = document.querySelector(
-					".guide-section-description",
-				);
-				const description = descriptionEl?.textContent?.trim() || "";
+				// DESCRIPTION
+				const description =
+					document
+						.querySelector(".guide-section-description")
+						?.textContent?.trim() || "";
 
-				// 제한사항
-				const constraintEls = document.querySelectorAll(
-					".guide-section-description ul li",
-				);
-				const constraints = Array.from(constraintEls).map(
-					(el) => el.textContent?.trim() || "",
-				);
+				// CONSTRAINTS
+				const constraints = Array.from(
+					document.querySelectorAll(".guide-section-description ul li"),
+				).map((el) => el.textContent?.trim() || "");
 
-				// 입출력 예시
+				// EXAMPLES
 				const exampleTable = document.querySelector(
 					".guide-section-description table",
 				);
@@ -64,12 +90,11 @@ export default defineContentScript({
 					url: window.location.href,
 				};
 			} catch (error) {
-				console.error("[Recall] 문제 정보 추출 실패:", error);
+				console.error("프로그래머스 문제 정보 추출 실패:", error);
 				return null;
 			}
 		}
 
-		// 에디터에서 코드 추출
 		function getEditorCode(): string | null {
 			try {
 				// CodeMirror 6 (최신 프로그래머스)
@@ -101,7 +126,6 @@ export default defineContentScript({
 					}
 				}
 
-				// 텍스트 영역 폴백
 				const textarea = document.querySelector(
 					".editor textarea, #code",
 				) as HTMLTextAreaElement | null;
@@ -111,36 +135,46 @@ export default defineContentScript({
 
 				return null;
 			} catch (error) {
-				console.error("[Recall] 코드 추출 실패:", error);
+				console.error("프로그래머스 코드 추출 실패:", error);
 				return null;
 			}
 		}
 
-		// 언어 감지
 		function detectLanguage(): string {
-			const langSelector = document.querySelector(
-				".dropdown-toggle, .nav-item.active, [data-testid='language-selector']",
-			);
-			const text = langSelector?.textContent?.toLowerCase() || "";
+			const languageSelectorText =
+				document
+					.querySelector(
+						".dropdown-toggle, .nav-item.active, [data-testid='language-selector']",
+					)
+					?.textContent?.toLowerCase() || "";
 
-			if (text.includes("python")) return "python";
-			if (text.includes("java") && !text.includes("javascript")) return "java";
-			if (text.includes("javascript")) return "javascript";
-			if (text.includes("c++") || text.includes("cpp")) return "cpp";
-			if (text.includes("c#")) return "csharp";
-			if (text.includes("kotlin")) return "kotlin";
-			if (text.includes("swift")) return "swift";
-			if (text.includes("go")) return "go";
-			if (text.includes("rust")) return "rust";
+			if (languageSelectorText.includes("python")) return "python";
+			if (
+				languageSelectorText.includes("java") &&
+				!languageSelectorText.includes("javascript")
+			)
+				return "java";
+			if (languageSelectorText.includes("javascript")) return "javascript";
+			if (
+				languageSelectorText.includes("c++") ||
+				languageSelectorText.includes("cpp")
+			)
+				return "cpp";
+			if (languageSelectorText.includes("c#")) return "csharp";
+			if (languageSelectorText.includes("kotlin")) return "kotlin";
+			if (languageSelectorText.includes("swift")) return "swift";
+			if (languageSelectorText.includes("go")) return "go";
+			if (languageSelectorText.includes("rust")) return "rust";
 
 			return "unknown";
 		}
 
-		// 코드 변화 감지 및 전송
 		function checkCodeChange() {
 			const currentCode = getEditorCode();
+
 			if (currentCode !== null && currentCode !== lastCode) {
 				lastCode = currentCode;
+
 				browser.runtime.sendMessage({
 					type: "CODE_CHANGED",
 					payload: {
@@ -151,92 +185,62 @@ export default defineContentScript({
 			}
 		}
 
-		// 모니터링 시작
 		function startMonitoring() {
-			if (isMonitoring) return;
+			if (isMonitoring) {
+				return;
+			}
 
 			isMonitoring = true;
 			lastCode = getEditorCode() || "";
 
-			// 500ms마다 코드 변화 체크
-			monitorInterval = window.setInterval(checkCodeChange, 500);
+			monitorInterval = window.setInterval(checkCodeChange, 500); // 500ms마다 코드 변화 체크
 
-			console.log("[Recall] 코드 모니터링 시작");
+			console.log("프로그래머스 코드 모니터링 시작");
 		}
 
-		// 모니터링 중지
 		function stopMonitoring() {
-			if (!isMonitoring) return;
+			if (!isMonitoring) {
+				return;
+			}
 
 			isMonitoring = false;
+
 			if (monitorInterval) {
 				clearInterval(monitorInterval);
 				monitorInterval = null;
 			}
 
-			console.log("[Recall] 코드 모니터링 중지");
+			console.log("프로그래머스 코드 모니터링 중지");
 		}
 
-		// 실행/제출 버튼 이벤트 감지
 		function setupButtonListeners() {
-			const observer = new MutationObserver(() => {
-				// 실행 버튼
-				const runBtn = document.querySelector(
+			const buttonObserver = new MutationObserver(() => {
+				const runButton = document.querySelector(
 					'[data-testid="run-code-button"], .run-btn, button:has(.fa-play)',
 				);
-				if (runBtn && !runBtn.hasAttribute("data-odap-listener")) {
-					runBtn.setAttribute("data-odap-listener", "true");
-					runBtn.addEventListener("click", () => {
+				if (runButton && !runButton.hasAttribute("data-odap-listener")) {
+					runButton.setAttribute("data-odap-listener", "true");
+					runButton.addEventListener("click", () => {
 						browser.runtime.sendMessage({ type: "CODE_RUN" });
 					});
 				}
 
-				// 제출 버튼
-				const submitBtn = document.querySelector(
+				const submitButton = document.querySelector(
 					'[data-testid="submit-code-button"], .submit-btn, button:has(.fa-check)',
 				);
-				if (submitBtn && !submitBtn.hasAttribute("data-odap-listener")) {
-					submitBtn.setAttribute("data-odap-listener", "true");
-					submitBtn.addEventListener("click", () => {
+				if (submitButton && !submitButton.hasAttribute("data-odap-listener")) {
+					submitButton.setAttribute("data-odap-listener", "true");
+					submitButton.addEventListener("click", () => {
 						browser.runtime.sendMessage({ type: "CODE_SUBMIT" });
 					});
 				}
 			});
 
-			observer.observe(document.body, {
+			buttonObserver.observe(document.body, {
 				childList: true,
 				subtree: true,
 			});
 		}
-
-		// 메시지 리스너
-		browser.runtime.onMessage.addListener((message, _sender, sendResponse) => {
-			switch (message.type) {
-				case "GET_PROBLEM_INFO": {
-					const problemInfo = extractProblemInfo();
-					sendResponse({ type: "PROBLEM_INFO", payload: problemInfo });
-					break;
-				}
-				case "START_CODE_MONITOR":
-					startMonitoring();
-					sendResponse({ success: true });
-					break;
-				case "STOP_CODE_MONITOR":
-					stopMonitoring();
-					sendResponse({ success: true });
-					break;
-				case "GET_CURRENT_CODE": {
-					const code = getEditorCode();
-					sendResponse({ code, language: detectLanguage() });
-					break;
-				}
-			}
-			return true;
-		});
-
-		// 초기화
-		setupButtonListeners();
-		console.log("[Recall] 프로그래머스 Content Script 로드됨");
 	},
 });
 
