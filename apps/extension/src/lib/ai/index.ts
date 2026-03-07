@@ -14,6 +14,6 @@ export function createAIClient(provider: AIProvider, apiKey: string): AIClient {
 }
 
 export { ClaudeClient } from "./claude";
-export { OpenAIClient } from "./openai";
 export * from "./cost";
+export { OpenAIClient } from "./openai";
 export * from "./prompts";
