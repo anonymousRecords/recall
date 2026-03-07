@@ -1,14 +1,20 @@
 import { useEffect, useRef, useState } from "react";
 import { PageLayout } from "../../../components/layout";
 import { cn } from "../../../lib/utils";
-import type { ChatMessage, SpeechState } from "../../../types";
+import type { ChatMessage } from "../../../types";
 
 interface InterviewActiveViewProps {
 	messages: ChatMessage[];
 	timeRemaining: number | null;
 	isAILoading: boolean;
-	speech: SpeechState;
-	onSendMessage: (content: string) => Promise<void>;
+	speech: {
+		isMicOn: boolean;
+		isInterviewerSpeaking: boolean;
+		finalTranscript: string;
+		liveTranscript: string;
+		toggleListening: () => Promise<void>;
+	};
+	onSendMessage: (content: string) => void;
 	onEnd: () => Promise<void>;
 }
 
@@ -21,11 +27,10 @@ export function InterviewActiveView({
 	onEnd,
 }: InterviewActiveViewProps) {
 	const {
-		isListening,
-		isSpeaking,
+		isMicOn,
+		isInterviewerSpeaking,
 		finalTranscript,
-		interimTranscript,
-		volume,
+		liveTranscript,
 		toggleListening,
 	} = speech;
 
@@ -53,22 +58,21 @@ export function InterviewActiveView({
 				messages={messages}
 				isAILoading={isAILoading}
 				finalTranscript={finalTranscript}
-				interimTranscript={interimTranscript}
+				liveTranscript={liveTranscript}
 				messagesEndRef={messagesEndRef}
 			/>
 
 			<div className="shrink-0 border-t border-[#3e3e42] bg-[#252526] px-4 py-3 space-y-2">
 				<VoiceInteractionField
 					isAILoading={isAILoading}
-					isListening={isListening}
-					isSpeaking={isSpeaking}
-					volume={volume}
+					isMicOn={isMicOn}
+					isInterviewerSpeaking={isInterviewerSpeaking}
 					toggleListening={toggleListening}
-					transcripts={{ finalTranscript, interimTranscript }}
+					transcripts={{ finalTranscript, liveTranscript }}
 				/>
 				<MessageInput
 					isAILoading={isAILoading}
-					isListening={isListening}
+					isMicOn={isMicOn}
 					onSendMessage={onSendMessage}
 				/>
 			</div>
@@ -95,7 +99,7 @@ function InterviewActiveViewHeader({
 	return (
 		<div className="flex items-center justify-between px-4 py-3">
 			<div className="flex items-center gap-3">
-				<p className="font-mono text-[11px] text-[#858585]">// live coding</p>
+				<p className="font-mono text-[11px] text-[#858585]">live coding</p>
 				{timeRemaining !== null && (
 					<span
 						className={cn(
@@ -197,7 +201,9 @@ function MessageBubble({ message }: MessageBubbleProps) {
 function AiThinkingBubble() {
 	return (
 		<div className="flex items-start gap-2">
-			<span className="shrink-0 font-mono text-[11px] text-[#569cd6]">[AI]</span>
+			<span className="shrink-0 font-mono text-[11px] text-[#569cd6]">
+				[AI]
+			</span>
 			<span className="font-mono text-[13px] text-[#858585]">···</span>
 		</div>
 	);
@@ -207,7 +213,7 @@ interface MessageListProps {
 	messages: ChatMessage[];
 	isAILoading: boolean;
 	finalTranscript: string | null;
-	interimTranscript: string | null;
+	liveTranscript: string | null;
 	messagesEndRef: React.RefObject<HTMLDivElement | null>;
 }
 
@@ -215,7 +221,7 @@ function MessageList({
 	messages,
 	isAILoading,
 	finalTranscript,
-	interimTranscript,
+	liveTranscript,
 	messagesEndRef,
 }: MessageListProps) {
 	return (
@@ -226,10 +232,10 @@ function MessageList({
 
 			{isAILoading && <AiThinkingBubble />}
 
-			{(finalTranscript || interimTranscript) && (
+			{(finalTranscript || liveTranscript) && (
 				<TranscriptBubble
 					finalTranscript={finalTranscript}
-					interimTranscript={interimTranscript}
+					liveTranscript={liveTranscript}
 				/>
 			)}
 
@@ -240,19 +246,24 @@ function MessageList({
 
 interface TranscriptBubbleProps {
 	finalTranscript: string | null;
-	interimTranscript: string | null;
+	liveTranscript: string | null;
 }
 
-function TranscriptBubble({ finalTranscript, interimTranscript }: TranscriptBubbleProps) {
+function TranscriptBubble({
+	finalTranscript,
+	liveTranscript,
+}: TranscriptBubbleProps) {
 	return (
 		<div className="flex items-start gap-2">
-			<span className="shrink-0 font-mono text-[11px] text-[#4ec9b0] mt-0.5">[YOU]</span>
+			<span className="shrink-0 font-mono text-[11px] text-[#4ec9b0] mt-0.5">
+				[YOU]
+			</span>
 			<p className="font-sans text-[13px] leading-relaxed">
 				<span className="text-[#858585]">{finalTranscript}</span>
-				{interimTranscript && (
+				{liveTranscript && (
 					<span className="text-[#525252] italic">
 						{finalTranscript ? " " : ""}
-						{interimTranscript}
+						{liveTranscript}
 					</span>
 				)}
 			</p>
@@ -262,11 +273,15 @@ function TranscriptBubble({ finalTranscript, interimTranscript }: TranscriptBubb
 
 interface MessageInputProps {
 	isAILoading: boolean;
-	isListening: boolean;
+	isMicOn: boolean;
 	onSendMessage: (message: string) => void;
 }
 
-function MessageInput({ isAILoading, isListening, onSendMessage }: MessageInputProps) {
+function MessageInput({
+	isAILoading,
+	isMicOn,
+	onSendMessage,
+}: MessageInputProps) {
 	const [input, setInput] = useState("");
 	const textareaRef = useRef<HTMLTextAreaElement>(null);
 
@@ -287,14 +302,22 @@ function MessageInput({ isAILoading, isListening, onSendMessage }: MessageInputP
 
 	return (
 		<form
-			onSubmit={(e) => { e.preventDefault(); handleSubmit(); }}
+			onSubmit={(e) => {
+				e.preventDefault();
+				handleSubmit();
+			}}
 			className="flex items-end gap-2 border border-[#3e3e42] bg-[#1e1e1e] focus-within:border-[#569cd6] transition-colors"
 		>
-			<span className="pl-3 pt-2 font-mono text-[12px] text-[#569cd6] self-start">&gt;</span>
+			<span className="pl-3 pt-2 font-mono text-[12px] text-[#569cd6] self-start">
+				&gt;
+			</span>
 			<textarea
 				ref={textareaRef}
 				value={input}
-				onChange={(e) => { setInput(e.target.value); adjustHeight(); }}
+				onChange={(e) => {
+					setInput(e.target.value);
+					adjustHeight();
+				}}
 				onKeyDown={(e) => {
 					if (e.key === "Enter" && !e.shiftKey) {
 						e.preventDefault();
@@ -302,14 +325,14 @@ function MessageInput({ isAILoading, isListening, onSendMessage }: MessageInputP
 					}
 				}}
 				placeholder="텍스트를 입력하세요"
-				disabled={isAILoading || isListening}
+				disabled={isAILoading || isMicOn}
 				rows={1}
 				className="flex-1 resize-none bg-transparent px-2 py-2 font-mono text-[13px] text-[#d4d4d4] placeholder:text-[#858585] focus:outline-none disabled:opacity-40"
 				aria-label="메시지 입력"
 			/>
 			<button
 				type="submit"
-				disabled={!input.trim() || isAILoading || isListening}
+				disabled={!input.trim() || isAILoading || isMicOn}
 				className="self-end px-3 py-2 font-mono text-[12px] text-[#569cd6] disabled:opacity-30 hover:text-[#d4d4d4] transition-colors"
 			>
 				[ → ]
@@ -318,48 +341,31 @@ function MessageInput({ isAILoading, isListening, onSendMessage }: MessageInputP
 	);
 }
 
-const BAR_VARIATIONS = [
-	{ id: "left", variation: 0.7 },
-	{ id: "center", variation: 1 },
-	{ id: "right", variation: 0.8 },
-] as const;
-
-function VoiceVisualizer({ volume }: { volume: number }) {
-	const getBarHeight = (variation: number) => {
-		if (volume < 0.01) return 2;
-		return Math.max(2, Math.min(12, volume * 12 * variation));
-	};
-
+function VoiceVisualizer() {
 	return (
 		<span className="inline-flex items-center gap-0.5" aria-hidden="true">
-			{BAR_VARIATIONS.map((bar) => (
-				<span
-					key={bar.id}
-					className="inline-block w-0.5 bg-[#f44747] transition-all duration-75"
-					style={{ height: `${getBarHeight(bar.variation)}px` }}
-				/>
-			))}
+			<span className="inline-block w-0.5 bg-[#f44747] animate-[voiceBar_0.8s_ease-in-out_infinite]" style={{ height: "8px", animationDelay: "0ms" }} />
+			<span className="inline-block w-0.5 bg-[#f44747] animate-[voiceBar_0.8s_ease-in-out_infinite]" style={{ height: "8px", animationDelay: "160ms" }} />
+			<span className="inline-block w-0.5 bg-[#f44747] animate-[voiceBar_0.8s_ease-in-out_infinite]" style={{ height: "8px", animationDelay: "320ms" }} />
 		</span>
 	);
 }
 
 interface VoiceInteractionFieldProps {
-	isListening: boolean;
-	isSpeaking: boolean;
+	isMicOn: boolean;
+	isInterviewerSpeaking: boolean;
 	isAILoading: boolean;
-	volume: number;
 	toggleListening: () => void;
 	transcripts: {
 		finalTranscript: string | null;
-		interimTranscript: string | null;
+		liveTranscript: string | null;
 	};
 }
 
 function VoiceInteractionField({
-	isListening,
-	isSpeaking,
+	isMicOn,
+	isInterviewerSpeaking,
 	isAILoading,
-	volume,
 	toggleListening,
 }: VoiceInteractionFieldProps) {
 	return (
@@ -367,19 +373,19 @@ function VoiceInteractionField({
 			<button
 				type="button"
 				onClick={toggleListening}
-				disabled={isSpeaking || isAILoading}
-				aria-label={isListening ? "음성 인식 중지" : "음성 인식 시작"}
-				aria-pressed={isListening}
+				disabled={isInterviewerSpeaking || isAILoading}
+				aria-label={isMicOn ? "음성 인식 중지" : "음성 인식 시작"}
+				aria-pressed={isMicOn}
 				className={cn(
 					"font-mono text-[12px] border px-2.5 py-1 transition-all disabled:opacity-40",
-					isListening
+					isMicOn
 						? "border-[#f44747] text-[#f44747]"
 						: "border-[#3e3e42] text-[#858585] hover:border-[#525252] hover:text-[#d4d4d4]",
 				)}
 			>
-				{isListening ? (
+				{isMicOn ? (
 					<span className="flex items-center gap-1.5">
-						<VoiceVisualizer volume={volume} />
+						<VoiceVisualizer />
 						<span>[ ■ stop ]</span>
 					</span>
 				) : (
@@ -388,14 +394,14 @@ function VoiceInteractionField({
 			</button>
 
 			<span className="font-mono text-[12px]">
-				{isListening ? (
+				{isMicOn ? (
 					<span className="text-[#f44747]">● 듣는 중...</span>
-				) : isSpeaking ? (
+				) : isInterviewerSpeaking ? (
 					<span className="text-[#569cd6]">AI 말하는 중...</span>
 				) : isAILoading ? (
 					<span className="text-[#858585]">AI 생각 중...</span>
 				) : (
-					<span className="text-[#525252]">// mic 버튼으로 말하기</span>
+					<span className="text-[#525252]">mic 버튼으로 말하기</span>
 				)}
 			</span>
 		</div>
