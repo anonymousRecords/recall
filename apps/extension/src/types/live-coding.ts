@@ -1,4 +1,4 @@
-export type AIProvider = "openai" | "claude" | "free";
+export type AIProvider = "openai" | "claude";
 
 export type ProgrammingLanguage =
 	| "python"
