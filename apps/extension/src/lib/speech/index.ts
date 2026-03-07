@@ -1,2 +1,2 @@
-export { SpeechRecognizer } from "./stt";
-export { SpeechSynthesizer } from "./tts";
+export { SpeechToText } from "./stt";
+export { TextToSpeech } from "./tts";

@@ -44,20 +44,20 @@ declare global {
 	}
 }
 
-interface SpeechRecognizerOptions {
-	onResult: (text: string, isFinal: boolean) => void;
+interface SpeechToTextOptions {
+	onResult: (transcript: string, isTranscriptConfirmed: boolean) => void;
 	onError: (error: string) => void;
 	onEnd?: () => void;
 }
 
-export class SpeechRecognizer {
+export class SpeechToText {
 	private recognition: SpeechRecognitionInstance | null = null;
 	private isListening = false;
 	private onResult: (text: string, isFinal: boolean) => void;
 	private onError: (error: string) => void;
 	private onEnd?: () => void;
 
-	constructor(options: SpeechRecognizerOptions) {
+	constructor(options: SpeechToTextOptions) {
 		this.onResult = options.onResult;
 		this.onError = options.onError;
 		this.onEnd = options.onEnd;
@@ -84,10 +84,10 @@ export class SpeechRecognizer {
 		this.recognition.onresult = (event) => {
 			const lastIndex = event.results.length - 1;
 			const result = event.results[lastIndex];
-			const text = result[0].transcript;
-			const isFinal = result.isFinal;
+			const transcript = result[0].transcript;
+			const isTranscriptConfirmed = result.isFinal;
 
-			this.onResult(text, isFinal);
+			this.onResult(transcript, isTranscriptConfirmed);
 		};
 
 		this.recognition.onerror = (event) => {

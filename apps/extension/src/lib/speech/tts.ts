@@ -1,17 +1,17 @@
-interface SpeechSynthesizerOptions {
+interface TextToSpeechOptions {
 	onStart?: () => void;
 	onEnd?: () => void;
 	onError?: (error: string) => void;
 }
 
-export class SpeechSynthesizer {
+export class TextToSpeech {
 	private synth: SpeechSynthesis;
 	private voice: SpeechSynthesisVoice | null = null;
 	private onStart?: () => void;
 	private onEnd?: () => void;
 	private onError?: (error: string) => void;
 
-	constructor(options: SpeechSynthesizerOptions = {}) {
+	constructor(options: TextToSpeechOptions = {}) {
 		this.synth = window.speechSynthesis;
 		this.onStart = options.onStart;
 		this.onEnd = options.onEnd;
