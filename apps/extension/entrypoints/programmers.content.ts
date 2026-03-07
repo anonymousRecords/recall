@@ -1,3 +1,4 @@
+import { onMessage, sendMessage } from "../src/lib/messaging";
 import type { ProblemInfo } from "../src/types";
 
 export default defineContentScript({
@@ -7,30 +8,19 @@ export default defineContentScript({
 		let lastCode = "";
 		let monitorInterval: number | null = null;
 
-		setupButtonListeners();
 		console.log("프로그래머스 Content Script 로드됨");
 
-		browser.runtime.onMessage.addListener((message, _sender, sendResponse) => {
-			switch (message.type) {
-				case "GET_PROBLEM_INFO": {
-					const problemInfo = extractProblemInfo();
-					sendResponse({ type: "PROBLEM_INFO", payload: problemInfo });
-					break;
-				}
-				case "START_CODE_MONITOR":
-					startMonitoring();
-					sendResponse({ success: true });
-					break;
-				case "STOP_CODE_MONITOR":
-					stopMonitoring();
-					sendResponse({ success: true });
-					break;
-				case "GET_CURRENT_CODE": {
-					const code = getEditorCode();
-					sendResponse({ code, language: detectLanguage() });
-					break;
-				}
-			}
+		onMessage("GET_PROBLEM_INFO", () => extractProblemInfo());
+		onMessage("GET_CURRENT_CODE", () => {
+			const code = getEditorCode();
+			return code ? { code, language: detectLanguage() } : null;
+		});
+		onMessage("START_CODE_MONITOR", () => {
+			startMonitoring();
+			return true;
+		});
+		onMessage("STOP_CODE_MONITOR", () => {
+			stopMonitoring();
 			return true;
 		});
 
@@ -175,12 +165,9 @@ export default defineContentScript({
 			if (currentCode !== null && currentCode !== lastCode) {
 				lastCode = currentCode;
 
-				browser.runtime.sendMessage({
-					type: "CODE_CHANGED",
-					payload: {
-						code: currentCode,
-						language: detectLanguage(),
-					},
+				sendMessage("CODE_CHANGED", {
+					code: currentCode,
+					language: detectLanguage(),
 				});
 			}
 		}
@@ -213,34 +200,6 @@ export default defineContentScript({
 			console.log("프로그래머스 코드 모니터링 중지");
 		}
 
-		function setupButtonListeners() {
-			const buttonObserver = new MutationObserver(() => {
-				const runButton = document.querySelector(
-					'[data-testid="run-code-button"], .run-btn, button:has(.fa-play)',
-				);
-				if (runButton && !runButton.hasAttribute("data-odap-listener")) {
-					runButton.setAttribute("data-odap-listener", "true");
-					runButton.addEventListener("click", () => {
-						browser.runtime.sendMessage({ type: "CODE_RUN" });
-					});
-				}
-
-				const submitButton = document.querySelector(
-					'[data-testid="submit-code-button"], .submit-btn, button:has(.fa-check)',
-				);
-				if (submitButton && !submitButton.hasAttribute("data-odap-listener")) {
-					submitButton.setAttribute("data-odap-listener", "true");
-					submitButton.addEventListener("click", () => {
-						browser.runtime.sendMessage({ type: "CODE_SUBMIT" });
-					});
-				}
-			});
-
-			buttonObserver.observe(document.body, {
-				childList: true,
-				subtree: true,
-			});
-		}
 	},
 });
 
