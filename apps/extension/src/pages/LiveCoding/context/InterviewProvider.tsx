@@ -1,31 +1,30 @@
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { createContext, type ReactNode, useReducer, useRef } from "react";
-import type {
-	ChatMessage,
-	InterviewStatus,
-	LiveInterview,
-	ProblemInfo,
-} from "../../../types";
+import { liveCodingSettingsQueryOptions } from "../../../queries/live-coding-settings";
+import type { ChatMessage, LiveInterview, ProblemInfo } from "../../../types";
 import { useCodeMonitor } from "../hooks/useCodeMonitor";
 import { useInterviewer } from "../hooks/useInterviewer";
 import { useSpeech } from "../hooks/useSpeech";
-import { liveCodingSettingsQueryOptions } from "../../../queries/live-coding-settings";
-import { initialInterviewState, interviewReducer } from "./interviewReducer";
-import { useInterviewCoordinator } from "./useInterviewCoordinator";
+import {
+	type InterviewError,
+	type InterviewPhase,
+	initialInterviewState,
+	interviewReducer,
+} from "./interviewReducer";
+import { useInterviewMachine } from "./useInterviewMachine";
 
 export interface InterviewStateContext {
-	status: InterviewStatus;
+	phase: InterviewPhase;
 	interview: LiveInterview | null;
 	messages: ChatMessage[];
 	timeRemaining: number | null;
 	problemInfo: ProblemInfo | null;
-	isAILoading: boolean;
+	error: InterviewError | null;
 	speech: {
-		isListening: boolean;
-		isSpeaking: boolean;
+		isMicOn: boolean;
+		isInterviewerSpeaking: boolean;
 		finalTranscript: string;
-		interimTranscript: string;
-		volume: number;
+		liveTranscript: string;
 		toggleListening: () => Promise<void>;
 	};
 }
@@ -37,7 +36,7 @@ export interface InterviewActionsContext {
 	}) => Promise<void>;
 	endInterview: () => Promise<void>;
 	resetInterview: () => void;
-	sendMessage: (content: string) => Promise<void>;
+	sendMessage: (content: string) => void;
 }
 
 export const InterviewStateCtx = createContext<InterviewStateContext | null>(
@@ -58,13 +57,11 @@ export function InterviewProvider({ children }: { children: ReactNode }) {
 	const handleFinalTranscriptRef = useRef<(text: string) => void>(() => {});
 
 	const speech = useSpeech({
-		mode: settings.voiceInputMode,
-		voiceEnabled: settings.voiceEnabled,
-		voiceRate: settings.voiceRate,
 		onFinalTranscript: (text) => handleFinalTranscriptRef.current(text),
+		onInterviewerSpeakingEnd: () => dispatch({ type: "SPEAKING_DONE" }),
 	});
 
-	const coordinator = useInterviewCoordinator({
+	const machine = useInterviewMachine({
 		state,
 		dispatch,
 		speech,
@@ -72,28 +69,34 @@ export function InterviewProvider({ children }: { children: ReactNode }) {
 		interviewer,
 	});
 
-	handleFinalTranscriptRef.current = coordinator.handleFinalTranscript;
+	handleFinalTranscriptRef.current = machine.handleFinalTranscript;
 
 	return (
 		<InterviewStateCtx.Provider
 			value={{
-				status: state.status,
+				phase: state.phase,
 				interview: state.interview,
 				messages: state.messages,
 				timeRemaining: state.timeRemaining,
 				problemInfo: codeMonitor.problemInfo,
-				isAILoading: interviewer.isLoading,
+				error: state.error,
 				speech: {
-					isListening: speech.isListening,
-					isSpeaking: speech.isSpeaking,
+					isMicOn: speech.isMicOn,
+					isInterviewerSpeaking: speech.isInterviewerSpeaking,
 					finalTranscript: speech.finalTranscript,
-					interimTranscript: speech.interimTranscript,
-					volume: speech.volume,
+					liveTranscript: speech.liveTranscript,
 					toggleListening: speech.toggleListening,
 				},
 			}}
 		>
-			<InterviewActionsCtx.Provider value={coordinator}>
+			<InterviewActionsCtx.Provider
+				value={{
+					startInterview: machine.startInterview,
+					endInterview: machine.endInterview,
+					resetInterview: machine.resetInterview,
+					sendMessage: machine.sendMessage,
+				}}
+			>
 				{children}
 			</InterviewActionsCtx.Provider>
 		</InterviewStateCtx.Provider>

@@ -1,8 +1,11 @@
 import { Suspense } from "react";
-import { InterviewActiveView } from "./components/InterviewActiveView";
-import { InterviewReportView } from "./components/InterviewReportView";
-import { InterviewSetupView } from "./components/InterviewSetupView";
-import { InterviewProvider, useInterviewActions, useInterviewState } from "./context";
+import {
+	InterviewActiveView,
+	InterviewReportView,
+	InterviewSetupView,
+} from "./components";
+import { useInterviewActions, useInterviewState } from "./context";
+import { InterviewProvider } from "./context/InterviewProvider";
 
 export function LiveCodingPage() {
 	return (
@@ -16,29 +19,28 @@ export function LiveCodingPage() {
 
 function LiveCodingContent() {
 	const {
-		status,
+		phase,
 		interview,
 		messages,
 		timeRemaining,
 		problemInfo,
-		isAILoading,
 		speech,
 	} = useInterviewState();
 	const { startInterview, endInterview, resetInterview, sendMessage } =
 		useInterviewActions();
 
-	if (status === "idle") {
+	if (phase === "idle") {
 		return (
 			<InterviewSetupView problemInfo={problemInfo} onStart={startInterview} />
 		);
 	}
 
-	if (status === "active") {
+	if (phase === "listening" || phase === "processing" || phase === "speaking") {
 		return (
 			<InterviewActiveView
 				messages={messages}
 				timeRemaining={timeRemaining}
-				isAILoading={isAILoading}
+				isAILoading={phase === "processing"}
 				speech={speech}
 				onSendMessage={sendMessage}
 				onEnd={endInterview}
@@ -46,9 +48,12 @@ function LiveCodingContent() {
 		);
 	}
 
-	if (status === "completed" && interview) {
-		return <InterviewReportView interview={interview} onNewInterview={resetInterview} />;
+	if (phase === "completed" && interview) {
+		return (
+			<InterviewReportView
+				interview={interview}
+				onNewInterview={resetInterview}
+			/>
+		);
 	}
-
-	return null;
 }
