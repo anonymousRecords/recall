@@ -11,9 +11,7 @@ const DEFAULT_LIVE_CODING_SETTINGS: LiveCodingSettings = {
 	defaultTimeLimit: 30,
 	defaultStyle: "normal",
 	autoRegisterProblem: true,
-	voiceInputMode: "auto",
 	voiceEnabled: true,
-	voiceRate: 1.0,
 };
 
 function getApiKey(): Promise<string> {
