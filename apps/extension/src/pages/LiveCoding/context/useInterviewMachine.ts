@@ -32,9 +32,8 @@ export function useInterviewMachine({
 	interviewer,
 }: MachineOptions) {
 	const stateRef = useRef(state);
-	stateRef.current = state;
 
-	const lastAIQuestionTimeRef = useRef<number>(0);
+	stateRef.current = state;
 
 	const startInterview = useCallback(
 		async (config: {
@@ -117,7 +116,11 @@ export function useInterviewMachine({
 			return;
 		}
 
-		if (Date.now() - lastAIQuestionTimeRef.current < AI_QUESTION_COOLDOWN_MS) {
+		const lastAIMessageTime =
+			stateRef.current.messages.filter((m) => m.role === "interviewer").at(-1)
+				?.timestamp ?? 0;
+
+		if (Date.now() - lastAIMessageTime < AI_QUESTION_COOLDOWN_MS) {
 			return;
 		}
 
@@ -148,7 +151,6 @@ export function useInterviewMachine({
 				return;
 			}
 
-			lastAIQuestionTimeRef.current = Date.now();
 			const { content, notes } = result;
 
 			dispatch({
