@@ -201,6 +201,8 @@ export function useInterviewActions({
 		);
 
 		try {
+			await updateInterview(interview.id, { messages });
+
 			const report = await interviewer.generateReport(
 				messages,
 				codeMonitor.editorCode,
@@ -321,6 +323,7 @@ export function useInterviewActions({
 	// 자동 저장
 	useEffect(() => {
 		const { phase, interview, messages } = stateRef.current;
+
 		if (phase === "idle" || phase === "completed") {
 			return;
 		}
