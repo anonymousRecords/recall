@@ -1,25 +1,27 @@
 import { useContext } from "react";
 import {
-	type InterviewActionsContext,
-	InterviewActionsCtx,
-	type InterviewStateContext,
-	InterviewStateCtx,
+	InterviewActionsContext,
+	InterviewStateContext,
 } from "./InterviewProvider";
 
 export function useInterviewState(): InterviewStateContext {
-	const ctx = useContext(InterviewStateCtx);
-	if (!ctx) {
+	const context = useContext(InterviewStateContext);
+
+	if (!context) {
 		throw new Error("useInterviewState must be used within InterviewProvider");
 	}
-	return ctx;
+
+	return context;
 }
 
 export function useInterviewActions(): InterviewActionsContext {
-	const ctx = useContext(InterviewActionsCtx);
-	if (!ctx) {
+	const context = useContext(InterviewActionsContext);
+
+	if (!context) {
 		throw new Error(
 			"useInterviewActions must be used within InterviewProvider",
 		);
 	}
-	return ctx;
+
+	return context;
 }

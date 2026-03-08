@@ -1,6 +1,5 @@
 import { useSuspenseQuery } from "@tanstack/react-query";
-import { createContext, type ReactNode, useReducer, useRef } from "react";
-import { sendMessage } from "@/src/lib/messaging";
+import { createContext, useReducer } from "react";
 import { liveCodingSettingsQueryOptions } from "../../../queries/live-coding-settings";
 import type { ChatMessage, LiveInterview, ProblemInfo } from "../../../types";
 import { useCodeMonitor } from "../hooks/useCodeMonitor";
@@ -12,8 +11,9 @@ import {
 	initialInterviewState,
 	interviewReducer,
 } from "./interviewReducer";
-import { useInterviewMachine } from "./useInterviewMachine";
+import { useInterviewActions } from "./useInterviewActions";
 
+// STATE
 export interface InterviewStateContext {
 	phase: InterviewPhase;
 	interview: LiveInterview | null;
@@ -30,6 +30,10 @@ export interface InterviewStateContext {
 	};
 }
 
+// ACTION
+export const InterviewStateContext =
+	createContext<InterviewStateContext | null>(null);
+
 export interface InterviewActionsContext {
 	startInterview: (config: {
 		timeLimit: number;
@@ -40,27 +44,34 @@ export interface InterviewActionsContext {
 	sendAIMessage: (content: string) => void;
 }
 
-export const InterviewStateCtx = createContext<InterviewStateContext | null>(
-	null,
-);
-export const InterviewActionsCtx =
+export const InterviewActionsContext =
 	createContext<InterviewActionsContext | null>(null);
 
-export function InterviewProvider({ children }: { children: ReactNode }) {
+interface InterviewProviderProps {
+	children: React.ReactNode;
+}
+
+export function InterviewProvider({ children }: InterviewProviderProps) {
 	const [state, dispatch] = useReducer(interviewReducer, initialInterviewState);
+
 	const { data: settings } = useSuspenseQuery(liveCodingSettingsQueryOptions());
-	const codeMonitor = useCodeMonitor();
+
 	const interviewer = useInterviewer({
 		provider: settings.aiProvider,
 		apiKey: settings.apiKey,
 	});
 
+	const codeMonitor = useCodeMonitor();
+
+	// NOTE: machine이 아직 선언되지 않았지만, onFinalTranscript는
+	// 비동기 이벤트에서만 호출되므로 machine 초기화 이후 실행됨.
+	// usePreservedCallback이 내부적으로 최신 참조를 보장함.
 	const speech = useSpeech({
-		onFinalTranscript: (text) => machine.sendAIMessage(text),
+		onFinalTranscript: (text) => actions.sendAIMessage(text),
 		onInterviewerSpeakingEnd: () => dispatch({ type: "SPEAKING_DONE" }),
 	});
 
-	const machine = useInterviewMachine({
+	const actions = useInterviewActions({
 		state,
 		dispatch,
 		speech,
@@ -69,7 +80,7 @@ export function InterviewProvider({ children }: { children: ReactNode }) {
 	});
 
 	return (
-		<InterviewStateCtx.Provider
+		<InterviewStateContext.Provider
 			value={{
 				phase: state.phase,
 				interview: state.interview,
@@ -86,16 +97,16 @@ export function InterviewProvider({ children }: { children: ReactNode }) {
 				},
 			}}
 		>
-			<InterviewActionsCtx.Provider
+			<InterviewActionsContext.Provider
 				value={{
-					startInterview: machine.startInterview,
-					endInterview: machine.endInterview,
-					resetInterview: machine.resetInterview,
-					sendAIMessage: machine.sendAIMessage,
+					startInterview: actions.startInterview,
+					endInterview: actions.endInterview,
+					resetInterview: actions.resetInterview,
+					sendAIMessage: actions.sendAIMessage,
 				}}
 			>
 				{children}
-			</InterviewActionsCtx.Provider>
-		</InterviewStateCtx.Provider>
+			</InterviewActionsContext.Provider>
+		</InterviewStateContext.Provider>
 	);
 }

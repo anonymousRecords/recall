@@ -24,7 +24,7 @@ interface MachineOptions {
 	interviewer: ReturnType<typeof useInterviewer>;
 }
 
-export function useInterviewMachine({
+export function useInterviewActions({
 	state,
 	dispatch,
 	speech,
