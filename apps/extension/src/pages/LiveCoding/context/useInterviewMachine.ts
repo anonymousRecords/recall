@@ -33,14 +33,13 @@ export function useInterviewMachine({
 	const stateRef = useRef(state);
 	stateRef.current = state;
 
-	const endInterviewRef = useRef<() => Promise<void>>(async () => {});
 	const lastAIQuestionTimeRef = useRef<number>(0);
 	const codeChangeTimeoutRef = useRef<number | null>(null);
 	const lastCodeChangeTimeRef = useRef<number>(Date.now());
 
 	const startInterview = useCallback(
 		async (config: {
-			timeLimit: number | null;
+			timeLimit: number;
 			interviewerStyle: InterviewerStyle;
 		}) => {
 			if (!codeMonitor.problemInfo) {
@@ -112,106 +111,10 @@ export function useInterviewMachine({
 		[codeMonitor, interviewer, speech, dispatch],
 	);
 
-	const callAI = useCallback(
-		async (aiTrigger: AITrigger) => {
-			if (!stateRef.current.interviewConfig) {
-				return null;
-			}
-
-			try {
-				let interviewerResponse: { content: string; notes?: string };
-
-				switch (aiTrigger.type) {
-					case "user_speech": {
-						const userMessage: ChatMessage = {
-							id: crypto.randomUUID(),
-							role: "user",
-							content: aiTrigger.transcript,
-							timestamp: Date.now(),
-							codeContext: codeMonitor.editorCode,
-						};
-
-						dispatch({ type: "ADD_MESSAGE", message: userMessage });
-
-						interviewerResponse = await interviewer.respondToUser({
-							content: aiTrigger.transcript,
-							codeContext: codeMonitor.editorCode,
-							messages: [...stateRef.current.messages, userMessage],
-
-							problemInfo: stateRef.current.interviewConfig.problemInfo,
-							interviewerStyle:
-								stateRef.current.interviewConfig.interviewerStyle,
-						});
-						break;
-					}
-
-					case "code_change": {
-						const result = await interviewer.respondToCodeChange({
-							previousCode: stateRef.current.previousCode,
-							currentCode: codeMonitor.editorCode,
-							pauseDuration: Math.floor(
-								(Date.now() - lastCodeChangeTimeRef.current) / 1000,
-							),
-							messages: stateRef.current.messages,
-							problemInfo: stateRef.current.interviewConfig.problemInfo,
-							interviewerStyle:
-								stateRef.current.interviewConfig.interviewerStyle,
-						});
-
-						dispatch({
-							type: "SET_PREVIOUS_CODE",
-							code: codeMonitor.editorCode,
-						});
-
-						// AI가 "SKIP" 반환한 경우
-						if (result === null) {
-							dispatch({ type: "SPEAKING_DONE" });
-							return;
-						}
-
-						lastAIQuestionTimeRef.current = Date.now();
-						interviewerResponse = result;
-						break;
-					}
-				}
-
-				const { content, notes } = interviewerResponse;
-
-				const aiMessage: ChatMessage = {
-					id: crypto.randomUUID(),
-					role: "interviewer",
-					content,
-					notes,
-					timestamp: Date.now(),
-				};
-
-				dispatch({ type: "AI_RESPONDED", message: aiMessage });
-
-				speech.startSpeaking(content);
-			} catch (error) {
-				console.error("AI 응답 실패:", error);
-				dispatch({
-					type: "AI_FAILED",
-					message: "AI 응답에 실패했어요. 다시 말씀해주세요.",
-				});
-			}
-		},
-		[
-			codeMonitor.editorCode,
-			dispatch,
-			interviewer.respondToCodeChange,
-			interviewer.respondToUser,
-			speech.startSpeaking,
-		],
-	);
-
 	// CODE CHANGED
 	useEffect(() => {
-		if (state.phase !== "listening") {
-			return;
-		}
-
-		if (state.interviewConfig === null) {
+		const { phase, interviewConfig, previousCode, messages } = stateRef.current;
+		if (phase !== "listening") {
 			return;
 		}
 
@@ -232,13 +135,57 @@ export function useInterviewMachine({
 				return;
 			}
 
-			if (
-				!shouldTriggerAI(stateRef.current.previousCode, codeMonitor.editorCode)
-			) {
+			if (!shouldTriggerAI(previousCode, codeMonitor.editorCode)) {
 				return;
 			}
 
-			callAI({ type: "code_change" });
+			(async () => {
+				try {
+					const result = await interviewer.respondToCodeChange({
+						previousCode: previousCode,
+						currentCode: codeMonitor.editorCode,
+						pauseDuration: Math.floor(
+							(Date.now() - lastCodeChangeTimeRef.current) / 1000,
+						),
+						messages: messages,
+						problemInfo: interviewConfig.problemInfo,
+						interviewerStyle: interviewConfig.interviewerStyle,
+					});
+
+					dispatch({
+						type: "SET_PREVIOUS_CODE",
+						code: codeMonitor.editorCode,
+					});
+
+					// AI가 "SKIP" 반환한 경우
+					if (result === null) {
+						dispatch({ type: "SPEAKING_DONE" });
+						return;
+					}
+
+					lastAIQuestionTimeRef.current = Date.now();
+					const { content, notes } = result;
+
+					dispatch({
+						type: "AI_RESPONDED",
+						message: {
+							id: crypto.randomUUID(),
+							role: "interviewer",
+							content,
+							notes,
+							timestamp: Date.now(),
+						},
+					});
+
+					speech.startSpeaking(content);
+				} catch (error) {
+					console.error("AI 응답 실패:", error);
+					dispatch({
+						type: "AI_FAILED",
+						message: "AI 응답에 실패했어요. 다시 말씀해주세요.",
+					});
+				}
+			})();
 
 			dispatch({ type: "CODE_CHANGED" });
 		}, CODE_CHANGE_DEBOUNCE_MS);
@@ -248,12 +195,17 @@ export function useInterviewMachine({
 				clearTimeout(codeChangeTimeoutRef.current);
 			}
 		};
-	}, [codeMonitor.editorCode, state, dispatch, callAI]);
+	}, [
+		codeMonitor.editorCode,
+		dispatch,
+		interviewer.respondToCodeChange,
+		speech.startSpeaking,
+	]);
 
 	const endInterview = useCallback(async () => {
-		const { interview, interviewConfig, messages } = stateRef.current;
+		const { phase, interview, interviewConfig, messages } = stateRef.current;
 
-		if (!interview || !interviewConfig) {
+		if (phase === "idle") {
 			return;
 		}
 
@@ -304,26 +256,24 @@ export function useInterviewMachine({
 		}
 	}, [speech, codeMonitor, interviewer, dispatch]);
 
-	endInterviewRef.current = endInterview;
-
 	const resetInterview = useCallback(() => {
 		const { phase, interview, messages } = stateRef.current;
 
-		if (phase !== "idle" && interview) {
-			const duration = Math.floor(
-				(Date.now() - new Date(interview.startedAt).getTime()) / 1000,
-			);
-
-			posthog.capture("interview_abandoned", {
-				duration_sec: duration,
-				message_count: messages.length,
-			});
+		if (phase === "idle") {
+			return;
 		}
+
+		posthog.capture("interview_abandoned", {
+			duration_sec:
+				(Date.now() - new Date(interview.startedAt).getTime()) / 1000,
+			message_count: messages.length,
+		});
+
 		dispatch({ type: "RESET_INTERVIEW" });
 	}, [dispatch]);
 
 	const sendAIMessage = useCallback(
-		(text: string) => {
+		async (text: string) => {
 			if (stateRef.current.phase !== "listening") {
 				return;
 			}
@@ -332,11 +282,49 @@ export function useInterviewMachine({
 
 			posthog.capture("voice_message_sent");
 
-			callAI({ type: "user_speech", transcript: text });
+			const userMessage: ChatMessage = {
+				id: crypto.randomUUID(),
+				role: "user",
+				content: text,
+				timestamp: Date.now(),
+				codeContext: codeMonitor.editorCode,
+			};
+
+			dispatch({ type: "ADD_MESSAGE", message: userMessage });
+
+			try {
+				const { content, notes } = await interviewer.respondToUser({
+					content: text,
+					codeContext: codeMonitor.editorCode,
+					messages: [...stateRef.current.messages, userMessage],
+
+					problemInfo: stateRef.current.interviewConfig.problemInfo,
+					interviewerStyle: stateRef.current.interviewConfig.interviewerStyle,
+				});
+
+				dispatch({
+					type: "AI_RESPONDED",
+					message: {
+						id: crypto.randomUUID(),
+						role: "interviewer",
+						content,
+						notes,
+						timestamp: Date.now(),
+					},
+				});
+
+				speech.startSpeaking(content);
+			} catch (error) {
+				console.error("AI 응답 실패:", error);
+				dispatch({
+					type: "AI_FAILED",
+					message: "AI 응답에 실패했어요. 다시 말씀해주세요.",
+				});
+			}
 
 			dispatch({ type: "TRANSCRIPT_RECEIVED", text });
 		},
-		[speech, dispatch, callAI],
+		[speech, dispatch, codeMonitor.editorCode, interviewer.respondToUser],
 	);
 
 	// 타이머
@@ -344,40 +332,31 @@ export function useInterviewMachine({
 		(state.phase === "listening" ||
 			state.phase === "processing" ||
 			state.phase === "speaking") &&
-		state.timeRemaining !== null &&
 		state.timeRemaining > 0;
 
 	useEffect(() => {
-		if (!isTimerActive) {
-			return;
-		}
-
+		if (!isTimerActive) return;
 		const interval = setInterval(() => dispatch({ type: "TICK_TIMER" }), 1000);
-
 		return () => clearInterval(interval);
 	}, [isTimerActive, dispatch]);
 
 	// 타임 아웃 시 자동 종료
 	useEffect(() => {
-		if (state.timeRemaining === 0) {
-			endInterviewRef.current();
-		}
-	}, [state.timeRemaining]);
+		if (state.timeRemaining !== 0 || state.phase === "idle") return;
+		endInterview();
+	}, [state.timeRemaining, state.phase, endInterview]);
 
 	// 자동 저장
 	useEffect(() => {
-		if (
-			!state.interview ||
-			state.phase === "idle" ||
-			state.phase === "completed"
-		) {
+		const { phase, interview, messages } = stateRef.current;
+		if (phase === "idle" || phase === "completed") {
 			return;
 		}
 
-		updateInterview(state.interview.id, {
-			messages: state.messages,
+		updateInterview(interview.id, {
+			messages: messages,
 			codeSnapshots: [
-				...(state.interview.codeSnapshots || []),
+				...(interview.codeSnapshots || []),
 				{
 					code: codeMonitor.editorCode,
 					language: codeMonitor.editorLanguage,
@@ -385,13 +364,7 @@ export function useInterviewMachine({
 				},
 			],
 		});
-	}, [
-		state.messages,
-		state.interview,
-		state.phase,
-		codeMonitor.editorCode,
-		codeMonitor.editorLanguage,
-	]);
+	}, [codeMonitor.editorCode, codeMonitor.editorLanguage]);
 
 	return {
 		startInterview,
@@ -400,7 +373,3 @@ export function useInterviewMachine({
 		sendAIMessage,
 	};
 }
-
-type AITrigger =
-	| { type: "user_speech"; transcript: string }
-	| { type: "code_change" };

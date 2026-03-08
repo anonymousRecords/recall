@@ -18,7 +18,7 @@ export interface InterviewStateContext {
 	phase: InterviewPhase;
 	interview: LiveInterview | null;
 	messages: ChatMessage[];
-	timeRemaining: number | null;
+	timeRemaining: number;
 	problemInfo: ProblemInfo | null;
 	error: InterviewError | null;
 	speech: {
@@ -32,7 +32,7 @@ export interface InterviewStateContext {
 
 export interface InterviewActionsContext {
 	startInterview: (config: {
-		timeLimit: number | null;
+		timeLimit: number;
 		interviewerStyle: "friendly" | "normal" | "pressure";
 	}) => Promise<void>;
 	endInterview: () => Promise<void>;

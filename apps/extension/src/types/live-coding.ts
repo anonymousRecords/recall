@@ -47,7 +47,7 @@ export interface ChatMessage {
 
 export interface InterviewConfig {
 	problemInfo: ProblemInfo;
-	timeLimit: number | null;
+	timeLimit: number;
 	interviewerStyle: InterviewerStyle;
 	language: ProgrammingLanguage;
 }

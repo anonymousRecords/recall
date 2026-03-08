@@ -17,7 +17,7 @@ import { useMicPermission } from "../hooks/useMicPermission";
 interface InterviewSetupViewProps {
 	problemInfo: ProblemInfo | null;
 	onStart: (config: {
-		timeLimit: number | null;
+		timeLimit: number;
 		interviewerStyle: InterviewerStyle;
 	}) => Promise<void>;
 }
@@ -131,7 +131,7 @@ const micPermissionMessages: Record<string, string> = {
 interface InterviewConfigProps {
 	problemInfo: ProblemInfo;
 	onStart: (config: {
-		timeLimit: number | null;
+		timeLimit: number;
 		interviewerStyle: InterviewerStyle;
 	}) => Promise<void>;
 }

@@ -11,15 +11,29 @@ export type InterviewPhase =
 	| "speaking" // TTS 재생 중
 	| "completed"; // 리포트 화면
 
-export interface InterviewState {
-	phase: InterviewPhase;
-	interview: LiveInterview | null;
-	interviewConfig: InterviewConfig | null;
-	messages: ChatMessage[];
-	timeRemaining: number | null;
-	previousCode: string;
-	error: InterviewError | null;
-}
+export type InterviewState =
+	| {
+			phase: "idle";
+			interview: null;
+			interviewConfig: null;
+			messages: [];
+			timeRemaining: 0;
+			previousCode: "";
+			error: InterviewError | null;
+	  }
+	| {
+			phase:
+				| "listening" // 마이크 대기 중
+				| "processing" // AI 호출 중
+				| "speaking" // TTS 재생 중
+				| "completed"; // 리포트 화면;
+			interview: LiveInterview;
+			interviewConfig: InterviewConfig;
+			messages: ChatMessage[];
+			timeRemaining: number;
+			previousCode: string;
+			error: InterviewError | null;
+	  };
 
 export type InterviewAction =
 	| {
@@ -59,9 +73,7 @@ export function interviewReducer(
 				interviewConfig: action.config,
 				messages: [],
 				previousCode: action.initialCode,
-				timeRemaining: action.config.timeLimit
-					? action.config.timeLimit * 60
-					: null,
+				timeRemaining: action.config.timeLimit * 60,
 				error: null,
 			};
 
@@ -98,22 +110,36 @@ export function interviewReducer(
 			return { ...state, phase: "listening" };
 
 		case "END_INTERVIEW":
+			if (state.phase === "idle") {
+				return state;
+			}
 			return { ...state, phase: "completed" };
 
 		case "REPORT_READY":
+			if (state.phase === "idle") {
+				return state;
+			}
 			return { ...state, interview: action.interview };
 
 		case "ADD_MESSAGE":
+			if (state.phase === "idle") {
+				return state;
+			}
 			return { ...state, messages: [...state.messages, action.message] };
 
 		case "START_FAILED":
+			if (state.phase === "idle") {
+				return state;
+			}
 			return {
-				...state,
-				phase: "idle",
+				...initialInterviewState,
 				error: { code: "START_FAILED", message: action.message },
 			};
 
 		case "AI_FAILED":
+			if (state.phase === "idle") {
+				return state;
+			}
 			return {
 				...state,
 				phase: "listening",
@@ -121,19 +147,28 @@ export function interviewReducer(
 			};
 
 		case "REPORT_FAILED":
+			if (state.phase === "idle") {
+				return state;
+			}
 			return {
 				...state,
 				error: { code: "REPORT_FAILED", message: action.message },
 			};
 
 		case "TICK_TIMER": {
-			if (state.timeRemaining === null || state.timeRemaining <= 0) {
+			if (state.phase === "idle") {
+				return state;
+			}
+			if (state.timeRemaining <= 0) {
 				return state;
 			}
 			return { ...state, timeRemaining: state.timeRemaining - 1 };
 		}
 
 		case "SET_PREVIOUS_CODE":
+			if (state.phase === "idle") {
+				return state;
+			}
 			return { ...state, previousCode: action.code };
 
 		case "RESET_INTERVIEW":
@@ -149,7 +184,7 @@ export const initialInterviewState: InterviewState = {
 	interview: null,
 	interviewConfig: null,
 	messages: [],
-	timeRemaining: null,
+	timeRemaining: 0,
 	previousCode: "",
 	error: null,
 };
