@@ -1,7 +1,12 @@
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { createContext, useReducer } from "react";
 import { liveCodingSettingsQueryOptions } from "../../../queries/live-coding-settings";
-import type { ChatMessage, LiveInterview, ProblemInfo } from "../../../types";
+import type {
+	ChatMessage,
+	InterviewerStyle,
+	LiveInterview,
+	ProblemInfo,
+} from "../../../types";
 import { useCodeMonitor } from "../hooks/useCodeMonitor";
 import { useInterviewer } from "../hooks/useInterviewer";
 import { useSpeech } from "../hooks/useSpeech";
@@ -37,7 +42,7 @@ export const InterviewStateContext =
 export interface InterviewActionsContext {
 	startInterview: (config: {
 		timeLimit: number;
-		interviewerStyle: "friendly" | "normal" | "pressure";
+		interviewerStyle: InterviewerStyle;
 	}) => Promise<void>;
 	endInterview: () => Promise<void>;
 	resetInterview: () => void;

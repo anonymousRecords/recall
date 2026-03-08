@@ -145,9 +145,8 @@ export function useInterviewActions({
 				code: editorCode,
 			});
 
-			// AI가 "SKIP" 반환한 경우
 			if (result === null) {
-				dispatch({ type: "SPEAKING_DONE" });
+				dispatch({ type: "AI_SKIPPED" });
 				return;
 			}
 
@@ -299,8 +298,6 @@ export function useInterviewActions({
 					message: "AI 응답에 실패했어요. 다시 말씀해주세요.",
 				});
 			}
-
-			dispatch({ type: "TRANSCRIPT_RECEIVED", text });
 		},
 		[speech, dispatch, codeMonitor.editorCode, interviewer.respondToUser],
 	);

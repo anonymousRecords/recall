@@ -11,30 +11,6 @@ export type InterviewPhase =
 	| "speaking" // TTS 재생 중
 	| "completed"; // 리포트 화면
 
-export type InterviewState =
-	| {
-			phase: "idle";
-			interview: null;
-			interviewConfig: null;
-			messages: [];
-			timeRemaining: 0;
-			previousCode: "";
-			error: InterviewError | null;
-	  }
-	| {
-			phase:
-				| "listening" // 마이크 대기 중
-				| "processing" // AI 호출 중
-				| "speaking" // TTS 재생 중
-				| "completed"; // 리포트 화면;
-			interview: LiveInterview;
-			interviewConfig: InterviewConfig;
-			messages: ChatMessage[];
-			timeRemaining: number;
-			previousCode: string;
-			error: InterviewError | null;
-	  };
-
 export type InterviewAction =
 	| {
 			type: "START_INTERVIEW";
@@ -42,10 +18,10 @@ export type InterviewAction =
 			config: InterviewConfig;
 			initialCode: string;
 	  }
-	| { type: "TRANSCRIPT_RECEIVED"; text: string }
 	| { type: "CODE_CHANGED" }
 	| { type: "AI_RESPONDED"; message: ChatMessage }
 	| { type: "SPEAKING_DONE" }
+	| { type: "AI_SKIPPED" }
 	| { type: "END_INTERVIEW" }
 	| { type: "REPORT_READY"; interview: LiveInterview }
 	| { type: "START_FAILED"; message: string }
@@ -77,13 +53,6 @@ export function interviewReducer(
 				error: null,
 			};
 
-		case "TRANSCRIPT_RECEIVED":
-			if (state.phase !== "listening") {
-				return state;
-			}
-
-			return { ...state, phase: "processing", error: null };
-
 		case "CODE_CHANGED":
 			if (state.phase !== "listening") {
 				return state;
@@ -109,6 +78,13 @@ export function interviewReducer(
 
 			return { ...state, phase: "listening" };
 
+		case "AI_SKIPPED":
+			if (state.phase !== "processing") {
+				return state;
+			}
+
+			return { ...state, phase: "listening" };
+
 		case "END_INTERVIEW":
 			if (state.phase === "idle") {
 				return state;
@@ -119,18 +95,17 @@ export function interviewReducer(
 			if (state.phase === "idle") {
 				return state;
 			}
+
 			return { ...state, interview: action.interview };
 
 		case "ADD_MESSAGE":
 			if (state.phase === "idle") {
 				return state;
 			}
+
 			return { ...state, messages: [...state.messages, action.message] };
 
 		case "START_FAILED":
-			if (state.phase === "idle") {
-				return state;
-			}
 			return {
 				...initialInterviewState,
 				error: { code: "START_FAILED", message: action.message },
@@ -140,6 +115,7 @@ export function interviewReducer(
 			if (state.phase === "idle") {
 				return state;
 			}
+
 			return {
 				...state,
 				phase: "listening",
@@ -150,6 +126,7 @@ export function interviewReducer(
 			if (state.phase === "idle") {
 				return state;
 			}
+
 			return {
 				...state,
 				error: { code: "REPORT_FAILED", message: action.message },
@@ -159,9 +136,11 @@ export function interviewReducer(
 			if (state.phase === "idle") {
 				return state;
 			}
+
 			if (state.timeRemaining <= 0) {
 				return state;
 			}
+
 			return { ...state, timeRemaining: state.timeRemaining - 1 };
 		}
 
@@ -169,6 +148,7 @@ export function interviewReducer(
 			if (state.phase === "idle") {
 				return state;
 			}
+
 			return { ...state, previousCode: action.code };
 
 		case "RESET_INTERVIEW":
@@ -193,3 +173,27 @@ export interface InterviewError {
 	code: "AI_FAILED" | "REPORT_FAILED" | "START_FAILED";
 	message: string;
 }
+
+export type InterviewState =
+	| {
+			phase: "idle";
+			interview: null;
+			interviewConfig: null;
+			messages: [];
+			timeRemaining: 0;
+			previousCode: "";
+			error: InterviewError | null;
+	  }
+	| {
+			phase:
+				| "listening" // 마이크 대기 중
+				| "processing" // AI 호출 중
+				| "speaking" // TTS 재생 중
+				| "completed"; // 리포트 화면;
+			interview: LiveInterview;
+			interviewConfig: InterviewConfig;
+			messages: ChatMessage[];
+			timeRemaining: number;
+			previousCode: string;
+			error: InterviewError | null;
+	  };
