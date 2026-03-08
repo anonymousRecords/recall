@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from "react";
+import { usePreservedCallback } from "react-simplikit";
 import { SpeechToText, TextToSpeech } from "../../../lib/speech";
 
 interface UseSpeechProps {
@@ -19,16 +20,10 @@ export function useSpeech({
 	const speechToTextRef = useRef<SpeechToText | null>(null);
 	const textToSpeechRef = useRef<TextToSpeech | null>(null);
 
-	const onFinalTranscriptRef = useRef(onFinalTranscript);
-	const onInterviewerSpeakingEndRef = useRef(onInterviewerSpeakingEnd);
-
-	useEffect(() => {
-		onFinalTranscriptRef.current = onFinalTranscript;
-	}, [onFinalTranscript]);
-
-	useEffect(() => {
-		onInterviewerSpeakingEndRef.current = onInterviewerSpeakingEnd;
-	}, [onInterviewerSpeakingEnd]);
+	const preservedOnFinalTranscript = usePreservedCallback(onFinalTranscript);
+	const preservedOnInterviewerSpeakingEnd = usePreservedCallback(() =>
+		onInterviewerSpeakingEnd?.(),
+	);
 
 	useEffect(() => {
 		speechToTextRef.current = new SpeechToText({
@@ -39,7 +34,7 @@ export function useSpeech({
 					setLiveTranscript("");
 
 					if (transcript.trim()) {
-						onFinalTranscriptRef.current(transcript.trim());
+						preservedOnFinalTranscript(transcript.trim());
 					}
 				} else {
 					setLiveTranscript(transcript);
@@ -55,7 +50,7 @@ export function useSpeech({
 			onStart: () => setIsInterviewerSpeaking(true),
 			onEnd: () => {
 				setIsInterviewerSpeaking(false);
-				onInterviewerSpeakingEndRef.current?.();
+				preservedOnInterviewerSpeakingEnd();
 			},
 			onError: (err) => {
 				setIsInterviewerSpeaking(false);
@@ -67,7 +62,7 @@ export function useSpeech({
 			speechToTextRef.current?.stop();
 			textToSpeechRef.current?.stop();
 		};
-	}, []);
+	}, [preservedOnFinalTranscript, preservedOnInterviewerSpeakingEnd]);
 
 	// LISTENING
 	const startListening = useCallback(() => {
