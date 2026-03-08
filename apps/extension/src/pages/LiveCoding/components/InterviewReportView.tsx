@@ -21,37 +21,43 @@ export function InterviewReportView({
 			<div className="flex-1 overflow-auto p-4 space-y-3">
 				<BasicInfoReportCard report={report} />
 				<ScoreReportCard report={report} />
-				{report.feedback.length > 0 && <FeedbackCard report={report} />}
-				{report.strengths.length > 0 && <StrengthCard report={report} />}
-				{report.improvements.length > 0 && <ImprovementCard report={report} />}
-				{report.supportingQuotes && report.supportingQuotes.length > 0 && (
-					<SupportingQuotesCard quotes={report.supportingQuotes} />
-				)}
-				{report.sampleAnswer && (
-					<SampleAnswerCard sampleAnswer={report.sampleAnswer} />
-				)}
+				<FeedbackCard report={report} />
+				<StrengthCard report={report} />
+				<ImprovementCard report={report} />
+				<SupportingQuotesCard quotes={report.supportingQuotes} />
+				<SampleAnswerCard sampleAnswer={report.sampleAnswer} />
 
-				<div className="flex flex-col gap-2 pt-1">
-					<button
-						type="button"
-						className="w-full border border-[#3e3e42] py-2 font-mono text-[12px] text-[#858585] transition-colors hover:border-[#525252] hover:text-[#d4d4d4]"
-						onClick={onNewInterview}
-					>
-						[ + new interview ]
-					</button>
-					<button
-						type="button"
-						className="w-full py-2 font-mono text-[12px] text-[#525252] transition-colors hover:text-[#858585]"
-						onClick={() => {
-							const url = browser.runtime.getURL("/analytics.html");
-							browser.tabs.create({ url });
-						}}
-					>
-						[ → stats ]
-					</button>
-				</div>
+				<ReportActionsSection onNewInterview={onNewInterview} />
 			</div>
 		</PageLayout>
+	);
+}
+
+interface ReportActionsSectionProps {
+	onNewInterview: () => void;
+}
+
+function ReportActionsSection({ onNewInterview }: ReportActionsSectionProps) {
+	return (
+		<div className="flex flex-col gap-2 pt-1">
+			<button
+				type="button"
+				className="w-full border border-[#3e3e42] py-2 font-mono text-[12px] text-[#858585] transition-colors hover:border-[#525252] hover:text-[#d4d4d4]"
+				onClick={onNewInterview}
+			>
+				[ + new interview ]
+			</button>
+			<button
+				type="button"
+				className="w-full py-2 font-mono text-[12px] text-[#525252] transition-colors hover:text-[#858585]"
+				onClick={() => {
+					const url = browser.runtime.getURL("/analytics.html");
+					browser.tabs.create({ url });
+				}}
+			>
+				[ → stats ]
+			</button>
+		</div>
 	);
 }
 
@@ -77,7 +83,6 @@ interface BasicInfoReportCardProps {
 }
 
 function BasicInfoReportCard({ report }: BasicInfoReportCardProps) {
-	const tu = report.tokenUsage;
 	return (
 		<div className="border border-[#3e3e42] bg-[#252526] p-3">
 			<p className="font-mono text-[11px] text-[#858585] mb-2">
@@ -91,18 +96,19 @@ function BasicInfoReportCard({ report }: BasicInfoReportCardProps) {
 				<p>
 					<span className="text-[#569cd6]">messages</span> {report.messageCount}
 				</p>
-				{tu && (
+				{report.tokenUsage && (
 					<>
 						<p>
 							<span className="text-[#569cd6]">tokens</span>{" "}
 							{(
-								tu.totalPromptTokens + tu.totalCompletionTokens
+								report.tokenUsage.totalPromptTokens +
+								report.tokenUsage.totalCompletionTokens
 							).toLocaleString()}{" "}
-							({tu.callCount} calls)
+							({report.tokenUsage.callCount} calls)
 						</p>
 						<p>
 							<span className="text-[#569cd6]">cost</span> $
-							{tu.estimatedCost.toFixed(4)}
+							{report.tokenUsage.estimatedCost.toFixed(4)}
 						</p>
 					</>
 				)}
@@ -157,6 +163,10 @@ interface FeedbackCardProps {
 }
 
 function FeedbackCard({ report }: FeedbackCardProps) {
+	if (report.feedback.length === 0) {
+		return null;
+	}
+
 	return (
 		<div className="border border-[#3e3e42] bg-[#252526] p-3">
 			<p className="font-mono text-[11px] text-[#858585] mb-2">
@@ -181,6 +191,10 @@ interface StrengthCardProps {
 }
 
 function StrengthCard({ report }: StrengthCardProps) {
+	if (report.strengths.length === 0) {
+		return null;
+	}
+
 	return (
 		<div className="border border-[#3e3e42] bg-[#252526] p-3">
 			<p className="font-mono text-[11px] mb-2 text-[#4ec9b0]">
@@ -205,6 +219,10 @@ interface ImprovementCardProps {
 }
 
 function ImprovementCard({ report }: ImprovementCardProps) {
+	if (report.improvements.length === 0) {
+		return null;
+	}
+
 	return (
 		<div className="border border-[#3e3e42] bg-[#252526] p-3">
 			<p className="font-mono text-[11px] mb-2 text-[#dcdcaa]">
@@ -225,10 +243,14 @@ function ImprovementCard({ report }: ImprovementCardProps) {
 }
 
 interface SupportingQuotesCardProps {
-	quotes: { quote: string; analysis: string }[];
+	quotes: { quote: string; analysis: string }[] | undefined;
 }
 
 function SupportingQuotesCard({ quotes }: SupportingQuotesCardProps) {
+	if (!quotes || quotes.length === 0) {
+		return null;
+	}
+
 	return (
 		<div className="border border-[#3e3e42] bg-[#252526] p-3">
 			<p className="font-mono text-[11px] mb-3 text-[#569cd6]">
@@ -249,10 +271,14 @@ function SupportingQuotesCard({ quotes }: SupportingQuotesCardProps) {
 }
 
 interface SampleAnswerCardProps {
-	sampleAnswer: string;
+	sampleAnswer: string | undefined;
 }
 
 function SampleAnswerCard({ sampleAnswer }: SampleAnswerCardProps) {
+	if (!sampleAnswer) {
+		return null;
+	}
+
 	return (
 		<div className="border border-[#3e3e42] bg-[#252526] p-3">
 			<p className="font-mono text-[11px] mb-2 text-[#ce9178]">
