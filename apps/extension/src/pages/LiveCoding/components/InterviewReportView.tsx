@@ -80,14 +80,30 @@ function BasicInfoReportCard({ report }: BasicInfoReportCardProps) {
 	const tu = report.tokenUsage;
 	return (
 		<div className="border border-[#3e3e42] bg-[#252526] p-3">
-			<p className="font-mono text-[11px] text-[#858585] mb-2">// session log</p>
+			<p className="font-mono text-[11px] text-[#858585] mb-2">
+				{"// session log"}
+			</p>
 			<div className="space-y-1 font-mono text-[12px] text-[#858585]">
-				<p><span className="text-[#569cd6]">duration</span>  {formatDuration(report.duration)}</p>
-				<p><span className="text-[#569cd6]">messages</span>  {report.messageCount}</p>
+				<p>
+					<span className="text-[#569cd6]">duration</span>{" "}
+					{formatDuration(report.duration)}
+				</p>
+				<p>
+					<span className="text-[#569cd6]">messages</span> {report.messageCount}
+				</p>
 				{tu && (
 					<>
-						<p><span className="text-[#569cd6]">tokens</span>    {(tu.totalPromptTokens + tu.totalCompletionTokens).toLocaleString()} ({tu.callCount} calls)</p>
-						<p><span className="text-[#569cd6]">cost</span>      ${tu.estimatedCost.toFixed(4)}</p>
+						<p>
+							<span className="text-[#569cd6]">tokens</span>{" "}
+							{(
+								tu.totalPromptTokens + tu.totalCompletionTokens
+							).toLocaleString()}{" "}
+							({tu.callCount} calls)
+						</p>
+						<p>
+							<span className="text-[#569cd6]">cost</span> $
+							{tu.estimatedCost.toFixed(4)}
+						</p>
 					</>
 				)}
 			</div>
@@ -101,8 +117,7 @@ interface ScoreBarProps {
 }
 
 function ScoreBar({ label, score }: ScoreBarProps) {
-	const color =
-		score >= 80 ? "#4ec9b0" : score >= 60 ? "#dcdcaa" : "#f44747";
+	const color = score >= 80 ? "#4ec9b0" : score >= 60 ? "#dcdcaa" : "#f44747";
 
 	const filled = Math.round(score / 5);
 	const empty = 20 - filled;
@@ -126,7 +141,7 @@ interface ScoreReportCardProps {
 function ScoreReportCard({ report }: ScoreReportCardProps) {
 	return (
 		<div className="border border-[#3e3e42] bg-[#252526] p-3">
-			<p className="font-mono text-[11px] text-[#858585] mb-3">// scores</p>
+			<p className="font-mono text-[11px] text-[#858585] mb-3">{"// scores"}</p>
 			<div className="space-y-2">
 				<ScoreBar label="이해" score={report.scores.understanding} />
 				<ScoreBar label="소통" score={report.scores.communication} />
@@ -144,11 +159,15 @@ interface FeedbackCardProps {
 function FeedbackCard({ report }: FeedbackCardProps) {
 	return (
 		<div className="border border-[#3e3e42] bg-[#252526] p-3">
-			<p className="font-mono text-[11px] text-[#858585] mb-2">// feedback</p>
+			<p className="font-mono text-[11px] text-[#858585] mb-2">
+				{"// feedback"}
+			</p>
 			<ul className="space-y-1.5">
 				{report.feedback.map((item) => (
 					<li key={item} className="flex items-start gap-2">
-						<span className="font-mono text-[12px] text-[#569cd6] shrink-0 mt-0.5">&gt;</span>
+						<span className="font-mono text-[12px] text-[#569cd6] shrink-0 mt-0.5">
+							&gt;
+						</span>
 						<span className="text-[13px] text-[#d4d4d4]">{item}</span>
 					</li>
 				))}
@@ -164,11 +183,15 @@ interface StrengthCardProps {
 function StrengthCard({ report }: StrengthCardProps) {
 	return (
 		<div className="border border-[#3e3e42] bg-[#252526] p-3">
-			<p className="font-mono text-[11px] mb-2 text-[#4ec9b0]">// strengths</p>
+			<p className="font-mono text-[11px] mb-2 text-[#4ec9b0]">
+				{"// strengths"}
+			</p>
 			<ul className="space-y-1.5">
 				{report.strengths.map((item) => (
 					<li key={item} className="flex items-start gap-2">
-						<span className="font-mono text-[12px] text-[#4ec9b0] shrink-0 mt-0.5">&gt;</span>
+						<span className="font-mono text-[12px] text-[#4ec9b0] shrink-0 mt-0.5">
+							&gt;
+						</span>
 						<span className="text-[13px] text-[#d4d4d4]">{item}</span>
 					</li>
 				))}
@@ -184,11 +207,15 @@ interface ImprovementCardProps {
 function ImprovementCard({ report }: ImprovementCardProps) {
 	return (
 		<div className="border border-[#3e3e42] bg-[#252526] p-3">
-			<p className="font-mono text-[11px] mb-2 text-[#dcdcaa]">// improvements</p>
+			<p className="font-mono text-[11px] mb-2 text-[#dcdcaa]">
+				{"// improvements"}
+			</p>
 			<ul className="space-y-1.5">
 				{report.improvements.map((item) => (
 					<li key={item} className="flex items-start gap-2">
-						<span className="font-mono text-[12px] text-[#dcdcaa] shrink-0 mt-0.5">&gt;</span>
+						<span className="font-mono text-[12px] text-[#dcdcaa] shrink-0 mt-0.5">
+							&gt;
+						</span>
 						<span className="text-[13px] text-[#d4d4d4]">{item}</span>
 					</li>
 				))}
@@ -204,7 +231,9 @@ interface SupportingQuotesCardProps {
 function SupportingQuotesCard({ quotes }: SupportingQuotesCardProps) {
 	return (
 		<div className="border border-[#3e3e42] bg-[#252526] p-3">
-			<p className="font-mono text-[11px] mb-3 text-[#569cd6]">// evidence</p>
+			<p className="font-mono text-[11px] mb-3 text-[#569cd6]">
+				{"// evidence"}
+			</p>
 			<ul className="space-y-3">
 				{quotes.map((item) => (
 					<li key={item.quote} className="text-[13px]">
@@ -226,8 +255,12 @@ interface SampleAnswerCardProps {
 function SampleAnswerCard({ sampleAnswer }: SampleAnswerCardProps) {
 	return (
 		<div className="border border-[#3e3e42] bg-[#252526] p-3">
-			<p className="font-mono text-[11px] mb-2 text-[#ce9178]">// sample answer</p>
-			<p className="text-[13px] text-[#d4d4d4] leading-relaxed">{sampleAnswer}</p>
+			<p className="font-mono text-[11px] mb-2 text-[#ce9178]">
+				{"// sample answer"}
+			</p>
+			<p className="text-[13px] text-[#d4d4d4] leading-relaxed">
+				{sampleAnswer}
+			</p>
 		</div>
 	);
 }
