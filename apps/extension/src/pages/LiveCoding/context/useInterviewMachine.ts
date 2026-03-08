@@ -37,7 +37,6 @@ export function useInterviewMachine({
 	const lastAIQuestionTimeRef = useRef<number>(0);
 	const codeChangeTimeoutRef = useRef<number | null>(null);
 	const lastCodeChangeTimeRef = useRef<number>(Date.now());
-	const pendingAITriggerRef = useRef<AITrigger | null>(null);
 
 	const startInterview = useCallback(
 		async (config: {
@@ -113,71 +112,12 @@ export function useInterviewMachine({
 		[codeMonitor, interviewer, speech, dispatch],
 	);
 
-	// CODE CHANGED
-	useEffect(() => {
-		if (state.phase !== "listening") {
-			return;
-		}
-
-		if (state.interviewConfig === null) {
-			return;
-		}
-
-		if (codeMonitor.editorCode === stateRef.current.previousCode) {
-			return;
-		}
-
-		lastCodeChangeTimeRef.current = Date.now();
-
-		if (codeChangeTimeoutRef.current) {
-			clearTimeout(codeChangeTimeoutRef.current);
-		}
-
-		codeChangeTimeoutRef.current = window.setTimeout(() => {
-			const timeSinceLastQuestion = Date.now() - lastAIQuestionTimeRef.current;
-
-			if (timeSinceLastQuestion < AI_QUESTION_COOLDOWN_MS) {
-				return;
+	const callAI = useCallback(
+		async (aiTrigger: AITrigger) => {
+			if (!stateRef.current.interviewConfig) {
+				return null;
 			}
 
-			if (
-				!shouldTriggerAI(stateRef.current.previousCode, codeMonitor.editorCode)
-			) {
-				return;
-			}
-
-			pendingAITriggerRef.current = { type: "code_change" };
-
-			dispatch({ type: "CODE_CHANGED" });
-		}, CODE_CHANGE_DEBOUNCE_MS);
-
-		return () => {
-			if (codeChangeTimeoutRef.current) {
-				clearTimeout(codeChangeTimeoutRef.current);
-			}
-		};
-	}, [codeMonitor.editorCode, state, dispatch]);
-
-	// PROCESSING
-	useEffect(() => {
-		if (state.phase !== "processing") {
-			return;
-		}
-
-		if (state.interviewConfig === null) {
-			return;
-		}
-
-		const interviewConfig = state.interviewConfig;
-
-		const aiTrigger = pendingAITriggerRef.current;
-		pendingAITriggerRef.current = null; // 다음 트리거를 위해 초기화
-
-		if (!aiTrigger) {
-			return;
-		}
-
-		const callAI = async () => {
 			try {
 				let interviewerResponse: { content: string; notes?: string };
 
@@ -197,8 +137,10 @@ export function useInterviewMachine({
 							content: aiTrigger.transcript,
 							codeContext: codeMonitor.editorCode,
 							messages: [...stateRef.current.messages, userMessage],
-							problemInfo: interviewConfig.problemInfo,
-							interviewerStyle: interviewConfig.interviewerStyle,
+
+							problemInfo: stateRef.current.interviewConfig.problemInfo,
+							interviewerStyle:
+								stateRef.current.interviewConfig.interviewerStyle,
 						});
 						break;
 					}
@@ -211,8 +153,9 @@ export function useInterviewMachine({
 								(Date.now() - lastCodeChangeTimeRef.current) / 1000,
 							),
 							messages: stateRef.current.messages,
-							problemInfo: interviewConfig.problemInfo,
-							interviewerStyle: interviewConfig.interviewerStyle,
+							problemInfo: stateRef.current.interviewConfig.problemInfo,
+							interviewerStyle:
+								stateRef.current.interviewConfig.interviewerStyle,
 						});
 
 						dispatch({
@@ -252,10 +195,60 @@ export function useInterviewMachine({
 					message: "AI 응답에 실패했어요. 다시 말씀해주세요.",
 				});
 			}
-		};
+		},
+		[
+			codeMonitor.editorCode,
+			dispatch,
+			interviewer.respondToCodeChange,
+			interviewer.respondToUser,
+			speech.startSpeaking,
+		],
+	);
 
-		callAI();
-	}, [state.phase, codeMonitor, dispatch, interviewer, speech, state]);
+	// CODE CHANGED
+	useEffect(() => {
+		if (state.phase !== "listening") {
+			return;
+		}
+
+		if (state.interviewConfig === null) {
+			return;
+		}
+
+		if (codeMonitor.editorCode === stateRef.current.previousCode) {
+			return;
+		}
+
+		lastCodeChangeTimeRef.current = Date.now();
+
+		if (codeChangeTimeoutRef.current) {
+			clearTimeout(codeChangeTimeoutRef.current);
+		}
+
+		codeChangeTimeoutRef.current = window.setTimeout(() => {
+			const timeSinceLastQuestion = Date.now() - lastAIQuestionTimeRef.current;
+
+			if (timeSinceLastQuestion < AI_QUESTION_COOLDOWN_MS) {
+				return;
+			}
+
+			if (
+				!shouldTriggerAI(stateRef.current.previousCode, codeMonitor.editorCode)
+			) {
+				return;
+			}
+
+			callAI({ type: "code_change" });
+
+			dispatch({ type: "CODE_CHANGED" });
+		}, CODE_CHANGE_DEBOUNCE_MS);
+
+		return () => {
+			if (codeChangeTimeoutRef.current) {
+				clearTimeout(codeChangeTimeoutRef.current);
+			}
+		};
+	}, [codeMonitor.editorCode, state, dispatch, callAI]);
 
 	const endInterview = useCallback(async () => {
 		const { interview, interviewConfig, messages } = stateRef.current;
@@ -329,7 +322,7 @@ export function useInterviewMachine({
 		dispatch({ type: "RESET_INTERVIEW" });
 	}, [dispatch]);
 
-	const handleFinalTranscript = useCallback(
+	const sendAIMessage = useCallback(
 		(text: string) => {
 			if (stateRef.current.phase !== "listening") {
 				return;
@@ -339,18 +332,11 @@ export function useInterviewMachine({
 
 			posthog.capture("voice_message_sent");
 
-			pendingAITriggerRef.current = { type: "user_speech", transcript: text };
+			callAI({ type: "user_speech", transcript: text });
 
 			dispatch({ type: "TRANSCRIPT_RECEIVED", text });
 		},
-		[speech, dispatch],
-	);
-
-	const sendMessage = useCallback(
-		(content: string) => {
-			handleFinalTranscript(content);
-		},
-		[handleFinalTranscript],
+		[speech, dispatch, callAI],
 	);
 
 	// 타이머
@@ -411,8 +397,7 @@ export function useInterviewMachine({
 		startInterview,
 		endInterview,
 		resetInterview,
-		sendMessage,
-		handleFinalTranscript,
+		sendAIMessage,
 	};
 }
 

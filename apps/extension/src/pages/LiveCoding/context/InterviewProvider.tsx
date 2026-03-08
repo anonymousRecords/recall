@@ -1,5 +1,6 @@
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { createContext, type ReactNode, useReducer, useRef } from "react";
+import { sendMessage } from "@/src/lib/messaging";
 import { liveCodingSettingsQueryOptions } from "../../../queries/live-coding-settings";
 import type { ChatMessage, LiveInterview, ProblemInfo } from "../../../types";
 import { useCodeMonitor } from "../hooks/useCodeMonitor";
@@ -36,7 +37,7 @@ export interface InterviewActionsContext {
 	}) => Promise<void>;
 	endInterview: () => Promise<void>;
 	resetInterview: () => void;
-	sendMessage: (content: string) => void;
+	sendAIMessage: (content: string) => void;
 }
 
 export const InterviewStateCtx = createContext<InterviewStateContext | null>(
@@ -54,10 +55,8 @@ export function InterviewProvider({ children }: { children: ReactNode }) {
 		apiKey: settings.apiKey,
 	});
 
-	const handleFinalTranscriptRef = useRef<(text: string) => void>(() => {});
-
 	const speech = useSpeech({
-		onFinalTranscript: (text) => handleFinalTranscriptRef.current(text),
+		onFinalTranscript: (text) => machine.sendAIMessage(text),
 		onInterviewerSpeakingEnd: () => dispatch({ type: "SPEAKING_DONE" }),
 	});
 
@@ -68,8 +67,6 @@ export function InterviewProvider({ children }: { children: ReactNode }) {
 		codeMonitor,
 		interviewer,
 	});
-
-	handleFinalTranscriptRef.current = machine.handleFinalTranscript;
 
 	return (
 		<InterviewStateCtx.Provider
@@ -94,7 +91,7 @@ export function InterviewProvider({ children }: { children: ReactNode }) {
 					startInterview: machine.startInterview,
 					endInterview: machine.endInterview,
 					resetInterview: machine.resetInterview,
-					sendMessage: machine.sendMessage,
+					sendAIMessage: machine.sendAIMessage,
 				}}
 			>
 				{children}

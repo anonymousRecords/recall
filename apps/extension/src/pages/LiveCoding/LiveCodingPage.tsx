@@ -18,15 +18,9 @@ export function LiveCodingPage() {
 }
 
 function LiveCodingContent() {
-	const {
-		phase,
-		interview,
-		messages,
-		timeRemaining,
-		problemInfo,
-		speech,
-	} = useInterviewState();
-	const { startInterview, endInterview, resetInterview, sendMessage } =
+	const { phase, interview, messages, timeRemaining, problemInfo, speech } =
+		useInterviewState();
+	const { startInterview, endInterview, resetInterview, sendAIMessage } =
 		useInterviewActions();
 
 	if (phase === "idle") {
@@ -42,7 +36,7 @@ function LiveCodingContent() {
 				timeRemaining={timeRemaining}
 				isAILoading={phase === "processing"}
 				speech={speech}
-				onSendMessage={sendMessage}
+				onSendMessage={sendAIMessage}
 				onEnd={endInterview}
 			/>
 		);
