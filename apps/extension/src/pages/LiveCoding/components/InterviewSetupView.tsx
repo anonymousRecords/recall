@@ -1,4 +1,5 @@
 import { useSuspenseQuery } from "@tanstack/react-query";
+import type { ReactNode } from "react";
 import { useState } from "react";
 import { Link } from "react-router";
 import { PageHeader, PageLayout } from "../../../components/layout";
@@ -57,58 +58,32 @@ function InterviewChecklist({ problemInfo }: InterviewChecklistProps) {
 			</CardHeader>
 
 			<CardContent className="flex flex-col gap-4">
-				{hasApiKey ? (
-					<p className="font-mono text-[12px] text-[#4ec9b0]">
-						✓ API 키 등록됨
-					</p>
-				) : (
-					<div className="flex flex-col gap-2">
-						<p className="font-mono text-[12px] text-[#f44747]">
-							✗ API 키 필요
-						</p>
-						<p className="font-mono text-[11px] text-[#858585]">
-							AI 면접관을 사용하려면 API 키를 등록해주세요
-						</p>
+				<ChecklistItem
+					ok={hasApiKey}
+					okLabel="API 키 등록됨"
+					errorLabel="API 키 필요"
+					description="AI 면접관을 사용하려면 API 키를 등록해주세요"
+					action={
 						<Link to="/settings">
 							<Button size="sm" variant="secondary" className="w-full">
 								설정에서 API 키 등록하기
 							</Button>
 						</Link>
-					</div>
-				)}
-
-				{micPermission === "granted" ? (
-					<p className="font-mono text-[12px] text-[#4ec9b0]">
-						✓ 마이크 권한 허용됨
-					</p>
-				) : (
-					<div className="flex flex-col gap-2">
-						<p className="font-mono text-[12px] text-[#f44747]">
-							✗ 마이크 권한 필요
-						</p>
-						{micPermission !== "loading" && (
-							<>
-								<p className="font-mono text-[11px] text-[#858585]">
-									{micPermissionMessages[micPermission]}
-								</p>
-								<Button size="sm" onClick={openPermissionPage}>
-									마이크 권한 허용하기
-								</Button>
-							</>
-						)}
-					</div>
-				)}
-
-				{problemInfo ? (
-					<p className="font-mono text-[12px] text-[#4ec9b0]">✓ 문제 감지됨</p>
-				) : (
-					<div className="flex flex-col gap-2">
-						<p className="font-mono text-[12px] text-[#f44747]">
-							✗ 프로그래머스 문제 미감지
-						</p>
-						<p className="font-mono text-[11px] text-[#858585]">
-							프로그래머스 문제 페이지에서 확장을 열어주세요
-						</p>
+					}
+				/>
+				<ChecklistItem
+					ok={micPermission === "granted"}
+					okLabel="마이크 권한 허용됨"
+					errorLabel="마이크 권한 필요"
+					description={micPermission !== "loading" ? micPermissionMessages[micPermission] : undefined}
+					action={micPermission !== "loading" ? <Button size="sm" onClick={openPermissionPage}>마이크 권한 허용하기</Button> : undefined}
+				/>
+				<ChecklistItem
+					ok={!!problemInfo}
+					okLabel="문제 감지됨"
+					errorLabel="프로그래머스 문제 미감지"
+					description="프로그래머스 문제 페이지에서 확장을 열어주세요"
+					action={
 						<Button
 							size="sm"
 							variant="secondary"
@@ -116,10 +91,29 @@ function InterviewChecklist({ problemInfo }: InterviewChecklistProps) {
 						>
 							프로그래머스 바로가기
 						</Button>
-					</div>
-				)}
+					}
+				/>
 			</CardContent>
 		</Card>
+	);
+}
+
+function ChecklistItem({ ok, okLabel, errorLabel, description, action }: {
+	ok: boolean;
+	okLabel: string;
+	errorLabel: string;
+	description?: string;
+	action?: ReactNode;
+}) {
+	if (ok) {
+		return <p className="font-mono text-[12px] text-[#4ec9b0]">✓ {okLabel}</p>;
+	}
+	return (
+		<div className="flex flex-col gap-2">
+			<p className="font-mono text-[12px] text-[#f44747]">✗ {errorLabel}</p>
+			{description && <p className="font-mono text-[11px] text-[#858585]">{description}</p>}
+			{action}
+		</div>
 	);
 }
 
