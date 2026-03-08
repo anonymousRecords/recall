@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useRef } from "react";
+import { useDebounce, useInterval } from "react-simplikit";
 import {
 	completeInterview,
 	createInterview,
@@ -34,8 +35,6 @@ export function useInterviewMachine({
 	stateRef.current = state;
 
 	const lastAIQuestionTimeRef = useRef<number>(0);
-	const codeChangeTimeoutRef = useRef<number | null>(null);
-	const lastCodeChangeTimeRef = useRef<number>(Date.now());
 
 	const startInterview = useCallback(
 		async (config: {
@@ -112,95 +111,73 @@ export function useInterviewMachine({
 	);
 
 	// CODE CHANGED
-	useEffect(() => {
-		const { phase, interviewConfig, previousCode, messages } = stateRef.current;
+	const debouncedCodeChange = useDebounce(async (editorCode: string) => {
+		const { phase, previousCode, messages, interviewConfig } = stateRef.current;
 		if (phase !== "listening") {
 			return;
 		}
 
-		if (codeMonitor.editorCode === stateRef.current.previousCode) {
+		if (Date.now() - lastAIQuestionTimeRef.current < AI_QUESTION_COOLDOWN_MS) {
 			return;
 		}
 
-		lastCodeChangeTimeRef.current = Date.now();
-
-		if (codeChangeTimeoutRef.current) {
-			clearTimeout(codeChangeTimeoutRef.current);
+		if (!shouldTriggerAI(previousCode, editorCode)) {
+			return;
 		}
 
-		codeChangeTimeoutRef.current = window.setTimeout(() => {
-			const timeSinceLastQuestion = Date.now() - lastAIQuestionTimeRef.current;
+		dispatch({ type: "CODE_CHANGED" });
 
-			if (timeSinceLastQuestion < AI_QUESTION_COOLDOWN_MS) {
+		try {
+			const result = await interviewer.respondToCodeChange({
+				previousCode,
+				currentCode: editorCode,
+				pauseDuration: Math.floor(CODE_CHANGE_DEBOUNCE_MS / 1000),
+				messages,
+				problemInfo: interviewConfig.problemInfo,
+				interviewerStyle: interviewConfig.interviewerStyle,
+			});
+
+			dispatch({
+				type: "SET_PREVIOUS_CODE",
+				code: editorCode,
+			});
+
+			// AI가 "SKIP" 반환한 경우
+			if (result === null) {
+				dispatch({ type: "SPEAKING_DONE" });
 				return;
 			}
 
-			if (!shouldTriggerAI(previousCode, codeMonitor.editorCode)) {
-				return;
-			}
+			lastAIQuestionTimeRef.current = Date.now();
+			const { content, notes } = result;
 
-			(async () => {
-				try {
-					const result = await interviewer.respondToCodeChange({
-						previousCode: previousCode,
-						currentCode: codeMonitor.editorCode,
-						pauseDuration: Math.floor(
-							(Date.now() - lastCodeChangeTimeRef.current) / 1000,
-						),
-						messages: messages,
-						problemInfo: interviewConfig.problemInfo,
-						interviewerStyle: interviewConfig.interviewerStyle,
-					});
+			dispatch({
+				type: "AI_RESPONDED",
+				message: {
+					id: crypto.randomUUID(),
+					role: "interviewer",
+					content,
+					notes,
+					timestamp: Date.now(),
+				},
+			});
 
-					dispatch({
-						type: "SET_PREVIOUS_CODE",
-						code: codeMonitor.editorCode,
-					});
+			speech.startSpeaking(content);
+		} catch (error) {
+			console.error("AI 응답 실패:", error);
+			dispatch({
+				type: "AI_FAILED",
+				message: "AI 응답에 실패했어요. 다시 말씀해주세요.",
+			});
+		}
+	}, CODE_CHANGE_DEBOUNCE_MS);
 
-					// AI가 "SKIP" 반환한 경우
-					if (result === null) {
-						dispatch({ type: "SPEAKING_DONE" });
-						return;
-					}
+	useEffect(() => {
+		if (stateRef.current.phase !== "listening") return;
+		if (codeMonitor.editorCode === stateRef.current.previousCode) return;
 
-					lastAIQuestionTimeRef.current = Date.now();
-					const { content, notes } = result;
-
-					dispatch({
-						type: "AI_RESPONDED",
-						message: {
-							id: crypto.randomUUID(),
-							role: "interviewer",
-							content,
-							notes,
-							timestamp: Date.now(),
-						},
-					});
-
-					speech.startSpeaking(content);
-				} catch (error) {
-					console.error("AI 응답 실패:", error);
-					dispatch({
-						type: "AI_FAILED",
-						message: "AI 응답에 실패했어요. 다시 말씀해주세요.",
-					});
-				}
-			})();
-
-			dispatch({ type: "CODE_CHANGED" });
-		}, CODE_CHANGE_DEBOUNCE_MS);
-
-		return () => {
-			if (codeChangeTimeoutRef.current) {
-				clearTimeout(codeChangeTimeoutRef.current);
-			}
-		};
-	}, [
-		codeMonitor.editorCode,
-		dispatch,
-		interviewer.respondToCodeChange,
-		speech.startSpeaking,
-	]);
+		debouncedCodeChange(codeMonitor.editorCode);
+	}, [codeMonitor.editorCode, debouncedCodeChange]);
 
 	const endInterview = useCallback(async () => {
 		const { phase, interview, interviewConfig, messages } = stateRef.current;
@@ -213,10 +190,7 @@ export function useInterviewMachine({
 		speech.stopSpeaking();
 		await codeMonitor.stopMonitoring();
 
-		if (codeChangeTimeoutRef.current) {
-			clearTimeout(codeChangeTimeoutRef.current);
-			codeChangeTimeoutRef.current = null;
-		}
+		debouncedCodeChange.cancel();
 
 		dispatch({ type: "END_INTERVIEW" });
 
@@ -254,7 +228,7 @@ export function useInterviewMachine({
 
 			dispatch({ type: "REPORT_FAILED", message: "리포트 생성에 실패했어요." });
 		}
-	}, [speech, codeMonitor, interviewer, dispatch]);
+	}, [speech, codeMonitor, interviewer, dispatch, debouncedCodeChange]);
 
 	const resetInterview = useCallback(() => {
 		const { phase, interview, messages } = stateRef.current;
@@ -327,18 +301,14 @@ export function useInterviewMachine({
 		[speech, dispatch, codeMonitor.editorCode, interviewer.respondToUser],
 	);
 
-	// 타이머
-	const isTimerActive =
-		(state.phase === "listening" ||
-			state.phase === "processing" ||
-			state.phase === "speaking") &&
-		state.timeRemaining > 0;
-
-	useEffect(() => {
-		if (!isTimerActive) return;
-		const interval = setInterval(() => dispatch({ type: "TICK_TIMER" }), 1000);
-		return () => clearInterval(interval);
-	}, [isTimerActive, dispatch]);
+	useInterval(() => dispatch({ type: "TICK_TIMER" }), {
+		delay: 1000,
+		enabled:
+			(state.phase === "listening" ||
+				state.phase === "processing" ||
+				state.phase === "speaking") &&
+			state.timeRemaining > 0,
+	});
 
 	// 타임 아웃 시 자동 종료
 	useEffect(() => {
