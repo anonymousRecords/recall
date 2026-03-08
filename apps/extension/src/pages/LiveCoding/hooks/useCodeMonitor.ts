@@ -1,4 +1,5 @@
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
+import { usePreservedCallback } from "react-simplikit";
 import { getActiveTab } from "../../../lib/browser";
 import { onMessage } from "../../../lib/messaging";
 import {
@@ -20,11 +21,9 @@ export function useCodeMonitor({ onCodeChange }: UseCodeMonitorOptions = {}) {
 	const [editorLanguage, setEditorLanguage] =
 		useState<ProgrammingLanguage>("unknown");
 
-	const onCodeChangeRef = useRef(onCodeChange);
-
-	useEffect(() => {
-		onCodeChangeRef.current = onCodeChange;
-	}, [onCodeChange]);
+	const preservedOnCodeChange = usePreservedCallback(
+		(code: string, language: string) => onCodeChange?.(code, language),
+	);
 
 	useEffect(() => {
 		const checkCurrentTab = async () => {
@@ -56,9 +55,9 @@ export function useCodeMonitor({ onCodeChange }: UseCodeMonitorOptions = {}) {
 		return onMessage("CODE_CHANGED", ({ data }) => {
 			setEditorCode(data.code);
 			setEditorLanguage(data.language);
-			onCodeChangeRef.current?.(data.code, data.language);
+			preservedOnCodeChange(data.code, data.language);
 		});
-	}, []);
+	}, [preservedOnCodeChange]);
 
 	const startMonitoring = useCallback(async () => {
 		return startProgrammersMonitor();
