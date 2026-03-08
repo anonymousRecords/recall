@@ -47,6 +47,9 @@ importers:
       react-router:
         specifier: ^7.13.0
         version: 7.13.0(react-dom@19.2.4(react@19.2.4))(react@19.2.4)
+      react-simplikit:
+        specifier: ^0.0.48
+        version: 0.0.48(react@19.2.4)
     devDependencies:
       '@tailwindcss/vite':
         specifier: ^4.1.18
@@ -1883,6 +1886,11 @@ packages:
     peerDependenciesMeta:
       react-dom:
         optional: true
+
+  react-simplikit@0.0.48:
+    resolution: {integrity: sha512-WbHgqyTD4ZKPv563r9xYivXC64adOVR9TbR1ThrTTQ6OUqWh7MIwT/iuYyNXQK3duBYHudta+AbGAU276DJY/g==}
+    peerDependencies:
+      react: '*'
 
   react@19.2.4:
     resolution: {integrity: sha512-9nfp2hYpCwOjAN+8TZFGhtWEwgvWHXqESH8qT89AT/lWklpLON22Lc8pEtnpsZz7VmawabSU0gCjnj8aC0euHQ==}
@@ -3989,6 +3997,10 @@ snapshots:
       set-cookie-parser: 2.7.2
     optionalDependencies:
       react-dom: 19.2.4(react@19.2.4)
+
+  react-simplikit@0.0.48(react@19.2.4):
+    dependencies:
+      react: 19.2.4
 
   react@19.2.4: {}
 
