@@ -14,74 +14,128 @@
       flex-direction: column;
       justify-content: center;
       align-items: center;
-      background: #fff;
-      font-family: "Pretendard", -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: #1e1e1e;
+      font-family: 'Consolas', 'Courier New', monospace;
     }
 
-    .logo-group {
+    .terminal {
+      width: 360px;
+      border: 1px solid #3e3e42;
+      background: #252526;
+    }
+
+    .terminal-header {
+      border-bottom: 1px solid #3e3e42;
+      padding: 10px 14px;
+    }
+
+    .terminal-header .comment {
+      font-size: 11px;
+      color: #858585;
+    }
+
+    .terminal-header .subtitle {
+      margin-top: 2px;
+      font-size: 12px;
+      color: #dcdcaa;
+    }
+
+    .terminal-body {
+      padding: 16px 14px;
+    }
+
+    .line {
       display: flex;
-      align-items: center;
-      margin-bottom: 40px;
+      align-items: flex-start;
+      gap: 8px;
+      font-size: 12px;
+      color: #858585;
+      line-height: 1.6;
     }
 
-    .logo-group img {
-      width: 120px;
-      height: 120px;
-      animation: wave 2.4s ease-in-out infinite;
+    .line .prompt {
+      color: #569cd6;
+      flex-shrink: 0;
     }
 
-    .logo-group img:nth-child(1) {
-      margin-right: -65px;
-      animation-delay: 0s;
-    }
-
-    .logo-group img:nth-child(2) {
-      margin-right: -65px;
-      animation-delay: 0.3s;
-      z-index: 1;
-    }
-
-    .logo-group img:nth-child(3) {
-      animation-delay: 0.6s;
-    }
-
-    @keyframes wave {
-      0%, 100% { transform: translateY(0); }
-      50% { transform: translateY(-10px); }
+    .divider {
+      border: none;
+      border-top: 1px solid #3e3e42;
+      margin: 14px 0;
     }
 
     #requestBtn {
-      padding: 12px 32px;
-      font-size: 16px;
-      font-weight: 600;
-      color: #fff;
-      background: #222;
-      border: none;
-      border-radius: 8px;
+      width: 100%;
+      padding: 8px 0;
+      font-family: 'Consolas', 'Courier New', monospace;
+      font-size: 12px;
+      color: #858585;
+      background: transparent;
+      border: 1px solid #3e3e42;
       cursor: pointer;
-      transition: background 0.2s;
+      transition: border-color 0.15s, color 0.15s;
     }
 
-    #requestBtn:hover { background: #444; }
-    #requestBtn:disabled { background: #999; cursor: default; }
+    #requestBtn:hover:not(:disabled) {
+      border-color: #525252;
+      color: #d4d4d4;
+    }
+
+    #requestBtn:disabled {
+      color: #525252;
+      border-color: #3e3e42;
+      cursor: default;
+    }
 
     #status {
-      margin-top: 16px;
-      font-size: 14px;
-      color: #555;
+      margin-top: 10px;
+      font-size: 12px;
+      color: #858585;
+      min-height: 18px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    #status .status-icon {
+      color: #569cd6;
+    }
+
+    #status.success .status-icon { color: #4ec9b0; }
+    #status.error .status-icon { color: #f44747; }
+
+    @keyframes blink {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0; }
+    }
+
+    .cursor {
+      display: inline-block;
+      animation: blink 1s step-start infinite;
+      color: #d4d4d4;
     }
   </style>
 </head>
 <body>
-  <div class="logo-group">
-    <img src="../public/logo-icon.png" alt="logo" />
-    <img src="../public/logo-icon.png" alt="logo" />
-    <img src="../public/logo-icon.png" alt="logo" />
+  <div class="terminal">
+    <div class="terminal-header">
+      <p class="comment">// mic permissions</p>
+      <p class="subtitle">$ recall --request-access audio</p>
+    </div>
+    <div class="terminal-body">
+      <div class="line">
+        <span class="prompt">&gt;</span>
+        <span>인터뷰 녹음을 위해 마이크 접근 권한이 필요해요</span>
+      </div>
+      <div class="line" style="margin-top: 4px;">
+        <span class="prompt">&gt;</span>
+        <span>버튼 클릭 후 브라우저 팝업에서 <span style="color: #d4d4d4;">허용</span>을 선택해주세요</span>
+      </div>
+      <hr class="divider" />
+      <button id="requestBtn">[ request mic access ]</button>
+      <div id="status"></div>
+    </div>
   </div>
-  <button id="requestBtn">마이크 권한 허용</button>
-  <span style="margin-top: 25px; text-align: center;">버튼 클릭 후 브라우저 주소창 아래에 나타나는<br/>
-    권한 요청 팝업에서 "허용"을 선택해주세요</span>
-  <div id="status"></div>
 
   <script>
     const btn = document.getElementById('requestBtn');
@@ -89,28 +143,31 @@
 
     btn.addEventListener('click', async () => {
       btn.disabled = true;
-      status.textContent = '';
+      status.className = '';
+      status.innerHTML = '<span class="status-icon">&gt;</span> <span>requesting...<span class="cursor">█</span></span>';
 
       try {
         const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
         for (const track of stream.getTracks()) track.stop();
 
-        status.textContent = '마이크 권한이 허용되었습니다.';
-        btn.textContent = '완료';
+        status.className = 'success';
+        status.innerHTML = '<span class="status-icon">&gt;</span> <span style="color: #4ec9b0;">access granted</span>';
+        btn.textContent = '[ done ]';
 
         setTimeout(() => {
           window.close();
         }, 2000);
       } catch (err) {
+        status.className = 'error';
         if (err.name === 'NotAllowedError') {
-          status.textContent = '권한이 거부되었어요';
+          status.innerHTML = '<span class="status-icon">&gt;</span> <span style="color: #f44747;">error: permission denied</span>';
         } else if (err.name === 'NotFoundError') {
-          status.textContent = '마이크를 찾을 수 없어요';
+          status.innerHTML = '<span class="status-icon">&gt;</span> <span style="color: #f44747;">error: device not found</span>';
         } else {
-          status.textContent = `오류: ${err.message}`;
+          status.innerHTML = `<span class="status-icon">&gt;</span> <span style="color: #f44747;">error: ${err.message}</span>`;
         }
         btn.disabled = false;
-        btn.textContent = '다시 시도';
+        btn.textContent = '[ retry ]';
       }
     });
   </script>
