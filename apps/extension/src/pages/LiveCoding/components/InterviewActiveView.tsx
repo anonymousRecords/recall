@@ -344,9 +344,9 @@ function MessageInput({
 function VoiceVisualizer() {
 	return (
 		<span className="inline-flex items-center gap-0.5" aria-hidden="true">
-			<span className="inline-block w-0.5 bg-[#f44747] animate-[voiceBar_0.8s_ease-in-out_infinite]" style={{ height: "8px", animationDelay: "0ms" }} />
-			<span className="inline-block w-0.5 bg-[#f44747] animate-[voiceBar_0.8s_ease-in-out_infinite]" style={{ height: "8px", animationDelay: "160ms" }} />
-			<span className="inline-block w-0.5 bg-[#f44747] animate-[voiceBar_0.8s_ease-in-out_infinite]" style={{ height: "8px", animationDelay: "320ms" }} />
+			<span className="inline-block w-0.5 bg-[#f44747] animate-[voice-bar_0.8s_ease-in-out_infinite]" style={{ height: "8px", animationDelay: "0ms" }} />
+			<span className="inline-block w-0.5 bg-[#f44747] animate-[voice-bar_0.8s_ease-in-out_infinite]" style={{ height: "8px", animationDelay: "160ms" }} />
+			<span className="inline-block w-0.5 bg-[#f44747] animate-[voice-bar_0.8s_ease-in-out_infinite]" style={{ height: "8px", animationDelay: "320ms" }} />
 		</span>
 	);
 }

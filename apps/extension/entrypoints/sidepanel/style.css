@@ -1,37 +1,37 @@
-@import url("https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&family=DotGothic16&display=swap");
+@import "https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&family=DotGothic16&display=swap";
 @import "tailwindcss";
 
 @font-face {
-	font-family: "Pretendard";
+	font-family: Pretendard;
 	src: url("./fonts/Pretendard-Regular.subset.woff2") format("woff2");
 	font-weight: 400;
 }
 
 @font-face {
-	font-family: "Pretendard";
+	font-family: Pretendard;
 	src: url("./fonts/Pretendard-Medium.subset.woff2") format("woff2");
 	font-weight: 500;
 }
 
 @font-face {
-	font-family: "Pretendard";
+	font-family: Pretendard;
 	src: url("./fonts/Pretendard-SemiBold.subset.woff2") format("woff2");
 	font-weight: 600;
 }
 
 @font-face {
-	font-family: "Pretendard";
+	font-family: Pretendard;
 	src: url("./fonts/Pretendard-Bold.subset.woff2") format("woff2");
 	font-weight: 700;
 }
 
 :root {
 	font-family:
-		"Pretendard", -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+		Pretendard, -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
 	-webkit-font-smoothing: antialiased;
 	-moz-osx-font-smoothing: grayscale;
 	font-feature-settings: "cv02", "cv03", "cv04", "cv11";
-	text-rendering: optimizeLegibility;
+	text-rendering: optimizelegibility;
 
 	/* VS Code Dark+ color tokens */
 	--color-bg-editor: #1e1e1e;
@@ -54,7 +54,7 @@
 	/* Font families */
 	--font-mono: "JetBrains Mono", "Fira Code", monospace;
 	--font-pixel: "DotGothic16", monospace;
-	--font-sans: "Pretendard", -apple-system, sans-serif;
+	--font-sans: Pretendard, -apple-system, sans-serif;
 
 	/* Radius — very small, terminal-like */
 	--radius-sm: 2px;
@@ -86,7 +86,7 @@ body {
 	height: 100%;
 }
 
-@keyframes voiceBar {
+@keyframes voice-bar {
 	0%,
 	100% {
 		transform: scaleY(0.3);
