@@ -130,6 +130,17 @@ function ProblemFormFields({
 				rows={4}
 			/>
 
+			{isNew && (
+				<Input
+					id="registrationDate"
+					label="등록 날짜"
+					type="date"
+					value={form.registrationDate}
+					onChange={(e) => updateField("registrationDate", e.target.value)}
+					hint="문제를 실제로 푼 날짜를 입력하세요"
+				/>
+			)}
+
 			{!isNew && (
 				<Select
 					id="status"
@@ -178,7 +189,7 @@ function ProblemDetailPageHeader({
 				[ ← ]
 			</button>
 			<p className="font-mono text-[11px] text-[#858585]">
-				// {isNew ? "new problem" : "edit problem"}
+				{`// ${isNew ? "new problem" : "edit problem"}`}
 			</p>
 		</div>
 	);
