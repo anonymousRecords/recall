@@ -318,6 +318,7 @@ export function useInterviewActions({
 	}, [state.timeRemaining, state.phase, endInterview]);
 
 	// 자동 저장
+	const MAX_CODE_SNAPSHOTS = 100;
 	useEffect(() => {
 		const { phase, interview, messages } = stateRef.current;
 
@@ -325,17 +326,18 @@ export function useInterviewActions({
 			return;
 		}
 
-		updateInterview(interview.id, {
-			messages: messages,
-			codeSnapshots: [
-				...(interview.codeSnapshots || []),
-				{
-					code: codeMonitor.editorCode,
-					language: codeMonitor.editorLanguage,
-					timestamp: Date.now(),
-				},
-			],
-		});
+		const prevSnapshots = interview.codeSnapshots || [];
+		const newSnapshot = {
+			code: codeMonitor.editorCode,
+			language: codeMonitor.editorLanguage,
+			timestamp: Date.now(),
+		};
+		const codeSnapshots = [
+			...prevSnapshots.slice(-(MAX_CODE_SNAPSHOTS - 1)),
+			newSnapshot,
+		];
+
+		updateInterview(interview.id, { messages, codeSnapshots });
 	}, [codeMonitor.editorCode, codeMonitor.editorLanguage]);
 
 	return {
