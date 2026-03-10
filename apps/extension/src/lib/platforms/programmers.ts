@@ -38,16 +38,16 @@ export async function getProgrammersProblemCode(): Promise<{
 	}
 }
 
-export async function startProgrammersMonitor(): Promise<boolean> {
+export async function startProgrammersMonitor(): Promise<number | undefined> {
 	const tab = await getActiveTab();
-	return sendMessage("START_CODE_MONITOR", undefined, tab.id);
+	await sendMessage("START_CODE_MONITOR", undefined, tab.id);
+
+	return tab.id;
 }
 
-export async function stopProgrammersMonitor(): Promise<boolean> {
+export async function stopProgrammersMonitor(tabId: number): Promise<boolean> {
 	try {
-		const tab = await getActiveTab();
-
-		return await sendMessage("STOP_CODE_MONITOR", undefined, tab.id);
+		return await sendMessage("STOP_CODE_MONITOR", undefined, tabId);
 	} catch (error) {
 		console.error("프로그래머스 코드 모니터링 중지 실패:", error);
 		return false;
