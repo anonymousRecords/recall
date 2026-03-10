@@ -52,7 +52,6 @@ export function useCodeMonitor({ onCodeChange }: UseCodeMonitorOptions = {}) {
 
 		checkCurrentTab();
 
-		// content script가 로드될 때 (URL 이동으로 프로그래머스 진입)
 		const unsubscribe = onMessage("PROGRAMMERS_PAGE_LOADED", () => {
 			checkCurrentTab();
 		});
@@ -61,9 +60,13 @@ export function useCodeMonitor({ onCodeChange }: UseCodeMonitorOptions = {}) {
 		const handleTabActivated = () => {
 			checkCurrentTab();
 		};
+
 		browser.tabs.onActivated.addListener(handleTabActivated);
 
 		return () => {
+			if (monitoringTabId.current !== null) {
+				stopProgrammersMonitor(monitoringTabId.current).catch(() => {});
+			}
 			unsubscribe();
 			browser.tabs.onActivated.removeListener(handleTabActivated);
 		};
