@@ -41,6 +41,7 @@ function DashboardPageContent() {
 				});
 			}
 			queryClient.invalidateQueries({ queryKey: queryKeys.problems.all });
+			browser.runtime.sendMessage({ type: "UPDATE_BADGE" });
 		},
 	});
 
