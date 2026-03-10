@@ -172,6 +172,8 @@ export default defineContentScript({
 				sendMessage("CODE_CHANGED", {
 					code: currentCode,
 					language: detectLanguage(),
+				}).catch(() => {
+					// 사이드 패널이 열려있지 않으면 무시
 				});
 			}
 		}
