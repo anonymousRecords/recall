@@ -132,6 +132,7 @@ interface InterviewConfigProps {
 
 function InterviewConfig({ problemInfo, onStart }: InterviewConfigProps) {
 	const { data: settings } = useSuspenseQuery(liveCodingSettingsQueryOptions());
+	const hasApiKey = settings.apiKey.trim().length > 0;
 
 	const [timeLimit, setTimeLimit] = useState(
 		settings.defaultTimeLimit.toString(),
@@ -190,7 +191,7 @@ function InterviewConfig({ problemInfo, onStart }: InterviewConfigProps) {
 			</Card>
 			<Button
 				className="w-full"
-				disabled={isStarting || !settings.apiKey}
+				disabled={isStarting || !hasApiKey}
 				onClick={async () => {
 					setIsStarting(true);
 					setError(null);
