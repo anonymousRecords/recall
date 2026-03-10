@@ -1,5 +1,6 @@
 import { useCallback, useMemo } from "react";
 import { calculateCost } from "../../../lib/ai/cost";
+import { InterviewReportSchema } from "../../../lib/ai/schemas";
 import type {
 	AIProvider,
 	ChatMessage,
@@ -93,17 +94,7 @@ export function useInterviewer({ provider, apiKey }: UseInterviewerOptions) {
 			});
 
 			try {
-				const jsonMatch = response.match(/\{[\s\S]*\}/);
-
-				if (!jsonMatch) {
-					throw new Error("JSON을 찾을 수 없습니다.");
-				}
-
-				const parsed: unknown = JSON.parse(jsonMatch[0]);
-
-				if (!isInterviewReport(parsed)) {
-					throw new Error("리포트 형식이 올바르지 않습니다.");
-				}
+				const parsed = InterviewReportSchema.parse(JSON.parse(response));
 
 				const { totalPromptTokens, totalCompletionTokens, callCount } =
 					getTokenUsage();
@@ -152,21 +143,6 @@ function parseAIResponse(response: string): AIMessage {
 	};
 }
 
-function isInterviewReport(obj: unknown): obj is InterviewReport {
-	if (typeof obj !== "object" || obj === null) {
-		return false;
-	}
-
-	const r = obj as Record<string, unknown>;
-
-	return (
-		typeof r.scores === "object" &&
-		r.scores !== null &&
-		Array.isArray(r.feedback) &&
-		Array.isArray(r.strengths) &&
-		Array.isArray(r.improvements)
-	);
-}
 
 function makeEmptyReport(
 	duration: number,

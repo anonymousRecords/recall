@@ -125,8 +125,7 @@ export function useAIClient({ provider, apiKey }: UseAIClientOptions) {
 							[
 								{
 									role: "system",
-									content:
-										"당신은 코딩 면접 평가자입니다. 반드시 유효한 JSON 형식으로만 응답하세요.",
+									content: "당신은 코딩 면접 평가자입니다.",
 								},
 								{
 									role: "user",
@@ -138,7 +137,7 @@ export function useAIClient({ provider, apiKey }: UseAIClientOptions) {
 									),
 								},
 							],
-							{ maxTokens: 1024 },
+							{ maxTokens: 1024, jsonMode: true },
 						);
 
 						accumulateTokenUsage(aiResponse.usage);

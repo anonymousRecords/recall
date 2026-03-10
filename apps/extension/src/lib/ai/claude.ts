@@ -1,4 +1,5 @@
 import type { AIClient, AIResponse } from "../../types";
+import { INTERVIEW_REPORT_JSON_SCHEMA } from "./schemas";
 
 export class ClaudeClient implements AIClient {
 	private apiKey: string;
@@ -11,7 +12,7 @@ export class ClaudeClient implements AIClient {
 
 	async chat(
 		messages: { role: string; content: string }[],
-		options?: { maxTokens?: number },
+		options?: { maxTokens?: number; jsonMode?: boolean },
 	): Promise<AIResponse> {
 		const systemMessage =
 			messages.find((m) => m.role === "system")?.content || "";
@@ -26,6 +27,24 @@ export class ClaudeClient implements AIClient {
 			chatMessages.push({ role: "user", content: "시작해주세요." });
 		}
 
+		const body: Record<string, unknown> = {
+			model: this.model,
+			max_tokens: options?.maxTokens ?? 300,
+			system: systemMessage,
+			messages: chatMessages,
+		};
+
+		if (options?.jsonMode) {
+			body.tools = [
+				{
+					name: "submit_report",
+					description: "면접 평가 리포트를 제출합니다.",
+					input_schema: INTERVIEW_REPORT_JSON_SCHEMA,
+				},
+			];
+			body.tool_choice = { type: "tool", name: "submit_report" };
+		}
+
 		const response = await fetch(`${this.baseUrl}/messages`, {
 			method: "POST",
 			headers: {
@@ -34,12 +53,7 @@ export class ClaudeClient implements AIClient {
 				"anthropic-version": "2023-06-01",
 				"anthropic-dangerous-direct-browser-access": "true",
 			},
-			body: JSON.stringify({
-				model: this.model,
-				max_tokens: options?.maxTokens ?? 300,
-				system: systemMessage,
-				messages: chatMessages,
-			}),
+			body: JSON.stringify(body),
 		});
 
 		if (!response.ok) {
@@ -50,6 +64,20 @@ export class ClaudeClient implements AIClient {
 		}
 
 		const data = await response.json();
+
+		if (options?.jsonMode) {
+			const toolUseBlock = data.content?.find(
+				(b: { type: string }) => b.type === "tool_use",
+			);
+			return {
+				content: JSON.stringify(toolUseBlock?.input ?? {}),
+				usage: {
+					promptTokens: data.usage?.input_tokens ?? 0,
+					completionTokens: data.usage?.output_tokens ?? 0,
+				},
+			};
+		}
+
 		return {
 			content: data.content[0]?.text || "",
 			usage: {

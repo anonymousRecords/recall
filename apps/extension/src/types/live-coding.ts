@@ -147,7 +147,7 @@ export interface SpeechState {
 export interface AIClient {
 	chat(
 		messages: { role: string; content: string }[],
-		options?: { maxTokens?: number },
+		options?: { maxTokens?: number; jsonMode?: boolean },
 	): Promise<AIResponse>;
 	testConnection(): Promise<boolean>;
 }

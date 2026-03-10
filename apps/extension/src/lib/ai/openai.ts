@@ -11,7 +11,7 @@ export class OpenAIClient implements AIClient {
 
 	async chat(
 		messages: { role: string; content: string }[],
-		options?: { maxTokens?: number },
+		options?: { maxTokens?: number; jsonMode?: boolean },
 	): Promise<AIResponse> {
 		const response = await fetch(`${this.baseUrl}/chat/completions`, {
 			method: "POST",
@@ -27,6 +27,7 @@ export class OpenAIClient implements AIClient {
 				})),
 				max_tokens: options?.maxTokens ?? 300,
 				temperature: 0.7,
+				...(options?.jsonMode && { response_format: { type: "json_object" } }),
 			}),
 		});
 
