@@ -10,16 +10,18 @@ import { getSettings } from "./settings";
 
 export async function createProblem(
 	input: CreateProblemInput,
+	createdAt?: Date,
 ): Promise<Problem> {
 	const settings = await getSettings();
 	const intervals = settings?.reviewIntervals ?? DEFAULT_INTERVALS;
-	const now = new Date().toISOString();
+	const baseDate = createdAt ?? new Date();
+	const now = baseDate.toISOString();
 
 	const problem: Problem = {
 		id: crypto.randomUUID(),
 		...input,
 		currentStage: 0,
-		nextReviewDate: getNextReviewDate(new Date(), 0, intervals),
+		nextReviewDate: getNextReviewDate(baseDate, 0, intervals),
 		createdAt: now,
 		updatedAt: now,
 	};
