@@ -15,15 +15,14 @@ export async function createProblem(
 	const settings = await getSettings();
 	const intervals = settings?.reviewIntervals ?? DEFAULT_INTERVALS;
 	const baseDate = createdAt ?? new Date();
-	const now = baseDate.toISOString();
 
 	const problem: Problem = {
 		id: crypto.randomUUID(),
 		...input,
 		currentStage: 0,
 		nextReviewDate: getNextReviewDate(baseDate, 0, intervals),
-		createdAt: now,
-		updatedAt: now,
+		createdAt: baseDate.toISOString(),
+		updatedAt: new Date().toISOString(),
 	};
 
 	await db.problems.add(problem);
