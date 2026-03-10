@@ -159,13 +159,22 @@
         }, 2000);
       } catch (err) {
         status.className = 'error';
+        status.innerHTML = '';
+        const icon = document.createElement('span');
+        icon.className = 'status-icon';
+        icon.textContent = '>';
+        const msg = document.createElement('span');
+        msg.style.color = '#f44747';
         if (err.name === 'NotAllowedError') {
-          status.innerHTML = '<span class="status-icon">&gt;</span> <span style="color: #f44747;">error: permission denied</span>';
+          msg.textContent = 'error: permission denied';
         } else if (err.name === 'NotFoundError') {
-          status.innerHTML = '<span class="status-icon">&gt;</span> <span style="color: #f44747;">error: device not found</span>';
+          msg.textContent = 'error: device not found';
         } else {
-          status.innerHTML = `<span class="status-icon">&gt;</span> <span style="color: #f44747;">error: ${err.message}</span>`;
+          msg.textContent = `error: ${err.message}`;
         }
+        status.appendChild(icon);
+        status.appendChild(document.createTextNode(' '));
+        status.appendChild(msg);
         btn.disabled = false;
         btn.textContent = '[ retry ]';
       }
