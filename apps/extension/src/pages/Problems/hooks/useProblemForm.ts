@@ -1,5 +1,5 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { format, parse } from "date-fns";
+import { format } from "date-fns";
 import { useCallback, useEffect, useState } from "react";
 import { useNavigate } from "react-router";
 import {
@@ -46,7 +46,7 @@ export function useProblemForm(id?: string) {
 		mutationFn: ({
 			input,
 			createdAt,
-		}: { input: CreateProblemInput & { status: ProblemStatus }; createdAt?: Date }) =>
+		}: { input: CreateProblemInput & { status: ProblemStatus }; createdAt?: string }) =>
 			createProblem(input, createdAt),
 		onSuccess: (_, { input }) => {
 			posthog.capture("problem_created", {
@@ -146,10 +146,10 @@ export function useProblemForm(id?: string) {
 				};
 
 				if (isNew) {
-					const registrationDate = form.registrationDate
-						? parse(form.registrationDate, "yyyy-MM-dd", new Date())
-						: new Date();
-					await addProblem({ input: { ...base, status: "active" }, createdAt: registrationDate });
+					await addProblem({
+						input: { ...base, status: "active" },
+						createdAt: form.registrationDate || undefined,
+					});
 				} else {
 					await editProblem({ id, input: { ...base, status: form.status } });
 				}

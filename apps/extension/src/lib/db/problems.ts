@@ -1,3 +1,4 @@
+import { parse } from "date-fns";
 import type {
 	CreateProblemInput,
 	Problem,
@@ -10,18 +11,22 @@ import { getSettings } from "./settings";
 
 export async function createProblem(
 	input: CreateProblemInput,
-	createdAt?: Date,
+	createdAt?: string,
 ): Promise<Problem> {
 	const settings = await getSettings();
 	const intervals = settings?.reviewIntervals ?? DEFAULT_INTERVALS;
-	const baseDate = createdAt ?? new Date();
+	const baseDate = createdAt
+		? parse(createdAt, "yyyy-MM-dd", new Date())
+		: new Date();
 
 	const problem: Problem = {
 		id: crypto.randomUUID(),
 		...input,
 		currentStage: 0,
 		nextReviewDate: getNextReviewDate(baseDate, 0, intervals),
-		createdAt: baseDate.toISOString(),
+		createdAt: createdAt
+			? `${createdAt}T00:00:00.000Z`
+			: new Date().toISOString(),
 		updatedAt: new Date().toISOString(),
 	};
 
