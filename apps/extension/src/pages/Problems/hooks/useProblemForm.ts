@@ -1,5 +1,5 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { format } from "date-fns";
+import { format, min, parseISO } from "date-fns";
 import { useCallback, useEffect, useState } from "react";
 import { useNavigate } from "react-router";
 import {
@@ -146,9 +146,13 @@ export function useProblemForm(id?: string) {
 				};
 
 				if (isNew) {
+					const today = format(new Date(), "yyyy-MM-dd");
+					const registrationDate = form.registrationDate
+						? format(min([parseISO(form.registrationDate), new Date()]), "yyyy-MM-dd")
+						: today;
 					await addProblem({
 						input: { ...base, status: "active" },
-						createdAt: form.registrationDate || undefined,
+						createdAt: registrationDate,
 					});
 				} else {
 					await editProblem({ id, input: { ...base, status: form.status } });
