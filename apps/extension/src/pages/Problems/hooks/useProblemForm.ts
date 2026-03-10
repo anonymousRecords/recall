@@ -1,4 +1,5 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { format, parse } from "date-fns";
 import { useCallback, useEffect, useState } from "react";
 import { useNavigate } from "react-router";
 import {
@@ -9,7 +10,7 @@ import {
 import { posthog } from "../../../lib/posthog";
 import { extractSiteFromUrl } from "../../../lib/utils";
 import { queryKeys } from "../../../queries/keys";
-import type { ProblemStatus } from "../../../types";
+import type { CreateProblemInput, ProblemStatus } from "../../../types";
 
 export type ProblemForm = {
 	title: string;
@@ -19,6 +20,7 @@ export type ProblemForm = {
 	tags: string[];
 	memo: string;
 	status: ProblemStatus;
+	registrationDate: string; // "yyyy-MM-dd" 형식
 };
 
 const INITIAL_FORM: ProblemForm = {
@@ -29,6 +31,7 @@ const INITIAL_FORM: ProblemForm = {
 	tags: [],
 	memo: "",
 	status: "active",
+	registrationDate: format(new Date(), "yyyy-MM-dd"),
 };
 
 export function useProblemForm(id?: string) {
@@ -40,8 +43,12 @@ export function useProblemForm(id?: string) {
 		queryClient.invalidateQueries({ queryKey: queryKeys.problems.all });
 
 	const { mutateAsync: addProblem } = useMutation({
-		mutationFn: createProblem,
-		onSuccess: (_, input) => {
+		mutationFn: ({
+			input,
+			createdAt,
+		}: { input: CreateProblemInput & { status: ProblemStatus }; createdAt?: Date }) =>
+			createProblem(input, createdAt),
+		onSuccess: (_, { input }) => {
 			posthog.capture("problem_created", {
 				site: input.site,
 				difficulty: input.difficulty ?? null,
@@ -92,6 +99,7 @@ export function useProblemForm(id?: string) {
 					tags: problem.tags,
 					memo: problem.memo,
 					status: problem.status,
+					registrationDate: format(new Date(problem.createdAt), "yyyy-MM-dd"),
 				});
 
 				setCreatedAt(problem.createdAt);
@@ -138,7 +146,10 @@ export function useProblemForm(id?: string) {
 				};
 
 				if (isNew) {
-					await addProblem({ ...base, status: "active" });
+					const registrationDate = form.registrationDate
+						? parse(form.registrationDate, "yyyy-MM-dd", new Date())
+						: new Date();
+					await addProblem({ input: { ...base, status: "active" }, createdAt: registrationDate });
 				} else {
 					await editProblem({ id, input: { ...base, status: form.status } });
 				}
