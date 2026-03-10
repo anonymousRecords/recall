@@ -39,14 +39,8 @@ export async function getProgrammersProblemCode(): Promise<{
 }
 
 export async function startProgrammersMonitor(): Promise<boolean> {
-	try {
-		const tab = await getActiveTab();
-
-		return await sendMessage("START_CODE_MONITOR", undefined, tab.id);
-	} catch (error) {
-		console.error("프로그래머스 코드 모니터링 시작 실패:", error);
-		return false;
-	}
+	const tab = await getActiveTab();
+	return sendMessage("START_CODE_MONITOR", undefined, tab.id);
 }
 
 export async function stopProgrammersMonitor(): Promise<boolean> {
