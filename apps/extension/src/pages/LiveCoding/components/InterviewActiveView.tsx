@@ -355,7 +355,7 @@ interface VoiceInteractionFieldProps {
 	isMicOn: boolean;
 	isInterviewerSpeaking: boolean;
 	isAILoading: boolean;
-	toggleListening: () => void;
+	toggleListening: () => Promise<void>;
 	transcripts: {
 		finalTranscript: string | null;
 		liveTranscript: string | null;
