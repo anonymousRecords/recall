@@ -220,7 +220,6 @@ const TIME_OPTIONS = [
 	{ value: "30", label: "30분" },
 	{ value: "45", label: "45분" },
 	{ value: "60", label: "60분" },
-	{ value: "null", label: "무제한" },
 ];
 
 const INTERVIEWER_STYLE_OPTIONS = [
