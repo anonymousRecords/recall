@@ -1,12 +1,15 @@
+import { useQueryClient } from "@tanstack/react-query";
 import { useCallback, useEffect, useState } from "react";
 import { createAIClient } from "../../../lib/ai";
 import {
 	getLiveCodingSettings,
 	updateLiveCodingSettings,
 } from "../../../lib/db/live-coding-settings";
+import { queryKeys } from "../../../queries/keys";
 import type { AIProvider } from "../../../types";
 
 export function useLiveCodingForm() {
+	const queryClient = useQueryClient();
 	const [aiProvider, setAiProvider] = useState<AIProvider>("openai");
 	const [apiKey, setApiKey] = useState("");
 	const [testingApi, setTestingApi] = useState(false);
@@ -21,7 +24,8 @@ export function useLiveCodingForm() {
 
 	const save = useCallback(async () => {
 		await updateLiveCodingSettings({ aiProvider, apiKey });
-	}, [aiProvider, apiKey]);
+		await queryClient.invalidateQueries({ queryKey: queryKeys.liveCodingSettings.all });
+	}, [aiProvider, apiKey, queryClient]);
 
 	const handleTestApi = useCallback(async () => {
 		if (!apiKey) {
