@@ -1,4 +1,4 @@
-import { useCallback } from "react";
+import { useCallback, useMemo } from "react";
 import { calculateCost } from "../../../lib/ai/cost";
 import type {
 	AIProvider,
@@ -133,12 +133,10 @@ export function useInterviewer({ provider, apiKey }: UseInterviewerOptions) {
 		[sendToAI, getTokenUsage, provider],
 	);
 
-	return {
-		greet,
-		respondToUser,
-		respondToCodeChange,
-		generateReport,
-	};
+	return useMemo(
+		() => ({ greet, respondToUser, respondToCodeChange, generateReport }),
+		[greet, respondToUser, respondToCodeChange, generateReport],
+	);
 }
 
 interface AIMessage {
