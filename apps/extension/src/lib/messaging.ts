@@ -7,6 +7,7 @@ interface ProtocolMap {
 	START_CODE_MONITOR(): boolean;
 	STOP_CODE_MONITOR(): boolean;
 	CODE_CHANGED(data: { code: string; language: ProgrammingLanguage }): void;
+	PROGRAMMERS_PAGE_LOADED(): void;
 }
 
 export const { sendMessage, onMessage } =

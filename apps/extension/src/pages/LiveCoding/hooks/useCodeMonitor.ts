@@ -49,6 +49,22 @@ export function useCodeMonitor({ onCodeChange }: UseCodeMonitorOptions = {}) {
 		};
 
 		checkCurrentTab();
+
+		// content script가 로드될 때 (URL 이동으로 프로그래머스 진입)
+		const unsubscribe = onMessage("PROGRAMMERS_PAGE_LOADED", () => {
+			checkCurrentTab();
+		});
+
+		// 이미 로드된 프로그래머스 탭으로 전환할 때
+		const handleTabActivated = () => {
+			checkCurrentTab();
+		};
+		browser.tabs.onActivated.addListener(handleTabActivated);
+
+		return () => {
+			unsubscribe();
+			browser.tabs.onActivated.removeListener(handleTabActivated);
+		};
 	}, []);
 
 	useEffect(() => {

@@ -10,6 +10,10 @@ export default defineContentScript({
 
 		console.log("프로그래머스 Content Script 로드됨");
 
+		sendMessage("PROGRAMMERS_PAGE_LOADED", undefined).catch(() => {
+			// 사이드 패널이 열려있지 않으면 무시
+		});
+
 		onMessage("GET_PROBLEM_INFO", () => extractProblemInfo());
 		onMessage("GET_CURRENT_CODE", () => {
 			const code = getEditorCode();
