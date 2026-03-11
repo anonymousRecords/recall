@@ -91,7 +91,16 @@ export default defineContentScript({
 
 		function getEditorCode(): string | null {
 			try {
-				// CodeMirror 6 (최신 프로그래머스)
+				// CodeMirror 5 (현재 프로그래머스 기준 — DOM 직접 확인)
+				const cm5Elements = document.querySelectorAll(".CodeMirror");
+				for (const el of cm5Elements) {
+					const cm = (el as CodeMirror5Element).CodeMirror;
+					if (cm) {
+						return cm.getValue();
+					}
+				}
+
+				// CodeMirror 6 (향후 마이그레이션 대비)
 				const cmEditor = document.querySelector(
 					".cm-editor",
 				) as CodeMirror6EditorElement | null;
@@ -102,16 +111,7 @@ export default defineContentScript({
 					}
 				}
 
-				// CodeMirror 5 (레거시)
-				const cm5Elements = document.querySelectorAll(".CodeMirror");
-				for (const el of cm5Elements) {
-					const cm = (el as CodeMirror5Element).CodeMirror;
-					if (cm) {
-						return cm.getValue();
-					}
-				}
-
-				// Monaco Editor (일부 문제)
+				// Monaco Editor (방어적 폴백)
 				const monacoWindow = window as WindowWithMonaco;
 				if (monacoWindow.monaco?.editor) {
 					const editors = monacoWindow.monaco.editor.getEditors();
