@@ -2,11 +2,11 @@
   <img width="450" height="450" alt="image" src="https://github.com/user-attachments/assets/061265a2-9c0b-4ee6-86ab-ad87cf2fe105" />
 </div>
 
-- [서비스 소개](#-서비스-소개)
-- [기획 배경](#-기획-배경)
-- [기술 스택](#-기술-스택)
-- [핵심 기능](#-핵심-기능)
-- [개발 기록](#-개발-기록)
+- [서비스 소개](https://github.com/anonymousRecords/recall?tab=readme-ov-file#%EC%84%9C%EB%B9%84%EC%8A%A4-%EC%86%8C%EA%B0%9C)
+- [기획 배경](https://github.com/anonymousRecords/recall?tab=readme-ov-file#%EA%B8%B0%ED%9A%8D-%EB%B0%B0%EA%B2%BD)
+- [기술 스택](https://github.com/anonymousRecords/recall?tab=readme-ov-file#%EA%B8%B0%EC%88%A0-%EC%8A%A4%ED%83%9D)
+- [핵심 기능](https://github.com/anonymousRecords/recall?tab=readme-ov-file#%ED%95%B5%EC%8B%AC-%EA%B8%B0%EB%8A%A5)
+- [개발 기록](https://github.com/anonymousRecords/recall?tab=readme-ov-file#%EA%B0%9C%EB%B0%9C-%EA%B8%B0%EB%A1%9D)
 
 # Recall
 
