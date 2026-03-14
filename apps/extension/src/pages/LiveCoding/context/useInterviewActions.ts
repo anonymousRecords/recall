@@ -124,7 +124,7 @@ export function useInterviewActions({
 			return;
 		}
 
-		if (!shouldTriggerAI(previousCode, editorCode)) {
+		if (!shouldTriggerAI({ prev: previousCode, curr: editorCode })) {
 			return;
 		}
 

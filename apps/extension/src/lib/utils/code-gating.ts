@@ -1,3 +1,47 @@
+const DIFF_THRESHOLD = 50;
+
+interface ShouldTriggerAIOptions {
+	prev: string;
+	curr: string;
+	threshold?: number;
+}
+
+export function shouldTriggerAI({
+	prev,
+	curr,
+	threshold = DIFF_THRESHOLD,
+}: ShouldTriggerAIOptions): boolean {
+	return (
+		calculateDiffSize(prev, curr) >= threshold &&
+		hasStructuralChange(prev, curr)
+	);
+}
+
+function calculateDiffSize(prev: string, curr: string): number {
+	return Math.abs(curr.length - prev.length);
+}
+
+function hasStructuralChange(prev: string, curr: string): boolean {
+	const prevKeywordCountMap = buildKeywordCountMap(prev);
+	const currKeywordCountMap = buildKeywordCountMap(curr);
+
+	return STRUCTURAL_KEYWORDS.some(
+		(keyword) =>
+			prevKeywordCountMap.get(keyword) !== currKeywordCountMap.get(keyword),
+	);
+}
+
+function buildKeywordCountMap(code: string): Map<string, number> {
+	const keywordCountMap = new Map<string, number>();
+
+	for (const keyword of STRUCTURAL_KEYWORDS) {
+		const keywordPattern = new RegExp(`\\b${keyword}\\b`, "g");
+		keywordCountMap.set(keyword, (code.match(keywordPattern) ?? []).length);
+	}
+
+	return keywordCountMap;
+}
+
 const STRUCTURAL_KEYWORDS = [
 	"function",
 	"for",
@@ -12,38 +56,4 @@ const STRUCTURAL_KEYWORDS = [
 	"const",
 	"let",
 	"var",
-];
-
-export const DIFF_THRESHOLD = 50;
-
-export function calculateDiffSize(prev: string, curr: string): number {
-	return Math.abs(curr.length - prev.length);
-}
-
-function countKeywords(code: string): Map<string, number> {
-	const counts = new Map<string, number>();
-	for (const keyword of STRUCTURAL_KEYWORDS) {
-		const re = new RegExp(`\\b${keyword}\\b`, "g");
-		counts.set(keyword, (code.match(re) ?? []).length);
-	}
-	return counts;
-}
-
-export function hasStructuralChange(prev: string, curr: string): boolean {
-	const prevCounts = countKeywords(prev);
-	const currCounts = countKeywords(curr);
-	return STRUCTURAL_KEYWORDS.some(
-		(keyword) => prevCounts.get(keyword) !== currCounts.get(keyword),
-	);
-}
-
-export function shouldTriggerAI(
-	prev: string,
-	curr: string,
-	threshold = DIFF_THRESHOLD,
-): boolean {
-	return (
-		calculateDiffSize(prev, curr) >= threshold &&
-		hasStructuralChange(prev, curr)
-	);
-}
+] as const;
