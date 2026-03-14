@@ -64,7 +64,6 @@ export function useProblemForm(id: string | undefined) {
 
 	const [loading, setLoading] = useState(!isNew);
 	const [saving, setSaving] = useState(false);
-	const [createdAt, setCreatedAt] = useState<string | null>(null);
 	const [form, setForm] = useState<ProblemForm>(INITIAL_FORM);
 
 	useEffect(() => {
@@ -86,8 +85,6 @@ export function useProblemForm(id: string | undefined) {
 					status: problem.status,
 					registrationDate: toDateString(new Date(problem.createdAt)),
 				});
-
-				setCreatedAt(problem.createdAt);
 			}
 			setLoading(false);
 		};
@@ -160,7 +157,6 @@ export function useProblemForm(id: string | undefined) {
 		isNew,
 		loading,
 		saving,
-		createdAt,
 		updateField,
 		handleLinkChange,
 		handleSubmit,

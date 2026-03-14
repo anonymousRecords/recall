@@ -1,4 +1,4 @@
-import { format } from "date-fns";
+import { format, parseISO } from "date-fns";
 import { useParams } from "react-router";
 import { PageLayout } from "../../components/layout";
 import { TagInput } from "../../components/shared";
@@ -28,7 +28,6 @@ export function ProblemDetailPage() {
 		isNew,
 		loading,
 		saving,
-		createdAt,
 		updateField,
 		handleLinkChange,
 		handleSubmit,
@@ -44,7 +43,7 @@ export function ProblemDetailPage() {
 			header={<ProblemDetailPageHeader isNew={isNew} onBack={handleCancel} />}
 		>
 			<form onSubmit={handleSubmit} className="flex-1 overflow-auto p-4">
-				{createdAt && <RegistrationDate createdAt={createdAt} />}
+				{!isNew && <RegistrationDate date={form.registrationDate} />}
 
 				<ProblemFormFields
 					form={form}
@@ -160,14 +159,14 @@ function ProblemFormFields({
 }
 
 interface RegistrationDateProps {
-	createdAt: string;
+	date: DateString;
 }
 
-function RegistrationDate({ createdAt }: RegistrationDateProps) {
+function RegistrationDate({ date }: RegistrationDateProps) {
 	return (
 		<div className="mb-4 flex justify-end">
 			<span className="font-mono text-[11px] text-[#858585]">
-				{format(new Date(createdAt), "yyyy.MM.dd")} 등록
+				{format(parseISO(date), "yyyy.MM.dd")} 등록
 			</span>
 		</div>
 	);
