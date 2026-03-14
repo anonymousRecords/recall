@@ -166,6 +166,7 @@ export function useInterviewActions({
 			speech.startSpeaking(content);
 		} catch (error) {
 			console.error("AI 응답 실패:", error);
+
 			dispatch({
 				type: "AI_FAILED",
 				message: "AI 응답에 실패했어요. 다시 말씀해주세요.",
@@ -174,8 +175,13 @@ export function useInterviewActions({
 	}, CODE_CHANGE_DEBOUNCE_MS);
 
 	useEffect(() => {
-		if (stateRef.current.phase !== "listening") return;
-		if (codeMonitor.editorCode === stateRef.current.previousCode) return;
+		if (stateRef.current.phase !== "listening") {
+			return;
+		}
+
+		if (codeMonitor.editorCode === stateRef.current.previousCode) {
+			return;
+		}
 
 		debouncedCodeChange(codeMonitor.editorCode);
 	}, [codeMonitor.editorCode, debouncedCodeChange]);
@@ -313,7 +319,10 @@ export function useInterviewActions({
 
 	// 타임 아웃 시 자동 종료
 	useEffect(() => {
-		if (state.timeRemaining !== 0 || state.phase === "idle") return;
+		if (state.timeRemaining !== 0 || state.phase === "idle") {
+			return;
+		}
+
 		endInterview();
 	}, [state.timeRemaining, state.phase, endInterview]);
 

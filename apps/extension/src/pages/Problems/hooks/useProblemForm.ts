@@ -1,5 +1,5 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { format, min, parseISO } from "date-fns";
+import { min, parseISO } from "date-fns";
 import { useCallback, useEffect, useState } from "react";
 import { useNavigate } from "react-router";
 import {
@@ -8,45 +8,36 @@ import {
 	updateProblem,
 } from "../../../lib/db/problems";
 import { posthog } from "../../../lib/posthog";
-import { extractSiteFromUrl } from "../../../lib/utils";
+import {
+	type DateString,
+	extractSiteFromUrl,
+	toDateString,
+} from "../../../lib/utils";
 import { queryKeys } from "../../../queries/keys";
 import type { CreateProblemInput, ProblemStatus } from "../../../types";
 
-export type ProblemForm = {
-	title: string;
-	link: string;
-	site: string;
-	difficulty: string;
-	tags: string[];
-	memo: string;
-	status: ProblemStatus;
-	registrationDate: string; // "yyyy-MM-dd" 형식
+type AddProblemParams = {
+	input: CreateProblemInput & { status: ProblemStatus };
+	createdAt?: DateString;
 };
 
-const INITIAL_FORM: ProblemForm = {
-	title: "",
-	link: "",
-	site: "",
-	difficulty: "",
-	tags: [],
-	memo: "",
-	status: "active",
-	registrationDate: format(new Date(), "yyyy-MM-dd"),
+type EditProblemParams = {
+	id: string;
+	input: Parameters<typeof updateProblem>[1];
 };
 
-export function useProblemForm(id?: string) {
+export function useProblemForm(id: string | undefined) {
 	const navigate = useNavigate();
+
+	const isNew = id === undefined;
+
 	const queryClient = useQueryClient();
-	const isNew = !id || id === "new";
 
 	const invalidate = () =>
 		queryClient.invalidateQueries({ queryKey: queryKeys.problems.all });
 
 	const { mutateAsync: addProblem } = useMutation({
-		mutationFn: ({
-			input,
-			createdAt,
-		}: { input: CreateProblemInput & { status: ProblemStatus }; createdAt?: string }) =>
+		mutationFn: ({ input, createdAt }: AddProblemParams) =>
 			createProblem(input, createdAt),
 		onSuccess: (_, { input }) => {
 			posthog.capture("problem_created", {
@@ -60,13 +51,7 @@ export function useProblemForm(id?: string) {
 	});
 
 	const { mutateAsync: editProblem } = useMutation({
-		mutationFn: ({
-			id,
-			input,
-		}: {
-			id: string;
-			input: Parameters<typeof updateProblem>[1];
-		}) => updateProblem(id, input),
+		mutationFn: ({ id, input }: EditProblemParams) => updateProblem(id, input),
 		onSuccess: (_, { input }) => {
 			posthog.capture("problem_updated", {
 				site: input.site ?? null,
@@ -99,7 +84,7 @@ export function useProblemForm(id?: string) {
 					tags: problem.tags,
 					memo: problem.memo,
 					status: problem.status,
-					registrationDate: format(new Date(problem.createdAt), "yyyy-MM-dd"),
+					registrationDate: toDateString(new Date(problem.createdAt)),
 				});
 
 				setCreatedAt(problem.createdAt);
@@ -135,6 +120,7 @@ export function useProblemForm(id?: string) {
 			if (!form.title.trim() || !form.link.trim()) return;
 
 			setSaving(true);
+
 			try {
 				const base = {
 					title: form.title.trim(),
@@ -146,9 +132,9 @@ export function useProblemForm(id?: string) {
 				};
 
 				if (isNew) {
-					const today = format(new Date(), "yyyy-MM-dd");
+					const today = toDateString(new Date());
 					const registrationDate = form.registrationDate
-						? format(min([parseISO(form.registrationDate), new Date()]), "yyyy-MM-dd")
+						? toDateString(min([parseISO(form.registrationDate), new Date()]))
 						: today;
 					await addProblem({
 						input: { ...base, status: "active" },
@@ -181,3 +167,25 @@ export function useProblemForm(id?: string) {
 		handleCancel,
 	};
 }
+
+export type ProblemForm = {
+	title: string;
+	link: string;
+	site: string;
+	difficulty: string;
+	tags: string[];
+	memo: string;
+	status: ProblemStatus;
+	registrationDate: DateString;
+};
+
+const INITIAL_FORM: ProblemForm = {
+	title: "",
+	link: "",
+	site: "",
+	difficulty: "",
+	tags: [],
+	memo: "",
+	status: "active",
+	registrationDate: toDateString(new Date()),
+};

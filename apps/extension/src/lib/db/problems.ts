@@ -5,12 +5,13 @@ import type {
 	UpdateProblemInput,
 } from "../../types";
 import { DEFAULT_INTERVALS, getNextReviewDate } from "../scheduling";
+import type { DateString } from "../utils";
 import { db } from "./index";
 import { getSettings } from "./settings";
 
 export async function createProblem(
 	input: CreateProblemInput,
-	createdAt?: string,
+	createdAt?: DateString,
 ): Promise<Problem> {
 	const settings = await getSettings();
 	const intervals = settings?.reviewIntervals ?? DEFAULT_INTERVALS;

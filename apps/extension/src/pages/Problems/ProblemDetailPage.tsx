@@ -3,6 +3,7 @@ import { useParams } from "react-router";
 import { PageLayout } from "../../components/layout";
 import { TagInput } from "../../components/shared";
 import { Button, Input, Select, Textarea } from "../../components/ui";
+import { type DateString, toDateString } from "../../lib/utils";
 import type { ProblemStatus } from "../../types";
 import { type ProblemForm, useProblemForm } from "./hooks/useProblemForm";
 
@@ -21,6 +22,7 @@ const STATUS_OPTIONS = [
 
 export function ProblemDetailPage() {
 	const { id } = useParams<{ id: string }>();
+
 	const {
 		form,
 		isNew,
@@ -136,9 +138,9 @@ function ProblemFormFields({
 					label="등록 날짜"
 					type="date"
 					value={form.registrationDate}
-					onChange={(e) => updateField("registrationDate", e.target.value)}
+					onChange={(e) => updateField("registrationDate", e.target.value as DateString)}
 					hint="문제를 실제로 푼 날짜를 입력하세요"
-					max={format(new Date(), "yyyy-MM-dd")}
+					max={toDateString(new Date())}
 				/>
 			)}
 

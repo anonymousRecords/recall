@@ -1,4 +1,11 @@
 import { type ClassValue, clsx } from "clsx";
+import { format } from "date-fns";
+
+export type DateString = string & { readonly __brand: "DateString" };
+
+export function toDateString(date: Date): DateString {
+	return format(date, "yyyy-MM-dd") as DateString;
+}
 
 export function cn(...inputs: ClassValue[]): string {
 	return clsx(inputs);

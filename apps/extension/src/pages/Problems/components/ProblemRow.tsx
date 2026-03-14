@@ -1,7 +1,5 @@
 import { Link } from "react-router";
-import {
-	ProgressIndicator,
-} from "../../../components/shared";
+import { ProgressIndicator } from "../../../components/shared";
 import { Badge } from "../../../components/ui";
 import {
 	formatReviewDate,
@@ -39,9 +37,7 @@ export function ProblemRow({ problem, intervals, onDelete }: ProblemRowProps) {
 					<div className="mt-2 flex flex-wrap items-center gap-2 pl-4">
 						<Badge>{problem.site}</Badge>
 						{getStatusBadge({ problem, overdue, future })}
-						{problem.difficulty && (
-							<Badge>{problem.difficulty}</Badge>
-						)}
+						{problem.difficulty && <Badge>{problem.difficulty}</Badge>}
 					</div>
 
 					{problem.tags.length > 0 && (
@@ -86,21 +82,21 @@ export function ProblemRow({ problem, intervals, onDelete }: ProblemRowProps) {
 	);
 }
 
-const getStatusBadge = ({
-	problem,
-	overdue,
-	future,
-}: {
+interface GetStatusBadgeProps {
 	problem: Problem;
 	overdue: boolean;
 	future: boolean;
-}) => {
+}
+
+const getStatusBadge = ({ problem, overdue, future }: GetStatusBadgeProps) => {
 	if (problem.status === "completed") {
 		return <Badge variant="success">DONE</Badge>;
 	}
+
 	if (problem.status === "archived") {
 		return <Badge>ARCHIVED</Badge>;
 	}
+
 	if (overdue) {
 		return (
 			<Badge variant="danger">
@@ -108,10 +104,12 @@ const getStatusBadge = ({
 			</Badge>
 		);
 	}
+
 	if (future) {
 		return (
 			<Badge variant="info">{formatReviewDate(problem.nextReviewDate)}</Badge>
 		);
 	}
+
 	return <Badge variant="warning">TODAY</Badge>;
 };

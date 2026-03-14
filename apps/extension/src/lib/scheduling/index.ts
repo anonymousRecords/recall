@@ -1,11 +1,11 @@
 import {
 	addDays,
-	format,
 	isFuture,
 	isPast,
 	isToday,
 	startOfDay,
 } from "date-fns";
+import { toDateString } from "../utils";
 
 export const DEFAULT_INTERVALS = [1, 3, 7, 14, 30];
 
@@ -26,7 +26,7 @@ export function formatReviewDate(dateString: string): string {
 		return "오늘";
 	}
 
-	return format(date, "yyyy-MM-dd");
+	return toDateString(date);
 }
 
 export function isOverdue(dateString: string): boolean {
