@@ -4,7 +4,7 @@ import { createSpeechToText, createTextToSpeech } from "../../../lib/speech";
 
 interface UseSpeechProps {
 	onTranscriptSubmit: (text: string) => void;
-	onInterviewerSpeakingEnd?: () => void;
+	onInterviewerSpeakingEnd: () => void;
 }
 
 export function useSpeech({
@@ -21,8 +21,8 @@ export function useSpeech({
 	const textToSpeechRef = useRef<ReturnType<typeof createTextToSpeech>>(null);
 
 	const preservedOnTranscriptSubmit = usePreservedCallback(onTranscriptSubmit);
-	const preservedOnInterviewerSpeakingEnd = usePreservedCallback(() =>
-		onInterviewerSpeakingEnd?.(),
+	const preservedOnInterviewerSpeakingEnd = usePreservedCallback(
+		onInterviewerSpeakingEnd,
 	);
 
 	useEffect(() => {
@@ -104,19 +104,19 @@ export function useSpeech({
 		[stopListening],
 	);
 
-	const stopSpeaking = useCallback(() => {
+	const stopSpeaking = () => {
 		if (!textToSpeechRef.current) {
 			return;
 		}
 
 		textToSpeechRef.current.stop();
 		setIsInterviewerSpeaking(false);
-	}, []);
+	};
 
-	const clearTranscript = useCallback(() => {
+	const clearTranscript = () => {
 		setLiveTranscript("");
 		setFinalTranscript("");
-	}, []);
+	};
 
 	return {
 		// UI
