@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { usePreservedCallback } from "react-simplikit";
-import { SpeechToText, TextToSpeech } from "../../../lib/speech";
+import { createSpeechToText, createTextToSpeech } from "../../../lib/speech";
 
 interface UseSpeechProps {
 	onFinalTranscript: (text: string) => void;
@@ -17,8 +17,8 @@ export function useSpeech({
 	const [liveTranscript, setLiveTranscript] = useState("");
 	const [finalTranscript, setFinalTranscript] = useState("");
 
-	const speechToTextRef = useRef<SpeechToText | null>(null);
-	const textToSpeechRef = useRef<TextToSpeech | null>(null);
+	const speechToTextRef = useRef<ReturnType<typeof createSpeechToText>>(null);
+	const textToSpeechRef = useRef<ReturnType<typeof createTextToSpeech>>(null);
 
 	const preservedOnFinalTranscript = usePreservedCallback(onFinalTranscript);
 	const preservedOnInterviewerSpeakingEnd = usePreservedCallback(() =>
@@ -26,7 +26,7 @@ export function useSpeech({
 	);
 
 	useEffect(() => {
-		speechToTextRef.current = new SpeechToText({
+		speechToTextRef.current = createSpeechToText({
 			onResult: (transcript, isTranscriptConfirmed) => {
 				if (isTranscriptConfirmed) {
 					setFinalTranscript(transcript);
@@ -46,7 +46,7 @@ export function useSpeech({
 			},
 		});
 
-		textToSpeechRef.current = new TextToSpeech({
+		textToSpeechRef.current = createTextToSpeech({
 			onStart: () => setIsInterviewerSpeaking(true),
 			onEnd: () => {
 				setIsInterviewerSpeaking(false);

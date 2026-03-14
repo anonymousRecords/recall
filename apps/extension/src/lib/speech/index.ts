@@ -1,2 +1,2 @@
-export { SpeechToText } from "./stt";
-export { TextToSpeech } from "./tts";
+export { createSpeechToText } from "./stt";
+export { createTextToSpeech } from "./tts";

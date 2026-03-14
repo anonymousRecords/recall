@@ -1,53 +1,38 @@
 interface TextToSpeechOptions {
-	onStart?: () => void;
-	onEnd?: () => void;
-	onError?: (error: string) => void;
+	onStart: () => void;
+	onEnd: () => void;
+	onError: (error: string) => void;
 }
 
-export class TextToSpeech {
-	private synth: SpeechSynthesis;
-	private voice: SpeechSynthesisVoice | null = null;
-	private onStart?: () => void;
-	private onEnd?: () => void;
-	private onError?: (error: string) => void;
+export function createTextToSpeech({
+	onStart,
+	onEnd,
+	onError,
+}: TextToSpeechOptions) {
+	const synth = window.speechSynthesis;
+	let voice: SpeechSynthesisVoice | null = null;
 
-	constructor(options: TextToSpeechOptions = {}) {
-		this.synth = window.speechSynthesis;
-		this.onStart = options.onStart;
-		this.onEnd = options.onEnd;
-		this.onError = options.onError;
+	const setVoice = () => {
+		const voices = synth.getVoices();
 
-		this.loadKoreanVoice();
+		voice =
+			voices.find((v) => v.lang.startsWith("ko")) ||
+			voices.find((v) => v.lang.startsWith("en")) ||
+			voices[0] ||
+			null;
+	};
+
+	if (synth.getVoices().length > 0) {
+		setVoice();
+	} else {
+		synth.onvoiceschanged = setVoice;
 	}
 
-	private loadKoreanVoice() {
-		const setVoice = () => {
-			const voices = this.synth.getVoices();
-			// 한국어 음성 우선, 없으면 첫 번째 음성
-			this.voice =
-				voices.find((v) => v.lang.startsWith("ko")) ||
-				voices.find((v) => v.lang.startsWith("en")) ||
-				voices[0] ||
-				null;
-		};
-
-		// 음성 목록이 이미 로드되어 있으면 바로 설정
-		if (this.synth.getVoices().length > 0) {
-			setVoice();
-		} else {
-			// 음성 목록 로드 대기
-			this.synth.onvoiceschanged = setVoice;
-		}
-	}
-
-	speak(text: string, rate = 1.0) {
-		// 이전 발화 중단
-		this.synth.cancel();
-
+	const createUtterance = (text: string, rate: number) => {
 		const utterance = new SpeechSynthesisUtterance(text);
 
-		if (this.voice) {
-			utterance.voice = this.voice;
+		if (voice) {
+			utterance.voice = voice;
 		}
 
 		utterance.lang = "ko-KR";
@@ -55,44 +40,42 @@ export class TextToSpeech {
 		utterance.pitch = 1.0;
 		utterance.volume = 1.0;
 
-		utterance.onstart = () => {
-			this.onStart?.();
-		};
-
-		utterance.onend = () => {
-			this.onEnd?.();
-		};
-
+		utterance.onstart = () => onStart();
+		utterance.onend = () => onEnd();
 		utterance.onerror = (event) => {
-			// canceled는 의도적인 중단이므로 무시
-			if (event.error === "canceled") return;
-			this.onError?.(event.error);
+			if (event.error === "canceled") {
+				return;
+			}
+			onError(event.error);
 		};
 
-		this.synth.speak(utterance);
-	}
+		return utterance;
+	};
 
-	stop() {
-		this.synth.cancel();
-	}
+	return {
+		speak(text: string, rate = 1.0) {
+			synth.cancel();
+			synth.speak(createUtterance(text, rate));
+		},
 
-	pause() {
-		this.synth.pause();
-	}
+		stop() {
+			synth.cancel();
+		},
 
-	resume() {
-		this.synth.resume();
-	}
+		pause() {
+			synth.pause();
+		},
 
-	get speaking() {
-		return this.synth.speaking;
-	}
+		resume() {
+			synth.resume();
+		},
 
-	get paused() {
-		return this.synth.paused;
-	}
+		get speaking() {
+			return synth.speaking;
+		},
 
-	static isSupported(): boolean {
-		return "speechSynthesis" in window;
-	}
+		get paused() {
+			return synth.paused;
+		},
+	};
 }
