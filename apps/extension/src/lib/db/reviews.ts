@@ -47,13 +47,3 @@ export async function completeReview(
 	await db.problems.put(updated);
 	return updated;
 }
-
-export async function getReviewsForProblem(
-	problemId: string,
-): Promise<Review[]> {
-	return db.reviews.where("problemId").equals(problemId).toArray();
-}
-
-export async function getAllReviews(): Promise<Review[]> {
-	return db.reviews.orderBy("completedAt").reverse().toArray();
-}

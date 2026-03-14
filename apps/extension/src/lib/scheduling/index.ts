@@ -19,17 +19,6 @@ export function getNextReviewDate(
 	return nextDate.toISOString();
 }
 
-export function getReviewStageLabel(
-	stage: number,
-	intervals: number[],
-): string {
-	if (stage >= intervals.length) {
-		return "완료";
-	}
-	const day = intervals[stage];
-	return `${day}일 후`;
-}
-
 export function formatReviewDate(dateString: string): string {
 	const date = new Date(dateString);
 
@@ -45,32 +34,6 @@ export function isOverdue(dateString: string): boolean {
 	return isPast(startOfDay(date)) && !isToday(date);
 }
 
-export function isDueToday(dateString: string): boolean {
-	return isToday(new Date(dateString));
-}
-
 export function isDueFuture(dateString: string): boolean {
 	return isFuture(startOfDay(new Date(dateString)));
-}
-
-export function getStageProgress(
-	currentStage: number,
-	totalStages: number,
-): number {
-	return Math.min((currentStage / totalStages) * 100, 100);
-}
-
-export function getRemainingStages(
-	currentStage: number,
-	intervals: number[],
-): number {
-	return Math.max(intervals.length - currentStage, 0);
-}
-
-export function calculateNextReviewFromStage(
-	stage: number,
-	intervals: number[] = DEFAULT_INTERVALS,
-): Date {
-	const daysToAdd = intervals[stage] ?? intervals[intervals.length - 1];
-	return addDays(startOfDay(new Date()), daysToAdd);
 }

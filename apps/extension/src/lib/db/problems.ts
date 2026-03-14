@@ -2,7 +2,6 @@ import { parse } from "date-fns";
 import type {
 	CreateProblemInput,
 	Problem,
-	ProblemStatus,
 	UpdateProblemInput,
 } from "../../types";
 import { DEFAULT_INTERVALS, getNextReviewDate } from "../scheduling";
@@ -42,10 +41,6 @@ export async function getAllProblems(): Promise<Problem[]> {
 	return db.problems.orderBy("createdAt").reverse().toArray();
 }
 
-export async function getActiveProblems(): Promise<Problem[]> {
-	return db.problems.where("status").equals("active").toArray();
-}
-
 export async function getTodayReviewProblems(): Promise<Problem[]> {
 	const today = new Date();
 	today.setHours(23, 59, 59, 999);
@@ -78,23 +73,4 @@ export async function updateProblem(
 export async function deleteProblem(id: string): Promise<void> {
 	await db.problems.delete(id);
 	await db.reviews.where("problemId").equals(id).delete();
-}
-
-export async function getProblemsByStatus(
-	status: ProblemStatus,
-): Promise<Problem[]> {
-	return db.problems.where("status").equals(status).toArray();
-}
-
-export async function searchProblems(query: string): Promise<Problem[]> {
-	const lowerQuery = query.toLowerCase();
-	return db.problems
-		.filter(
-			(p) =>
-				p.title.toLowerCase().includes(lowerQuery) ||
-				p.site.toLowerCase().includes(lowerQuery) ||
-				p.tags.some((t) => t.toLowerCase().includes(lowerQuery)) ||
-				p.memo.toLowerCase().includes(lowerQuery),
-		)
-		.toArray();
 }
