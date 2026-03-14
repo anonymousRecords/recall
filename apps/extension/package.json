@@ -30,6 +30,7 @@
 	},
 	"devDependencies": {
 		"@tailwindcss/vite": "^4.1.18",
+		"@types/dom-speech-recognition": "^0.0.7",
 		"@types/react": "^19.2.7",
 		"@types/react-dom": "^19.2.3",
 		"@wxt-dev/module-react": "^1.1.5",
