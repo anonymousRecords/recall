@@ -68,11 +68,11 @@ export function InterviewProvider({ children }: InterviewProviderProps) {
 
 	const codeMonitor = useCodeMonitor();
 
-	// NOTE: machine이 아직 선언되지 않았지만, onFinalTranscript는
+	// NOTE: machine이 아직 선언되지 않았지만, onTranscriptSubmit은
 	// 비동기 이벤트에서만 호출되므로 machine 초기화 이후 실행됨.
 	// usePreservedCallback이 내부적으로 최신 참조를 보장함.
 	const speech = useSpeech({
-		onFinalTranscript: (text) => actions.sendAIMessage(text),
+		onTranscriptSubmit: (text) => actions.sendAIMessage(text),
 		onInterviewerSpeakingEnd: () => dispatch({ type: "SPEAKING_DONE" }),
 	});
 
